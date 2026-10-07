@@ -1,0 +1,342 @@
+{
+  "common": {
+    "soon": "Soon",
+    "save": "Save",
+    "saving": "Saving…",
+    "saved": "Changes saved",
+    "cancel": "Cancel",
+    "close": "Close"
+  },
+  "errors": {
+    "validation": "Please check the fields.",
+    "notFound": "We couldn't find that record.",
+    "forbidden": "You don't have permission to do this.",
+    "unexpected": "Something went wrong. Please try again.",
+    "unauthenticated": "Your session has expired. Please sign in again.",
+    "rateLimited": "Too many attempts. Wait a moment and try again.",
+    "emailTaken": "An account with this email already exists. Please sign in.",
+    "invalidCredentials": "Email or password is incorrect.",
+    "invitationInvalid": "The invitation has expired or was already used.",
+    "invitationEmailMismatch": "The invitation was sent to a different email address.",
+    "alreadyMember": "This person is already a member of the company.",
+    "lastOwner": "A company must keep at least one owner."
+  },
+  "validation": {
+    "required": "Required.",
+    "tooLong": "Too long.",
+    "email": "Enter a valid email address.",
+    "passwordTooShort": "Password is too short.",
+    "vatNumber": "A VAT number starts with a country code, e.g. EE100000000."
+  },
+  "auth": {
+    "heroTitle": "Bookkeeping that keeps track for you.",
+    "heroBody": "One place for the invoices, payments, entries and reports of all your companies.",
+    "heroPoint1": "Many companies, one login",
+    "heroPoint2": "Estonian tax rules and reporting",
+    "heroPoint3": "Roles and permissions per client",
+    "loginTitle": "Welcome back",
+    "loginSubtitle": "Sign in to continue.",
+    "linkError": "That sign-in link is no longer valid. Request a new one.",
+    "loginMethod": "Sign-in method",
+    "withPassword": "Password",
+    "withMagicLink": "Email link",
+    "email": "Email",
+    "password": "Password",
+    "magicLinkHint": "We'll email you a link to sign in without a password. The link is valid for 15 minutes.",
+    "pleaseWait": "One moment…",
+    "login": "Sign in",
+    "sendLink": "Send link",
+    "noAccount": "No account yet?",
+    "register": "Create one",
+    "checkEmailTitle": "Check your inbox",
+    "checkEmailBody": "If an account exists for {email}, we've sent a sign-in link there.",
+    "backToLogin": "Back to sign in",
+    "registerTitle": "Create an account",
+    "registerSubtitle": "Creating an account is free. You can add a company in the next step.",
+    "registerInviteSubtitle": "Create an account to accept the invitation.",
+    "haveAccount": "Already have an account?",
+    "name": "Name",
+    "passwordHint": "At least {min} characters.",
+    "organizationName": "Firm or company name",
+    "organizationNameHint": "If you keep the books for several companies, enter your firm's name here.",
+    "createAccount": "Create account"
+  },
+  "invite": {
+    "invalidTitle": "Invitation not valid",
+    "invalidBody": "The invitation has expired, was revoked or was already used. Ask the sender for a new one.",
+    "toApp": "Open the app",
+    "title": "Invitation: {company}",
+    "body": "You were invited as {email} with the role “{role}”.",
+    "createAccount": "Create an account and accept",
+    "loginExisting": "I already have an account",
+    "mismatch": "You're signed in as {current}, but the invitation was sent to {invited}. Sign out and use the right account.",
+    "accept": "Accept invitation"
+  },
+  "roles": {
+    "OWNER": "Owner",
+    "ACCOUNTANT": "Accountant",
+    "EDITOR": "Editor",
+    "VIEWER": "Viewer",
+    "descriptions": {
+      "OWNER": "Full access, including users and permissions.",
+      "ACCOUNTANT": "All accounting work, including confirming documents and closing periods.",
+      "EDITOR": "Can create and edit drafts but cannot confirm them.",
+      "VIEWER": "Can see data and reports but cannot change anything."
+    }
+  },
+  "permissions": {
+    "module": "Module",
+    "level": "Access",
+    "defaultLevel": "From role ({level})",
+    "modules": {
+      "dashboard": "Dashboard",
+      "sales": "Sales",
+      "purchases": "Purchases",
+      "payments": "Payments",
+      "finance": "Finance",
+      "inventory": "Inventory",
+      "assets": "Fixed assets",
+      "reports": "Reports",
+      "settings": "Settings",
+      "users": "Users"
+    },
+    "levels": {
+      "none": "None",
+      "view": "View",
+      "edit": "Edit",
+      "confirm": "Confirm"
+    }
+  },
+  "shell": {
+    "theme": "Theme",
+    "themeLight": "Light theme",
+    "themeDark": "Dark theme",
+    "themeSystem": "Match system",
+    "language": "Language",
+    "mainNavigation": "Main navigation",
+    "expand": "Expand menu",
+    "collapse": "Collapse menu",
+    "switchCompany": "Switch company",
+    "searchCompanies": "Search by name or code…",
+    "noCompanies": "No companies found.",
+    "recentCompanies": "Recently opened",
+    "otherCompanies": "Other companies",
+    "allCompanies": "All companies",
+    "addCompany": "Add company",
+    "account": "My account",
+    "signOut": "Sign out",
+    "openMenu": "Open menu",
+    "breadcrumbs": "Location",
+    "search": "Search or run a command",
+    "searchShort": "Search or do…",
+    "searchShortMobile": "Search",
+    "create": "New",
+    "notificationsCount": "Notifications ({count} unread)",
+    "skipToContent": "Skip to content",
+    "close": "Close",
+    "quickActions": "Quick actions"
+  },
+  "nav": {
+    "groups": {
+      "dashboard": "Dashboard",
+      "sales": "Sales",
+      "purchases": "Purchases",
+      "payments": "Payments",
+      "finance": "Finance",
+      "inventory": "Inventory",
+      "assets": "Fixed assets",
+      "settings": "Settings"
+    },
+    "sections": {
+      "documents": "Documents",
+      "registers": "Registers",
+      "reports": "Reports",
+      "company": "Company",
+      "financial": "Accounting"
+    },
+    "items": {
+      "sales": {
+        "invoices": "Sales invoices",
+        "quotes": "Quotes",
+        "recurring": "Recurring invoices",
+        "consolidated": "Combined invoices",
+        "customers": "Customers",
+        "items": "Products and services",
+        "reportSales": "Sales overview",
+        "reportReceivables": "Customer balances",
+        "reportReminders": "Reminders and statements",
+        "reportInterest": "Late fees"
+      },
+      "purchases": {
+        "invoices": "Purchase invoices",
+        "inbox": "Pending invoices",
+        "orders": "Purchase orders",
+        "expenses": "Expense claims",
+        "suppliers": "Suppliers",
+        "employees": "Expense claimants",
+        "reportPurchases": "Purchases overview",
+        "reportPayables": "Supplier balances"
+      },
+      "payments": {
+        "list": "Receipts and payments",
+        "statements": "Bank statements",
+        "orders": "Payment orders",
+        "cashbook": "Cash book",
+        "accounts": "Bank and cash accounts"
+      },
+      "finance": {
+        "journal": "Journal entries",
+        "vat": "VAT return",
+        "ledger": "General ledger",
+        "trialBalance": "Trial balance",
+        "daybook": "Day book",
+        "balanceSheet": "Balance sheet",
+        "incomeStatement": "Income statement",
+        "cashFlow": "Cash flow"
+      },
+      "inventory": {
+        "movements": "Stock movements",
+        "stock": "Stock on hand",
+        "warehouses": "Warehouses"
+      },
+      "assets": {
+        "register": "Fixed assets",
+        "depreciation": "Depreciation"
+      },
+      "settings": {
+        "company": "Company details",
+        "users": "Users and permissions",
+        "accounts": "Chart of accounts",
+        "vatRates": "VAT rates",
+        "fiscalYears": "Financial years",
+        "numberSeries": "Document numbering",
+        "currencies": "Currencies",
+        "dimensions": "Dimensions",
+        "openingBalances": "Opening balances"
+      }
+    },
+    "quick": {
+      "newSalesInvoice": "New sales invoice",
+      "newPurchaseInvoice": "New purchase invoice",
+      "newPayment": "New payment",
+      "newJournalEntry": "New journal entry",
+      "newCustomer": "New customer",
+      "inviteUser": "Invite a user",
+      "newCompany": "Add company",
+      "newSalesInvoiceShort": "Invoice",
+      "newPaymentShort": "Payment",
+      "photoShort": "Photo"
+    }
+  },
+  "palette": {
+    "title": "Command palette",
+    "placeholder": "Where do you want to go, or what do you want to do?",
+    "searching": "Searching…",
+    "empty": "Nothing found.",
+    "results": "Results",
+    "kinds": {
+      "member": "User"
+    },
+    "actions": "Actions",
+    "navigation": "Views",
+    "companies": "Switch company",
+    "hintMove": "move",
+    "hintOpen": "open",
+    "hintClose": "close",
+    "hintGoto": "go to"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "greeting": "Hi, {name}!",
+    "subtitle": "Overview: {company}",
+    "denied": "You don't have access to that view. Ask the company owner if you need it.",
+    "checklistTitle": "Set up the company",
+    "checklistBody": "These steps make daily work easier. You can start invoicing right away and finish them later.",
+    "checklist": {
+      "fiscalYear": { "title": "Set the financial year", "body": "When your reporting year starts and ends." },
+      "accounts": { "title": "Review the chart of accounts", "body": "We start from the Estonian standard chart, which you can adjust." },
+      "banks": { "title": "Add bank and cash accounts", "body": "Then you can import statements and match payments." },
+      "openingBalances": { "title": "Enter opening balances", "body": "Moving from another system? Bring over the previous period's balances." },
+      "users": { "title": "Invite colleagues", "body": "Give your accountant or management access with a suitable role." }
+    },
+    "phaseBadge": "Phase {phase}",
+    "deadlinesTitle": "Deadlines",
+    "vatDeadline": "VAT return (KMD)",
+    "vatPeriod": "Period {period}",
+    "dueToday": "Today",
+    "dueInDays": "{days, plural, one {# day} other {# days}}",
+    "deadlinesNote": "The annual report deadline appears once the financial year is set up.",
+    "widgets": {
+      "receivables": { "title": "Unpaid sales invoices", "empty": "Customer balances by week will appear here." },
+      "payables": { "title": "Bills to pay", "empty": "What to pay and when will appear here." },
+      "bank": { "title": "Bank and cash", "empty": "Account balances and shortcuts will appear here." }
+    },
+    "notificationsTitle": "Notifications",
+    "noNotifications": "No new notifications.",
+    "shortcutsTitle": "Keyboard shortcuts",
+    "shortcutsBody": "Move around without the mouse.",
+    "shortcutPalette": "Search and actions",
+    "companySettingsLink": "Company details →"
+  },
+  "comingSoon": {
+    "title": "This part is in progress",
+    "body": "This view arrives in development phase {phase}. Meanwhile, the finished parts are ready to use.",
+    "back": "Back to dashboard"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "body": "The address is wrong or you don't have access to it.",
+    "home": "Go home"
+  },
+  "companies": {
+    "name": "Company name",
+    "regCode": "Registry code",
+    "regCodeHint": "Business registry code, 8 digits.",
+    "vatNumber": "VAT number",
+    "vatNumberHint": "Leave empty if the company isn't VAT registered.",
+    "listTitle": "My companies",
+    "listSubtitle": "Pick the company whose books you want to work on.",
+    "add": "Add company",
+    "emptyTitle": "No companies yet",
+    "emptyBody": "Add your first company or ask a colleague to invite you.",
+    "demo": "Demo",
+    "lastOpened": "Opened {date}",
+    "neverOpened": "Not opened yet",
+    "newTitle": "New company",
+    "newSubtitle": "Start with the basics. You'll set up the chart of accounts, VAT and financial year next.",
+    "create": "Create company",
+    "settingsSubtitle": "These details appear on invoices and reports.",
+    "basicData": "Basic details",
+    "basicDataBody": "Name, registry code and VAT number.",
+    "readOnly": "You have view-only access."
+  },
+  "users": {
+    "title": "Users and permissions",
+    "subtitle": "Who can access the data of {company}.",
+    "members": "{count, plural, one {# user} other {# users}}",
+    "invite": "Invite",
+    "you": "You",
+    "overrides": "{count, plural, one {# exception} other {# exceptions}}",
+    "lastSeen": "Last seen {date}",
+    "neverSeen": "Hasn't signed in yet",
+    "actionsFor": "Actions: {name}",
+    "editAccess": "Edit access",
+    "removeConfirm": "Remove {name} from this company?",
+    "remove": "Remove",
+    "removed": "User removed.",
+    "pendingInvitations": "Pending invitations",
+    "noInvitations": "No pending invitations.",
+    "expires": "valid until {date}",
+    "revoke": "Revoke",
+    "revoked": "Invitation revoked.",
+    "invited": "Invitation sent to {email}.",
+    "updated": "Access updated.",
+    "email": "Email",
+    "role": "Role",
+    "customizeAccess": "Customize access per module",
+    "inviteTitle": "Invite a user",
+    "inviteBody": "We'll send an email with a link valid for 7 days.",
+    "sendInvite": "Send invitation",
+    "accessTitle": "Access: {name}"
+  }
+}

@@ -1,0 +1,342 @@
+{
+  "common": {
+    "soon": "Varsti",
+    "save": "Salvesta",
+    "saving": "Salvestan…",
+    "saved": "Muudatused on salvestatud",
+    "cancel": "Loobu",
+    "close": "Sulge"
+  },
+  "errors": {
+    "validation": "Kontrolli välju.",
+    "notFound": "Otsitud kirjet ei leitud.",
+    "forbidden": "Sul pole selle toimingu jaoks õigust.",
+    "unexpected": "Midagi läks valesti. Proovi uuesti.",
+    "unauthenticated": "Sessioon on aegunud. Logi uuesti sisse.",
+    "rateLimited": "Liiga palju katseid. Oota veidi ja proovi uuesti.",
+    "emailTaken": "Selle e-postiga konto on juba olemas. Logi sisse.",
+    "invalidCredentials": "E-post või parool ei sobi.",
+    "invitationInvalid": "Kutse on aegunud või juba kasutatud.",
+    "invitationEmailMismatch": "Kutse on saadetud teisele e-posti aadressile.",
+    "alreadyMember": "See inimene on ettevõttes juba olemas.",
+    "lastOwner": "Ettevõttel peab jääma vähemalt üks omanik."
+  },
+  "validation": {
+    "required": "Kohustuslik väli.",
+    "tooLong": "Liiga pikk.",
+    "email": "Sisesta korrektne e-posti aadress.",
+    "passwordTooShort": "Parool on liiga lühike.",
+    "vatNumber": "KMKR number algab riigikoodiga, nt EE100000000."
+  },
+  "auth": {
+    "heroTitle": "Raamatupidamine, mis hoiab järge sinu eest.",
+    "heroBody": "Üks koht kõigi sinu ettevõtete arvete, maksete, kannete ja aruannete jaoks.",
+    "heroPoint1": "Mitu ettevõtet ühe kasutajaga",
+    "heroPoint2": "Eesti maksureeglid ja aruandlus",
+    "heroPoint3": "Rollid ja õigused iga kliendi kohta",
+    "loginTitle": "Tere tulemast tagasi",
+    "loginSubtitle": "Logi sisse, et jätkata.",
+    "linkError": "Sisselogimise link ei kehti enam. Küsi uus.",
+    "loginMethod": "Sisselogimise viis",
+    "withPassword": "Parooliga",
+    "withMagicLink": "E-posti lingiga",
+    "email": "E-post",
+    "password": "Parool",
+    "magicLinkHint": "Saadame sulle lingi, millega saad ilma paroolita sisse logida. Link kehtib 15 minutit.",
+    "pleaseWait": "Oota hetk…",
+    "login": "Logi sisse",
+    "sendLink": "Saada link",
+    "noAccount": "Pole veel kontot?",
+    "register": "Loo konto",
+    "checkEmailTitle": "Vaata oma postkasti",
+    "checkEmailBody": "Kui aadressiga {email} on konto olemas, saatsime sinna sisselogimise lingi.",
+    "backToLogin": "Tagasi sisselogimisse",
+    "registerTitle": "Loo konto",
+    "registerSubtitle": "Konto loomine on tasuta. Ettevõtte saad lisada kohe järgmisel sammul.",
+    "registerInviteSubtitle": "Loo konto, et kutse vastu võtta.",
+    "haveAccount": "Konto on juba olemas?",
+    "name": "Nimi",
+    "passwordHint": "Vähemalt {min} märki.",
+    "organizationName": "Büroo või ettevõtte nimi",
+    "organizationNameHint": "Kui haldad mitme ettevõtte raamatupidamist, kirjuta siia oma büroo nimi.",
+    "createAccount": "Loo konto"
+  },
+  "invite": {
+    "invalidTitle": "Kutse ei kehti",
+    "invalidBody": "Kutse on aegunud, tühistatud või juba kasutatud. Küsi saatjalt uus kutse.",
+    "toApp": "Ava rakendus",
+    "title": "Kutse: {company}",
+    "body": "Sind kutsuti aadressile {email} rolliga „{role}“.",
+    "createAccount": "Loo konto ja võta kutse vastu",
+    "loginExisting": "Mul on juba konto",
+    "mismatch": "Oled sisse logitud kui {current}, aga kutse on saadetud aadressile {invited}. Logi välja ja sisene õige kontoga.",
+    "accept": "Võta kutse vastu"
+  },
+  "roles": {
+    "OWNER": "Omanik",
+    "ACCOUNTANT": "Raamatupidaja",
+    "EDITOR": "Koostaja",
+    "VIEWER": "Vaataja",
+    "descriptions": {
+      "OWNER": "Täielik ligipääs, sh kasutajate ja õiguste haldus.",
+      "ACCOUNTANT": "Kõik raamatupidamise toimingud, sh dokumentide kinnitamine ja perioodide sulgemine.",
+      "EDITOR": "Saab koostada ja muuta mustandeid, aga ei kinnita neid.",
+      "VIEWER": "Näeb andmeid ja aruandeid, kuid ei saa midagi muuta."
+    }
+  },
+  "permissions": {
+    "module": "Moodul",
+    "level": "Õigus",
+    "defaultLevel": "Rolli järgi ({level})",
+    "modules": {
+      "dashboard": "Töölaud",
+      "sales": "Müük",
+      "purchases": "Ost",
+      "payments": "Maksed",
+      "finance": "Finants",
+      "inventory": "Ladu",
+      "assets": "Põhivara",
+      "reports": "Aruanded",
+      "settings": "Seadistused",
+      "users": "Kasutajad"
+    },
+    "levels": {
+      "none": "Puudub",
+      "view": "Vaatamine",
+      "edit": "Muutmine",
+      "confirm": "Kinnitamine"
+    }
+  },
+  "shell": {
+    "theme": "Teema",
+    "themeLight": "Hele teema",
+    "themeDark": "Tume teema",
+    "themeSystem": "Nagu süsteemis",
+    "language": "Keel",
+    "mainNavigation": "Peamenüü",
+    "expand": "Laienda menüü",
+    "collapse": "Ahenda menüü",
+    "switchCompany": "Vaheta ettevõtet",
+    "searchCompanies": "Otsi ettevõtet nime või koodi järgi…",
+    "noCompanies": "Ühtegi ettevõtet ei leitud.",
+    "recentCompanies": "Viimati avatud",
+    "otherCompanies": "Teised ettevõtted",
+    "allCompanies": "Kõik ettevõtted",
+    "addCompany": "Lisa ettevõte",
+    "account": "Minu konto",
+    "signOut": "Logi välja",
+    "openMenu": "Ava menüü",
+    "breadcrumbs": "Asukoht",
+    "search": "Otsi või tee toiming",
+    "searchShort": "Otsi või tee…",
+    "searchShortMobile": "Otsi",
+    "create": "Loo",
+    "notificationsCount": "Teated ({count} lugemata)",
+    "skipToContent": "Liigu sisu juurde",
+    "close": "Sulge",
+    "quickActions": "Kiirtoimingud"
+  },
+  "nav": {
+    "groups": {
+      "dashboard": "Töölaud",
+      "sales": "Müük",
+      "purchases": "Ost",
+      "payments": "Maksed",
+      "finance": "Finants",
+      "inventory": "Ladu",
+      "assets": "Põhivara",
+      "settings": "Seadistused"
+    },
+    "sections": {
+      "documents": "Dokumendid",
+      "registers": "Registrid",
+      "reports": "Aruanded",
+      "company": "Ettevõte",
+      "financial": "Raamatupidamine"
+    },
+    "items": {
+      "sales": {
+        "invoices": "Müügiarved",
+        "quotes": "Hinnapakkumised",
+        "recurring": "Korduvad arved",
+        "consolidated": "Koondarved",
+        "customers": "Kliendid",
+        "items": "Kaubad ja teenused",
+        "reportSales": "Müügi ülevaade",
+        "reportReceivables": "Klientide võlad",
+        "reportReminders": "Meeldetuletused ja saldoteatised",
+        "reportInterest": "Viivised"
+      },
+      "purchases": {
+        "invoices": "Ostuarved",
+        "inbox": "Ootel arved",
+        "orders": "Tellimused tarnijatele",
+        "expenses": "Kuluaruanded",
+        "suppliers": "Tarnijad",
+        "employees": "Aruandvad isikud",
+        "reportPurchases": "Ostude ülevaade",
+        "reportPayables": "Võlad tarnijatele"
+      },
+      "payments": {
+        "list": "Laekumised ja väljamaksed",
+        "statements": "Pangaväljavõtted",
+        "orders": "Maksekorraldused",
+        "cashbook": "Kassaraamat",
+        "accounts": "Pangakontod ja kassad"
+      },
+      "finance": {
+        "journal": "Kanded",
+        "vat": "Käibedeklaratsioon",
+        "ledger": "Pearaamat",
+        "trialBalance": "Käibeandmik",
+        "daybook": "Päevaraamat",
+        "balanceSheet": "Bilanss",
+        "incomeStatement": "Kasumiaruanne",
+        "cashFlow": "Rahavood"
+      },
+      "inventory": {
+        "movements": "Laoliikumised",
+        "stock": "Laoseis",
+        "warehouses": "Laod"
+      },
+      "assets": {
+        "register": "Põhivarad",
+        "depreciation": "Kulumi arvestus"
+      },
+      "settings": {
+        "company": "Ettevõtte andmed",
+        "users": "Kasutajad ja õigused",
+        "accounts": "Kontoplaan",
+        "vatRates": "Käibemaksumäärad",
+        "fiscalYears": "Majandusaastad",
+        "numberSeries": "Dokumentide numbrid",
+        "currencies": "Valuutad",
+        "dimensions": "Dimensioonid",
+        "openingBalances": "Algsaldod"
+      }
+    },
+    "quick": {
+      "newSalesInvoice": "Uus müügiarve",
+      "newPurchaseInvoice": "Uus ostuarve",
+      "newPayment": "Uus makse",
+      "newJournalEntry": "Uus kanne",
+      "newCustomer": "Uus klient",
+      "inviteUser": "Kutsu kasutaja",
+      "newCompany": "Lisa ettevõte",
+      "newSalesInvoiceShort": "Arve",
+      "newPaymentShort": "Makse",
+      "photoShort": "Foto"
+    }
+  },
+  "palette": {
+    "title": "Käsupalett",
+    "placeholder": "Kuhu soovid minna või mida teha?",
+    "searching": "Otsin…",
+    "empty": "Midagi ei leitud.",
+    "results": "Leitud",
+    "kinds": {
+      "member": "Kasutaja"
+    },
+    "actions": "Toimingud",
+    "navigation": "Vaated",
+    "companies": "Vaheta ettevõtet",
+    "hintMove": "liigu",
+    "hintOpen": "ava",
+    "hintClose": "sulge",
+    "hintGoto": "kiirlingid"
+  },
+  "dashboard": {
+    "title": "Töölaud",
+    "greeting": "Tere, {name}!",
+    "subtitle": "Ülevaade: {company}",
+    "denied": "Sul pole sellele vaatele ligipääsu. Vajadusel küsi õigusi ettevõtte omanikult.",
+    "checklistTitle": "Seadista ettevõte",
+    "checklistBody": "Need sammud teevad igapäevase töö lihtsaks. Võid alustada ka kohe arvetega ja need hiljem lõpetada.",
+    "checklist": {
+      "fiscalYear": { "title": "Määra majandusaasta", "body": "Millal algab ja lõpeb sinu aruandeaasta." },
+      "accounts": { "title": "Vaata üle kontoplaan", "body": "Alustame Eesti standardsest kontoplaanist, seda saab kohandada." },
+      "banks": { "title": "Lisa pangakontod ja kassad", "body": "Siis saad importida väljavõtteid ja siduda makseid." },
+      "openingBalances": { "title": "Sisesta algsaldod", "body": "Kui tuled üle teisest programmist, too kaasa eelmise perioodi seis." },
+      "users": { "title": "Kutsu kolleegid", "body": "Anna raamatupidajale või juhatusele ligipääs sobiva rolliga." }
+    },
+    "phaseBadge": "Faas {phase}",
+    "deadlinesTitle": "Tähtajad",
+    "vatDeadline": "Käibedeklaratsioon (KMD)",
+    "vatPeriod": "Periood {period}",
+    "dueToday": "Täna",
+    "dueInDays": "{days, plural, one {# päev} other {# päeva}}",
+    "deadlinesNote": "Majandusaasta aruande tähtaeg lisandub, kui majandusaasta on seadistatud.",
+    "widgets": {
+      "receivables": { "title": "Laekumata müügiarved", "empty": "Siin näed klientide võlgu nädalate kaupa." },
+      "payables": { "title": "Tasumata ostuarved", "empty": "Siin näed, mida ja millal tasuda tuleb." },
+      "bank": { "title": "Pangad ja kassad", "empty": "Siin näed kontode saldosid ja kiirlinke." }
+    },
+    "notificationsTitle": "Teated",
+    "noNotifications": "Uusi teateid pole.",
+    "shortcutsTitle": "Kiirklahvid",
+    "shortcutsBody": "Liigu rakenduses hiireta.",
+    "shortcutPalette": "Otsing ja toimingud",
+    "companySettingsLink": "Ettevõtte andmed →"
+  },
+  "comingSoon": {
+    "title": "See osa on töös",
+    "body": "Vaade valmib arendusfaasis {phase}. Seni saad kasutada juba valmis osi.",
+    "back": "Tagasi töölauale"
+  },
+  "notFound": {
+    "title": "Lehte ei leitud",
+    "body": "Aadress on vale või sul pole sellele ligipääsu.",
+    "home": "Avalehele"
+  },
+  "companies": {
+    "name": "Ettevõtte nimi",
+    "regCode": "Registrikood",
+    "regCodeHint": "Äriregistri kood, 8 numbrit.",
+    "vatNumber": "KMKR number",
+    "vatNumberHint": "Jäta tühjaks, kui ettevõte pole käibemaksukohustuslane.",
+    "listTitle": "Minu ettevõtted",
+    "listSubtitle": "Vali ettevõte, mille raamatupidamisega soovid jätkata.",
+    "add": "Lisa ettevõte",
+    "emptyTitle": "Ettevõtteid veel pole",
+    "emptyBody": "Lisa esimene ettevõte või palu kolleegil sind kutsuda.",
+    "demo": "Demo",
+    "lastOpened": "Avatud {date}",
+    "neverOpened": "Pole veel avatud",
+    "newTitle": "Uus ettevõte",
+    "newSubtitle": "Alusta põhiandmetest. Kontoplaani, käibemaksu ja majandusaasta seadistad järgmisena.",
+    "create": "Loo ettevõte",
+    "settingsSubtitle": "Need andmed ilmuvad arvetele ja aruannetele.",
+    "basicData": "Põhiandmed",
+    "basicDataBody": "Nimi, registrikood ja käibemaksukohustuslase number.",
+    "readOnly": "Sul on ainult vaatamisõigus."
+  },
+  "users": {
+    "title": "Kasutajad ja õigused",
+    "subtitle": "Kes pääsevad ligi ettevõtte {company} andmetele.",
+    "members": "{count, plural, one {# kasutaja} other {# kasutajat}}",
+    "invite": "Kutsu",
+    "you": "Sina",
+    "overrides": "{count, plural, one {# erand} other {# erandit}}",
+    "lastSeen": "Viimati {date}",
+    "neverSeen": "Pole veel sisenenud",
+    "actionsFor": "Toimingud: {name}",
+    "editAccess": "Muuda õigusi",
+    "removeConfirm": "Kas eemaldada {name} sellest ettevõttest?",
+    "remove": "Eemalda",
+    "removed": "Kasutaja eemaldati.",
+    "pendingInvitations": "Ootel kutsed",
+    "noInvitations": "Ootel kutseid pole.",
+    "expires": "kehtib kuni {date}",
+    "revoke": "Tühista",
+    "revoked": "Kutse tühistati.",
+    "invited": "Kutse saadeti aadressile {email}.",
+    "updated": "Õigused on uuendatud.",
+    "email": "E-post",
+    "role": "Roll",
+    "customizeAccess": "Kohanda õigusi moodulite kaupa",
+    "inviteTitle": "Kutsu kasutaja",
+    "inviteBody": "Saadame e-kirja lingiga, mis kehtib 7 päeva.",
+    "sendInvite": "Saada kutse",
+    "accessTitle": "Õigused: {name}"
+  }
+}

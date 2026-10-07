@@ -1,0 +1,225 @@
+// LILY SOKID – andmemudel
+//
+// Reeglid äritabelitele (lisanduvad faasist 1):
+// - väljad id (cuid), companyId, createdAt, updatedAt, createdById
+// - @@unique([companyId, id]) ja seosed teiste äritabelitega komposiitvõtmega (companyId, xxxId)
+// - summad Decimal @db.Decimal(18, 2), kogused Decimal @db.Decimal(18, 4)
+// - kuupäevad ilma kellaajata @db.Date
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum OrgRole {
+  ADMIN
+  MEMBER
+}
+
+enum CompanyRole {
+  OWNER
+  ACCOUNTANT
+  EDITOR
+  VIEWER
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  REVOKED
+}
+
+/// Raamatupidamisbüroo või ettevõtte enda konto, mis omab ettevõtteid.
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  members   OrganizationMember[]
+  companies Company[]
+}
+
+model OrganizationMember {
+  id             String   @id @default(cuid())
+  organizationId String
+  userId         String
+  /// ADMIN võib organisatsiooni alla ettevõtteid lisada.
+  role           OrgRole  @default(MEMBER)
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+  @@index([userId])
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  emailVerified DateTime?
+  name          String?
+  image         String?
+  /// null = kasutaja logib sisse ainult magic lingiga.
+  passwordHash  String?
+  locale        String    @default("et")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts       Account[]
+  orgMemberships OrganizationMember[]
+  memberships    Membership[]
+}
+
+/// Auth.js: välised identiteedid (OAuth/OIDC, hiljem Smart-ID).
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+/// Auth.js: magic linkide tokenid.
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Company {
+  id             String    @id @default(cuid())
+  organizationId String
+  name           String
+  /// Registrikood
+  regCode        String?
+  /// KMKR number
+  vatNumber      String?
+  countryCode    String    @default("EE") @db.Char(2)
+  baseCurrency   String    @default("EUR") @db.Char(3)
+  /// Dokumentide (arved jm) vaikimisi keel
+  documentLocale String    @default("et")
+  isDemo         Boolean   @default(false)
+  archivedAt     DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  createdById    String?
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  memberships   Membership[]
+  invitations   Invitation[]
+  notifications Notification[]
+
+  @@index([organizationId])
+  @@index([regCode])
+}
+
+/// Kasutaja ligipääs ettevõttele.
+model Membership {
+  id             String      @id @default(cuid())
+  userId         String
+  companyId      String
+  role           CompanyRole
+  /// Mooduli kaupa erandid rolli vaikeõigustest, nt { "sales": "edit", "settings": "none" }
+  permissions    Json?
+  /// Ettevõtte vahetaja „viimati kasutatud“ järjestus
+  lastAccessedAt DateTime?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, companyId])
+  @@index([companyId])
+  @@index([userId, lastAccessedAt(sort: Desc)])
+}
+
+model Invitation {
+  id          String           @id @default(cuid())
+  companyId   String
+  email       String
+  role        CompanyRole
+  permissions Json?
+  /// SHA-256 räsi; token ise läheb ainult e-kirja.
+  tokenHash   String           @unique
+  status      InvitationStatus @default(PENDING)
+  expiresAt   DateTime
+  acceptedAt  DateTime?
+  invitedById String
+  createdAt   DateTime         @default(now())
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId, status])
+  @@index([email])
+}
+
+/// Ettevõtte teated töölaual (süsteemi teated, tähtajad).
+model Notification {
+  id          String    @id @default(cuid())
+  companyId   String
+  /// null = nähtav kõigile ettevõtte kasutajatele
+  userId      String?
+  /// "system" | "deadline" | ...
+  kind        String
+  title       String
+  body        String?
+  href        String?
+  dueDate     DateTime? @db.Date
+  readAt      DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdById String?
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, id])
+  @@index([companyId, createdAt(sort: Desc)])
+}
+
+/// Muutmatu logi: rakendus teeb ainult INSERT-e.
+model AuditLog {
+  id         String   @id @default(cuid())
+  /// null = kasutaja või süsteemi tasemel sündmus
+  companyId  String?
+  userId     String?
+  /// nt "company.update", "membership.invite"
+  action     String
+  entityType String
+  entityId   String?
+  /// { before, after } – ainult muutunud väljad
+  diff       Json?
+  ip         String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  @@index([companyId, createdAt(sort: Desc)])
+  @@index([entityType, entityId])
+}
+
+model RateLimit {
+  /// nt "login:ip:1.2.3.4"
+  key     String   @id
+  count   Int
+  resetAt DateTime
+}

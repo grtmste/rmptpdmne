@@ -1,0 +1,342 @@
+{
+  "common": {
+    "soon": "Tulossa",
+    "save": "Tallenna",
+    "saving": "Tallennetaan…",
+    "saved": "Muutokset tallennettu",
+    "cancel": "Peruuta",
+    "close": "Sulje"
+  },
+  "errors": {
+    "validation": "Tarkista kentät.",
+    "notFound": "Tietuetta ei löytynyt.",
+    "forbidden": "Sinulla ei ole oikeutta tähän toimintoon.",
+    "unexpected": "Jokin meni pieleen. Yritä uudelleen.",
+    "unauthenticated": "Istunto on vanhentunut. Kirjaudu uudelleen.",
+    "rateLimited": "Liian monta yritystä. Odota hetki ja yritä uudelleen.",
+    "emailTaken": "Tällä sähköpostilla on jo tili. Kirjaudu sisään.",
+    "invalidCredentials": "Sähköposti tai salasana on väärin.",
+    "invitationInvalid": "Kutsu on vanhentunut tai jo käytetty.",
+    "invitationEmailMismatch": "Kutsu on lähetetty toiseen sähköpostiosoitteeseen.",
+    "alreadyMember": "Henkilö on jo yrityksen käyttäjä.",
+    "lastOwner": "Yrityksellä on oltava vähintään yksi omistaja."
+  },
+  "validation": {
+    "required": "Pakollinen kenttä.",
+    "tooLong": "Liian pitkä.",
+    "email": "Anna kelvollinen sähköpostiosoite.",
+    "passwordTooShort": "Salasana on liian lyhyt.",
+    "vatNumber": "ALV-numero alkaa maatunnuksella, esim. EE100000000."
+  },
+  "auth": {
+    "heroTitle": "Kirjanpito, joka pysyy ajan tasalla puolestasi.",
+    "heroBody": "Yksi paikka kaikkien yritystesi laskuille, maksuille, kirjauksille ja raporteille.",
+    "heroPoint1": "Monta yritystä yhdellä tunnuksella",
+    "heroPoint2": "Viron verosäännöt ja raportointi",
+    "heroPoint3": "Roolit ja oikeudet asiakaskohtaisesti",
+    "loginTitle": "Tervetuloa takaisin",
+    "loginSubtitle": "Kirjaudu sisään jatkaaksesi.",
+    "linkError": "Kirjautumislinkki ei ole enää voimassa. Pyydä uusi.",
+    "loginMethod": "Kirjautumistapa",
+    "withPassword": "Salasanalla",
+    "withMagicLink": "Sähköpostilinkillä",
+    "email": "Sähköposti",
+    "password": "Salasana",
+    "magicLinkHint": "Lähetämme linkin, jolla voit kirjautua ilman salasanaa. Linkki on voimassa 15 minuuttia.",
+    "pleaseWait": "Hetkinen…",
+    "login": "Kirjaudu",
+    "sendLink": "Lähetä linkki",
+    "noAccount": "Eikö sinulla ole tiliä?",
+    "register": "Luo tili",
+    "checkEmailTitle": "Tarkista sähköpostisi",
+    "checkEmailBody": "Jos osoitteella {email} on tili, lähetimme sinne kirjautumislinkin.",
+    "backToLogin": "Takaisin kirjautumiseen",
+    "registerTitle": "Luo tili",
+    "registerSubtitle": "Tilin luominen on maksutonta. Voit lisätä yrityksen seuraavassa vaiheessa.",
+    "registerInviteSubtitle": "Luo tili hyväksyäksesi kutsun.",
+    "haveAccount": "Onko sinulla jo tili?",
+    "name": "Nimi",
+    "passwordHint": "Vähintään {min} merkkiä.",
+    "organizationName": "Tilitoimiston tai yrityksen nimi",
+    "organizationNameHint": "Jos hoidat useamman yrityksen kirjanpitoa, kirjoita tähän tilitoimistosi nimi.",
+    "createAccount": "Luo tili"
+  },
+  "invite": {
+    "invalidTitle": "Kutsu ei ole voimassa",
+    "invalidBody": "Kutsu on vanhentunut, peruttu tai jo käytetty. Pyydä lähettäjältä uusi kutsu.",
+    "toApp": "Avaa sovellus",
+    "title": "Kutsu: {company}",
+    "body": "Sinut kutsuttiin osoitteeseen {email} roolilla ”{role}”.",
+    "createAccount": "Luo tili ja hyväksy kutsu",
+    "loginExisting": "Minulla on jo tili",
+    "mismatch": "Olet kirjautunut käyttäjänä {current}, mutta kutsu lähetettiin osoitteeseen {invited}. Kirjaudu ulos ja käytä oikeaa tiliä.",
+    "accept": "Hyväksy kutsu"
+  },
+  "roles": {
+    "OWNER": "Omistaja",
+    "ACCOUNTANT": "Kirjanpitäjä",
+    "EDITOR": "Laatija",
+    "VIEWER": "Katselija",
+    "descriptions": {
+      "OWNER": "Täydet oikeudet, myös käyttäjien ja oikeuksien hallinta.",
+      "ACCOUNTANT": "Kaikki kirjanpidon toiminnot, myös asiakirjojen vahvistus ja kausien sulkeminen.",
+      "EDITOR": "Voi laatia ja muokata luonnoksia, mutta ei vahvistaa niitä.",
+      "VIEWER": "Näkee tiedot ja raportit, mutta ei voi muuttaa mitään."
+    }
+  },
+  "permissions": {
+    "module": "Moduuli",
+    "level": "Oikeus",
+    "defaultLevel": "Roolin mukaan ({level})",
+    "modules": {
+      "dashboard": "Työpöytä",
+      "sales": "Myynti",
+      "purchases": "Osto",
+      "payments": "Maksut",
+      "finance": "Talous",
+      "inventory": "Varasto",
+      "assets": "Käyttöomaisuus",
+      "reports": "Raportit",
+      "settings": "Asetukset",
+      "users": "Käyttäjät"
+    },
+    "levels": {
+      "none": "Ei pääsyä",
+      "view": "Katselu",
+      "edit": "Muokkaus",
+      "confirm": "Vahvistus"
+    }
+  },
+  "shell": {
+    "theme": "Teema",
+    "themeLight": "Vaalea teema",
+    "themeDark": "Tumma teema",
+    "themeSystem": "Järjestelmän mukaan",
+    "language": "Kieli",
+    "mainNavigation": "Päävalikko",
+    "expand": "Laajenna valikko",
+    "collapse": "Pienennä valikko",
+    "switchCompany": "Vaihda yritystä",
+    "searchCompanies": "Hae nimellä tai tunnuksella…",
+    "noCompanies": "Yrityksiä ei löytynyt.",
+    "recentCompanies": "Viimeksi avatut",
+    "otherCompanies": "Muut yritykset",
+    "allCompanies": "Kaikki yritykset",
+    "addCompany": "Lisää yritys",
+    "account": "Oma tili",
+    "signOut": "Kirjaudu ulos",
+    "openMenu": "Avaa valikko",
+    "breadcrumbs": "Sijainti",
+    "search": "Hae tai suorita toiminto",
+    "searchShort": "Hae tai tee…",
+    "searchShortMobile": "Hae",
+    "create": "Uusi",
+    "notificationsCount": "Ilmoitukset ({count} lukematta)",
+    "skipToContent": "Siirry sisältöön",
+    "close": "Sulje",
+    "quickActions": "Pikatoiminnot"
+  },
+  "nav": {
+    "groups": {
+      "dashboard": "Työpöytä",
+      "sales": "Myynti",
+      "purchases": "Osto",
+      "payments": "Maksut",
+      "finance": "Talous",
+      "inventory": "Varasto",
+      "assets": "Käyttöomaisuus",
+      "settings": "Asetukset"
+    },
+    "sections": {
+      "documents": "Asiakirjat",
+      "registers": "Rekisterit",
+      "reports": "Raportit",
+      "company": "Yritys",
+      "financial": "Kirjanpito"
+    },
+    "items": {
+      "sales": {
+        "invoices": "Myyntilaskut",
+        "quotes": "Tarjoukset",
+        "recurring": "Toistuvat laskut",
+        "consolidated": "Koontilaskut",
+        "customers": "Asiakkaat",
+        "items": "Tuotteet ja palvelut",
+        "reportSales": "Myynnin yhteenveto",
+        "reportReceivables": "Asiakassaatavat",
+        "reportReminders": "Muistutukset ja saldoilmoitukset",
+        "reportInterest": "Viivästyskorot"
+      },
+      "purchases": {
+        "invoices": "Ostolaskut",
+        "inbox": "Odottavat laskut",
+        "orders": "Ostotilaukset",
+        "expenses": "Kulukorvaukset",
+        "suppliers": "Toimittajat",
+        "employees": "Tilitysvelvolliset",
+        "reportPurchases": "Ostojen yhteenveto",
+        "reportPayables": "Ostovelat"
+      },
+      "payments": {
+        "list": "Saapuneet ja lähteneet maksut",
+        "statements": "Tiliotteet",
+        "orders": "Maksumääräykset",
+        "cashbook": "Kassakirja",
+        "accounts": "Pankkitilit ja kassat"
+      },
+      "finance": {
+        "journal": "Kirjaukset",
+        "vat": "ALV-ilmoitus",
+        "ledger": "Pääkirja",
+        "trialBalance": "Saldoluettelo",
+        "daybook": "Päiväkirja",
+        "balanceSheet": "Tase",
+        "incomeStatement": "Tuloslaskelma",
+        "cashFlow": "Rahavirrat"
+      },
+      "inventory": {
+        "movements": "Varastotapahtumat",
+        "stock": "Varastosaldo",
+        "warehouses": "Varastot"
+      },
+      "assets": {
+        "register": "Käyttöomaisuus",
+        "depreciation": "Poistot"
+      },
+      "settings": {
+        "company": "Yrityksen tiedot",
+        "users": "Käyttäjät ja oikeudet",
+        "accounts": "Tilikartta",
+        "vatRates": "ALV-kannat",
+        "fiscalYears": "Tilikaudet",
+        "numberSeries": "Asiakirjojen numerointi",
+        "currencies": "Valuutat",
+        "dimensions": "Dimensiot",
+        "openingBalances": "Avaavat saldot"
+      }
+    },
+    "quick": {
+      "newSalesInvoice": "Uusi myyntilasku",
+      "newPurchaseInvoice": "Uusi ostolasku",
+      "newPayment": "Uusi maksu",
+      "newJournalEntry": "Uusi kirjaus",
+      "newCustomer": "Uusi asiakas",
+      "inviteUser": "Kutsu käyttäjä",
+      "newCompany": "Lisää yritys",
+      "newSalesInvoiceShort": "Lasku",
+      "newPaymentShort": "Maksu",
+      "photoShort": "Kuva"
+    }
+  },
+  "palette": {
+    "title": "Komentopaletti",
+    "placeholder": "Minne haluat mennä tai mitä tehdä?",
+    "searching": "Haetaan…",
+    "empty": "Mitään ei löytynyt.",
+    "results": "Tulokset",
+    "kinds": {
+      "member": "Käyttäjä"
+    },
+    "actions": "Toiminnot",
+    "navigation": "Näkymät",
+    "companies": "Vaihda yritystä",
+    "hintMove": "liiku",
+    "hintOpen": "avaa",
+    "hintClose": "sulje",
+    "hintGoto": "pikalinkit"
+  },
+  "dashboard": {
+    "title": "Työpöytä",
+    "greeting": "Hei, {name}!",
+    "subtitle": "Yleiskatsaus: {company}",
+    "denied": "Sinulla ei ole pääsyä tähän näkymään. Pyydä tarvittaessa oikeuksia yrityksen omistajalta.",
+    "checklistTitle": "Määritä yritys",
+    "checklistBody": "Nämä vaiheet helpottavat päivittäistä työtä. Voit aloittaa laskutuksen heti ja viimeistellä ne myöhemmin.",
+    "checklist": {
+      "fiscalYear": { "title": "Määritä tilikausi", "body": "Milloin raportointivuotesi alkaa ja päättyy." },
+      "accounts": { "title": "Tarkista tilikartta", "body": "Aloitamme Viron vakiotilikartasta, jota voit muokata." },
+      "banks": { "title": "Lisää pankkitilit ja kassat", "body": "Sen jälkeen voit tuoda tiliotteita ja kohdistaa maksuja." },
+      "openingBalances": { "title": "Syötä avaavat saldot", "body": "Siirrytkö toisesta ohjelmasta? Tuo edellisen kauden saldot mukaan." },
+      "users": { "title": "Kutsu kollegat", "body": "Anna kirjanpitäjälle tai johdolle pääsy sopivalla roolilla." }
+    },
+    "phaseBadge": "Vaihe {phase}",
+    "deadlinesTitle": "Määräajat",
+    "vatDeadline": "ALV-ilmoitus (KMD)",
+    "vatPeriod": "Kausi {period}",
+    "dueToday": "Tänään",
+    "dueInDays": "{days, plural, one {# päivä} other {# päivää}}",
+    "deadlinesNote": "Tilinpäätöksen määräaika näkyy, kun tilikausi on määritetty.",
+    "widgets": {
+      "receivables": { "title": "Avoimet myyntilaskut", "empty": "Tässä näet asiakassaatavat viikoittain." },
+      "payables": { "title": "Maksamattomat ostolaskut", "empty": "Tässä näet, mitä ja milloin pitää maksaa." },
+      "bank": { "title": "Pankit ja kassat", "empty": "Tässä näet tilien saldot ja pikalinkit." }
+    },
+    "notificationsTitle": "Ilmoitukset",
+    "noNotifications": "Ei uusia ilmoituksia.",
+    "shortcutsTitle": "Pikanäppäimet",
+    "shortcutsBody": "Liiku sovelluksessa ilman hiirtä.",
+    "shortcutPalette": "Haku ja toiminnot",
+    "companySettingsLink": "Yrityksen tiedot →"
+  },
+  "comingSoon": {
+    "title": "Tämä osa on työn alla",
+    "body": "Näkymä valmistuu kehitysvaiheessa {phase}. Sillä välin valmiit osat ovat käytössäsi.",
+    "back": "Takaisin työpöydälle"
+  },
+  "notFound": {
+    "title": "Sivua ei löytynyt",
+    "body": "Osoite on väärä tai sinulla ei ole siihen pääsyä.",
+    "home": "Etusivulle"
+  },
+  "companies": {
+    "name": "Yrityksen nimi",
+    "regCode": "Rekisterikoodi",
+    "regCodeHint": "Kaupparekisterin koodi, 8 numeroa.",
+    "vatNumber": "ALV-numero",
+    "vatNumberHint": "Jätä tyhjäksi, jos yritys ei ole arvonlisäverovelvollinen.",
+    "listTitle": "Omat yritykset",
+    "listSubtitle": "Valitse yritys, jonka kirjanpitoa haluat jatkaa.",
+    "add": "Lisää yritys",
+    "emptyTitle": "Ei vielä yrityksiä",
+    "emptyBody": "Lisää ensimmäinen yritys tai pyydä kollegaa kutsumaan sinut.",
+    "demo": "Demo",
+    "lastOpened": "Avattu {date}",
+    "neverOpened": "Ei vielä avattu",
+    "newTitle": "Uusi yritys",
+    "newSubtitle": "Aloita perustiedoista. Tilikartta, ALV ja tilikausi määritetään seuraavaksi.",
+    "create": "Luo yritys",
+    "settingsSubtitle": "Nämä tiedot näkyvät laskuissa ja raporteissa.",
+    "basicData": "Perustiedot",
+    "basicDataBody": "Nimi, rekisterikoodi ja ALV-numero.",
+    "readOnly": "Sinulla on vain katseluoikeus."
+  },
+  "users": {
+    "title": "Käyttäjät ja oikeudet",
+    "subtitle": "Ketkä pääsevät yrityksen {company} tietoihin.",
+    "members": "{count, plural, one {# käyttäjä} other {# käyttäjää}}",
+    "invite": "Kutsu",
+    "you": "Sinä",
+    "overrides": "{count, plural, one {# poikkeus} other {# poikkeusta}}",
+    "lastSeen": "Viimeksi {date}",
+    "neverSeen": "Ei ole vielä kirjautunut",
+    "actionsFor": "Toiminnot: {name}",
+    "editAccess": "Muokkaa oikeuksia",
+    "removeConfirm": "Poistetaanko {name} tästä yrityksestä?",
+    "remove": "Poista",
+    "removed": "Käyttäjä poistettiin.",
+    "pendingInvitations": "Odottavat kutsut",
+    "noInvitations": "Ei odottavia kutsuja.",
+    "expires": "voimassa {date} asti",
+    "revoke": "Peru",
+    "revoked": "Kutsu peruttiin.",
+    "invited": "Kutsu lähetettiin osoitteeseen {email}.",
+    "updated": "Oikeudet päivitetty.",
+    "email": "Sähköposti",
+    "role": "Rooli",
+    "customizeAccess": "Mukauta oikeuksia moduuleittain",
+    "inviteTitle": "Kutsu käyttäjä",
+    "inviteBody": "Lähetämme sähköpostin linkillä, joka on voimassa 7 päivää.",
+    "sendInvite": "Lähetä kutsu",
+    "accessTitle": "Oikeudet: {name}"
+  }
+}

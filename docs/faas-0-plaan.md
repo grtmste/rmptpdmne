@@ -26,7 +26,7 @@ eraldatud.
 | CI | GitHub Actions: lint, typecheck, Vitest (Postgres service), Playwright smoke | |
 
 **Nimekonflikt:** Auth.js vajab mudelit `Account` (OAuth/OIDC sidumised, vaja ka Smart-ID jaoks).
-Seepärast on pearaamatu konto mudel nimega **`GlAccount`** (tabel `gl_account`).
+Seepärast on pearaamatu konto mudel nimega **`GlAccount`**.
 
 ---
 
