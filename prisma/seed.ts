@@ -8,9 +8,11 @@ import "dotenv/config";
 import { createPrismaClient } from "../src/lib/prisma";
 import { hashPassword } from "../src/lib/password";
 import type { CompanyRole } from "../src/lib/permissions";
-import { parseISODate } from "../src/lib/accounting/dates";
+import { addDays, parseISODate } from "../src/lib/accounting/dates";
+import { todayLocal } from "../src/lib/dates";
 import { ensureCompanyDefaults } from "../src/server/services/company-setup";
 import { postJournalEntry } from "../src/server/services/journal";
+import { confirmInvoice, saveInvoiceDraft, saveQuote } from "../src/server/services/sales";
 
 const db = createPrismaClient();
 const PASSWORD = "demo-parool-123";
@@ -121,6 +123,129 @@ async function main() {
         { accountId: acc["2320"]!, credit: "640.00" },
         { accountId: acc["2900"]!, credit: "2500.00" },
         { accountId: acc["2950"]!, credit: "14239.95" },
+      ],
+    }),
+  );
+
+  // Müük (faas 3): arve seadistus, kliendid, artiklid, arved ja pakkumine
+  await db.company.update({
+    where: { id: first.id },
+    data: {
+      invoiceBankDetails: "LHV Pank EE717700771001234567",
+      invoiceNote: "Täname koostöö eest!",
+      invoiceFooter: "Lilleaed OÜ · aiad, mis rõõmustavad",
+      phone: "+372 5555 1234",
+    },
+  });
+  const vat = Object.fromEntries(
+    (await db.vatRate.findMany({ where: { companyId: first.id } })).map((v) => [v.code, v.id]),
+  ) as Record<string, string>;
+  const group = await db.customerGroup.create({ data: { companyId: first.id, name: "Püsikliendid" } });
+  const [kool, kohvik, eraisik] = await Promise.all([
+    db.customer.create({
+      data: {
+        companyId: first.id,
+        name: "Tartu Kunstikool",
+        regCode: "75012345",
+        email: "arved@kunstikool.example",
+        addressStreet: "Kunsti 3",
+        addressCity: "Tartu",
+        addressPostalCode: "51003",
+        groupId: group.id,
+      },
+    }),
+    db.customer.create({
+      data: {
+        companyId: first.id,
+        name: "Kohvik Roheline OÜ",
+        regCode: "14567890",
+        vatNumber: "EE101234567",
+        email: "raamatupidamine@roheline.example",
+        addressStreet: "Rüütli 10",
+        addressCity: "Tartu",
+        paymentTermDays: 7,
+      },
+    }),
+    db.customer.create({ data: { companyId: first.id, name: "Liis Lepp", isPerson: true, email: "liis@example.com", locale: "et" } }),
+  ]);
+  const itemGroup = await db.itemGroup.create({ data: { companyId: first.id, name: "Aiatööd" } });
+  const items = await Promise.all(
+    [
+      { code: "KUJ", name: "Aiakujunduse projekt", unit: "tk", salePrice: "450", type: "SERVICE" as const },
+      { code: "HOOL", name: "Aiahooldus", unit: "h", salePrice: "35", type: "SERVICE" as const },
+      { code: "ROOS", name: "Roosipõõsas", unit: "tk", salePrice: "18.50", purchasePrice: "9.20", type: "GOODS" as const },
+      { code: "MULD", name: "Aiamuld 50 l", unit: "kott", salePrice: "7.90", purchasePrice: "3.10", type: "GOODS" as const },
+    ].map((i) =>
+      db.item.create({
+        data: {
+          companyId: first.id,
+          ...i,
+          vatRateId: vat.KM,
+          salesAccountId: i.type === "GOODS" ? acc["3000"] : acc["3010"],
+          groupId: itemGroup.id,
+        },
+      }),
+    ),
+  );
+  const [kuj, hool, roos, muld] = items;
+  const today = todayLocal();
+  const owner = created[0]!.id;
+  // Kuupäevad jäävad majandusaasta sisse ka aasta alguses
+  const ago = (days: number) => {
+    const d = addDays(today, -days);
+    return d < startDate ? startDate : d;
+  };
+  const invoices = [
+    {
+      customerId: kool.id,
+      date: ago(40),
+      lines: [
+        { itemId: kuj!.id, description: kuj!.name, quantity: "1", unitPrice: "450", vatRateId: vat.KM },
+        { itemId: hool!.id, description: "Aiahooldus, september", quantity: "12", unitPrice: "35", vatRateId: vat.KM },
+      ],
+    },
+    {
+      customerId: kohvik.id,
+      date: ago(12),
+      lines: [
+        { itemId: roos!.id, description: roos!.name, quantity: "10", unitPrice: "18.50", vatRateId: vat.KM },
+        { itemId: muld!.id, description: muld!.name, quantity: "6", unitPrice: "7.90", vatRateId: vat.KM, discountPct: "10" },
+      ],
+    },
+    {
+      customerId: eraisik.id,
+      date: ago(3),
+      lines: [{ itemId: hool!.id, description: "Muru niitmine ja hekilõikus", quantity: "4.5", unitPrice: "35", vatRateId: vat.KM }],
+    },
+  ];
+  for (const inv of invoices) {
+    await db.$transaction(
+      async (tx) => {
+        const id = await saveInvoiceDraft(tx, first.id, owner, { type: "INVOICE", pricesIncludeVat: false, ...inv });
+        await confirmInvoice(tx, first.id, owner, id);
+      },
+      { timeout: 30_000 },
+    );
+  }
+  await db.$transaction((tx) =>
+    saveInvoiceDraft(tx, first.id, owner, {
+      type: "INVOICE",
+      customerId: kohvik.id,
+      date: today,
+      pricesIncludeVat: false,
+      lines: [{ itemId: hool!.id, description: "Terrassi lillekastide istutus", quantity: "3", unitPrice: "35", vatRateId: vat.KM }],
+    }),
+  );
+  await db.$transaction((tx) =>
+    saveQuote(tx, first.id, owner, {
+      customerId: kool.id,
+      date: ago(2),
+      validUntil: addDays(today, 12),
+      pricesIncludeVat: false,
+      notes: "Hinnad sisaldavad materjale ja tööd.",
+      lines: [
+        { itemId: kuj!.id, description: "Sisehoovi kujundusprojekt", quantity: "1", unitPrice: "450", vatRateId: vat.KM },
+        { itemId: roos!.id, description: roos!.name, quantity: "24", unitPrice: "18.50", vatRateId: vat.KM },
       ],
     }),
   );

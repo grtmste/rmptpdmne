@@ -101,6 +101,7 @@ export default async function JournalPage({ params, searchParams }: PageProps<"/
         number: e.number,
         status: e.status,
         source: e.source,
+        sourceId: e.sourceId,
         date: toISODate(e.date),
         description: e.description,
         createdBy: userName(e.createdById),

@@ -22,6 +22,7 @@ export type PreviewEntry = {
   number: string | null;
   status: "DRAFT" | "POSTED";
   source: string;
+  sourceId: string | null;
   date: string;
   description: string | null;
   createdBy: string | null;
@@ -88,6 +89,14 @@ export function EntryPreview({
           </Link>
         </Button>
       </div>
+
+      {entry.source === "SALES_INVOICE" && entry.sourceId && (
+        <div className="border-b bg-muted/40 px-5 py-2 text-sm">
+          <Link className="text-primary hover:underline" href={`/c/${companyId}/sales/invoices?doc=${entry.sourceId}`}>
+            {t("openDocument")}
+          </Link>
+        </div>
+      )}
 
       {(entry.reversalOf || entry.reversedBy) && (
         <div className="border-b bg-muted/40 px-5 py-2 text-sm">

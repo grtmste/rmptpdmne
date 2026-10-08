@@ -23,7 +23,7 @@ import { can, type Level, type MembershipLike, type Module } from "./permissions
  */
 
 /** Faas, mis on hetkel valmis. Kõrgema faasi vaated näitavad „tulekul“ lehte. */
-export const CURRENT_PHASE = 2;
+export const CURRENT_PHASE = 3;
 
 export type NavItem = {
   id: string;
@@ -86,8 +86,8 @@ export const NAVIGATION: NavGroup[] = [
       {
         label: "registers",
         items: [
-          item("sales.customers", "/sales/customers", "sales", 3),
-          item("sales.items", "/items", "sales", 3),
+          item("sales.customers", "/sales/customers", "sales", 3, ["klient"]),
+          item("sales.items", "/items", "sales", 3, ["artikkel", "kaup", "teenus"]),
         ],
       },
       {
@@ -217,6 +217,7 @@ export const SETTINGS_NAVIGATION: NavGroup = {
       items: [
         item("settings.company", "/settings/company", "settings", 0),
         item("settings.users", "/settings/users", "users", 0),
+        item("settings.invoice", "/settings/invoice", "settings", 3, ["arve", "IBAN"]),
       ],
     },
     {
@@ -252,6 +253,7 @@ export const QUICK_ACTIONS: QuickAction[] = [
   { id: "newPayment", label: "newPayment", href: "/payments/new", module: "payments", level: "edit", phase: 5, icon: Banknote },
   { id: "newJournalEntry", label: "newJournalEntry", href: "/finance/journal/new", module: "finance", level: "edit", phase: 2, icon: Landmark },
   { id: "newCustomer", label: "newCustomer", href: "/sales/customers/new", module: "sales", level: "edit", phase: 3, icon: Users },
+  { id: "newQuote", label: "newQuote", href: "/sales/quotes/new", module: "sales", level: "edit", phase: 3, icon: FileText },
   { id: "inviteUser", label: "inviteUser", href: "/settings/users?invite=1", module: "users", level: "confirm", phase: 0, icon: Plus },
   { id: "newCompany", label: "newCompany", href: "/companies/new", module: "dashboard", level: "view", phase: 0, icon: Building2 },
 ];

@@ -133,6 +133,18 @@ model Company {
   phone                 String?
   email                 String?
   website               String?
+  /// Arve seadistus: vaikimisi maksetähtaeg päevades
+  paymentTermDays       Int         @default(14)
+  /// Viivis protsentides päevas
+  lateInterestPct       Decimal     @default(0.05) @db.Decimal(6, 3)
+  /// Pangarekvisiidid arvel (kuni pangakontod lisanduvad faasis 5)
+  invoiceBankDetails    String?
+  /// Arve jaluse tekst
+  invoiceFooter         String?
+  /// Arve vaikimisi märkus (nt „Täname koostöö eest!“)
+  invoiceNote           String?
+  /// Arve aktsentvärv (hex)
+  invoiceAccent         String      @default("#0f5c55")
   isDemo                Boolean     @default(false)
   archivedAt            DateTime?
   createdAt             DateTime    @default(now())
@@ -152,6 +164,13 @@ model Company {
   dimensions       Dimension[]
   journalEntries   JournalEntry[]
   journalTemplates JournalTemplate[]
+  customers        Customer[]
+  customerGroups   CustomerGroup[]
+  items            Item[]
+  itemGroups       ItemGroup[]
+  salesInvoices    SalesInvoice[]
+  quotes           Quote[]
+  emailLogs        EmailLog[]
 
   @@index([organizationId])
   @@index([regCode])
@@ -270,6 +289,9 @@ enum VatKind {
   REVERSE_CHARGE
   /// Ei ole käive / ei kajastu KMD-l
   NOT_TAXABLE
+  /// Kasuminormi (marginaali) erikord: kasutatud kaup (KMS § 41), reisiteenus (KMS § 40).
+  /// Arvel käibemaksu ei näidata, maks arvutatakse juurdehindlusest.
+  MARGIN
 }
 
 /// Käibemaks. Määr sõltub kuupäevast (VatRatePeriod), mitte ei ole koodi sisse kirjutatud.
@@ -693,4 +715,324 @@ model JournalTemplateLine {
   account  GlAccount       @relation(fields: [companyId, accountId], references: [companyId, id], onDelete: Cascade)
 
   @@index([companyId, templateId])
+}
+
+// ---------------------------------------------------------------------------
+// Faas 3: müük
+// ---------------------------------------------------------------------------
+
+model CustomerGroup {
+  id          String   @id @default(cuid())
+  companyId   String
+  name        String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById String?
+
+  company   Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  customers Customer[]
+
+  @@unique([companyId, id])
+  @@unique([companyId, name])
+}
+
+model Customer {
+  id                String    @id @default(cuid())
+  companyId         String
+  name              String
+  /// Eraisik (registrikoodi asemel isikukood või puudub)
+  isPerson          Boolean   @default(false)
+  regCode           String?
+  vatNumber         String?
+  countryCode       String    @default("EE") @db.Char(2)
+  addressStreet     String?
+  addressCity       String?
+  addressPostalCode String?
+  addressCounty     String?
+  email             String?
+  /// Arve koopia saajad (komaga eraldatud)
+  emailCc           String?
+  phone             String?
+  contactPerson     String?
+  /// null = ettevõtte vaikimisi maksetähtaeg
+  paymentTermDays   Int?
+  /// Viivis % päevas; null = ettevõtte vaikimisi
+  lateInterestPct   Decimal?  @db.Decimal(6, 3)
+  /// Arvete keel
+  locale            String    @default("et")
+  currency          String    @default("EUR") @db.Char(3)
+  /// Püsiviitenumber (kui klient maksab alati sama viitega); muidu arve numbrist
+  referenceNumber   String?
+  groupId           String?
+  /// Vaikimisi käibemaks kliendi arvetel (nt EL teenused)
+  defaultVatRateId  String?
+  notes             String?
+  active            Boolean   @default(true)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  createdById       String?
+
+  company  Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  group    CustomerGroup? @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  invoices SalesInvoice[]
+  quotes   Quote[]
+
+  @@unique([companyId, id])
+  @@index([companyId, name])
+  @@index([companyId, regCode])
+}
+
+model ItemGroup {
+  id          String   @id @default(cuid())
+  companyId   String
+  name        String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById String?
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  items   Item[]
+
+  @@unique([companyId, id])
+  @@unique([companyId, name])
+}
+
+enum ItemType {
+  GOODS
+  SERVICE
+}
+
+/// Artikkel (kaup või teenus) – ühine müügi ja ostuga.
+model Item {
+  id                String   @id @default(cuid())
+  companyId         String
+  code              String
+  name              String
+  nameEn            String?
+  type              ItemType @default(SERVICE)
+  unit              String?
+  /// Müügihind ilma käibemaksuta
+  salePrice         Decimal? @db.Decimal(18, 4)
+  /// Viimane ostuhind (kasuminormi erikorra ja hiljem lao jaoks)
+  purchasePrice     Decimal? @db.Decimal(18, 4)
+  vatRateId         String?
+  salesAccountId    String?
+  purchaseAccountId String?
+  groupId           String?
+  /// Kasutatav müügis / ostus
+  forSales          Boolean  @default(true)
+  forPurchases      Boolean  @default(true)
+  description       String?
+  active            Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  createdById       String?
+
+  company Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  group   ItemGroup? @relation(fields: [groupId], references: [id], onDelete: SetNull)
+
+  @@unique([companyId, id])
+  @@unique([companyId, code])
+}
+
+enum SalesInvoiceType {
+  INVOICE
+  CREDIT
+  PREPAYMENT
+}
+
+enum DocumentStatus {
+  /// Mustand: vabalt muudetav, pearaamatus ei kajastu
+  DRAFT
+  /// Kinnitatud: kanne tehtud, muuta ei saa (parandus kreeditarvega)
+  CONFIRMED
+}
+
+model SalesInvoice {
+  id                 String           @id @default(cuid())
+  companyId          String
+  type               SalesInvoiceType @default(INVOICE)
+  status             DocumentStatus   @default(DRAFT)
+  /// Number antakse kinnitamisel
+  number             String?
+  customerId         String
+  /// Kliendi andmed arve koostamise hetkel (arvel ei muutu, kui klient hiljem muutub)
+  customerName       String
+  customerRegCode    String?
+  customerVatNumber  String?
+  customerAddress    String?
+  customerEmail      String?
+  date               DateTime         @db.Date
+  dueDate            DateTime         @db.Date
+  /// Kauba/teenuse üleandmise kuupäev, kui erineb
+  deliveryDate       DateTime?        @db.Date
+  referenceNumber    String?
+  currency           String           @default("EUR") @db.Char(3)
+  /// 1 EUR = rate valuutat
+  currencyRate       Decimal          @default(1) @db.Decimal(18, 6)
+  pricesIncludeVat   Boolean          @default(false)
+  locale             String           @default("et")
+  yourReference      String?
+  notes              String?
+  lateInterestPct    Decimal?         @db.Decimal(6, 3)
+  /// Kreeditarve korral algne arve
+  creditOfId         String?
+  /// Tax-free korrigeerimine (KMS § 15 lg 3 p 2): müük reisijale muudetakse 0% ekspordiks
+  taxFree            Boolean          @default(false)
+  /// Pakkumine, millest arve tehti
+  quoteId            String?
+  netTotal           Decimal          @default(0) @db.Decimal(18, 2)
+  vatTotal           Decimal          @default(0) @db.Decimal(18, 2)
+  total              Decimal          @default(0) @db.Decimal(18, 2)
+  /// Kogusumma eurodes (pearaamatu summa)
+  totalBase          Decimal          @default(0) @db.Decimal(18, 2)
+  journalEntryId     String?
+  confirmedAt        DateTime?
+  confirmedById      String?
+  sentAt             DateTime?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  createdById        String?
+
+  company  Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  customer Customer           @relation(fields: [companyId, customerId], references: [companyId, id], onDelete: Restrict)
+  creditOf SalesInvoice?      @relation("CreditOf", fields: [creditOfId], references: [id], onDelete: Restrict)
+  credits  SalesInvoice[]     @relation("CreditOf")
+  lines    SalesInvoiceLine[]
+
+  @@unique([companyId, id])
+  @@index([companyId, date])
+  @@index([companyId, status, date])
+  @@index([companyId, customerId])
+  @@index([companyId, number])
+}
+
+model SalesInvoiceLine {
+  id                  String    @id @default(cuid())
+  companyId           String
+  invoiceId           String
+  itemId              String?
+  code                String?
+  description         String
+  quantity            Decimal   @db.Decimal(18, 4)
+  unit                String?
+  unitPrice           Decimal   @db.Decimal(18, 4)
+  discountPct         Decimal   @default(0) @db.Decimal(5, 2)
+  vatRateId           String?
+  /// Rakendatud määr (kreeditarvel algse arve määr)
+  vatPct              Decimal   @default(0) @db.Decimal(5, 2)
+  accountId           String
+  departmentId        String?
+  dimensionValueIds   String[]  @default([])
+  /// Kasuminormi erikorra korral soetusmaksumus ühiku kohta
+  unitCost            Decimal?  @db.Decimal(18, 4)
+  /// Lõpparvel tasaarveldatud ettemaksuarve
+  prepaymentInvoiceId String?
+  netAmount           Decimal   @default(0) @db.Decimal(18, 2)
+  vatAmount           Decimal   @default(0) @db.Decimal(18, 2)
+  /// Kasuminormi erikorra käibemaks (arvel ei näidata)
+  marginVatAmount     Decimal   @default(0) @db.Decimal(18, 2)
+  sortOrder           Int       @default(0)
+
+  invoice SalesInvoice @relation(fields: [companyId, invoiceId], references: [companyId, id], onDelete: Cascade)
+
+  @@unique([companyId, id])
+  @@index([companyId, invoiceId])
+}
+
+enum QuoteStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  REJECTED
+  INVOICED
+}
+
+model Quote {
+  id                String      @id @default(cuid())
+  companyId         String
+  status            QuoteStatus @default(DRAFT)
+  number            String
+  customerId        String
+  customerName      String
+  customerRegCode   String?
+  customerVatNumber String?
+  customerAddress   String?
+  customerEmail     String?
+  date              DateTime    @db.Date
+  validUntil        DateTime?   @db.Date
+  currency          String      @default("EUR") @db.Char(3)
+  pricesIncludeVat  Boolean     @default(false)
+  locale            String      @default("et")
+  yourReference     String?
+  notes             String?
+  netTotal          Decimal     @default(0) @db.Decimal(18, 2)
+  vatTotal          Decimal     @default(0) @db.Decimal(18, 2)
+  total             Decimal     @default(0) @db.Decimal(18, 2)
+  invoiceId         String?
+  sentAt            DateTime?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  createdById       String?
+
+  company  Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  customer Customer    @relation(fields: [companyId, customerId], references: [companyId, id], onDelete: Restrict)
+  lines    QuoteLine[]
+
+  @@unique([companyId, id])
+  @@unique([companyId, number])
+  @@index([companyId, date])
+}
+
+model QuoteLine {
+  id                String   @id @default(cuid())
+  companyId         String
+  quoteId           String
+  itemId            String?
+  code              String?
+  description       String
+  quantity          Decimal  @db.Decimal(18, 4)
+  unit              String?
+  unitPrice         Decimal  @db.Decimal(18, 4)
+  discountPct       Decimal  @default(0) @db.Decimal(5, 2)
+  vatRateId         String?
+  vatPct            Decimal  @default(0) @db.Decimal(5, 2)
+  accountId         String?
+  departmentId      String?
+  dimensionValueIds String[] @default([])
+  unitCost          Decimal? @db.Decimal(18, 4)
+  netAmount         Decimal  @default(0) @db.Decimal(18, 2)
+  vatAmount         Decimal  @default(0) @db.Decimal(18, 2)
+  sortOrder         Int      @default(0)
+
+  quote Quote @relation(fields: [companyId, quoteId], references: [companyId, id], onDelete: Cascade)
+
+  @@index([companyId, quoteId])
+}
+
+enum EmailStatus {
+  SENT
+  FAILED
+}
+
+/// Dokumentide saatmise logi (arved, pakkumised, hiljem meeldetuletused ja saldoteatised).
+model EmailLog {
+  id           String      @id @default(cuid())
+  companyId    String
+  /// "SalesInvoice" | "Quote" | ...
+  documentType String
+  documentId   String
+  to           String
+  cc           String?
+  subject      String
+  status       EmailStatus
+  error        String?
+  providerId   String?
+  sentById     String?
+  createdAt    DateTime    @default(now())
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId, documentType, documentId])
+  @@index([companyId, createdAt(sort: Desc)])
 }

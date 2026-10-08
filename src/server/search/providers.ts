@@ -77,4 +77,90 @@ registerSearchProvider({
   },
 });
 
+/** Müügiarved numbri, viitenumbri või kliendi järgi. */
+registerSearchProvider({
+  id: "salesInvoices",
+  module: "sales",
+  async search(ctx, query, limit) {
+    const rows = await ctx.cdb.salesInvoice.findMany({
+      where: {
+        OR: [
+          { number: { contains: query, mode: "insensitive" } },
+          { referenceNumber: { startsWith: query } },
+          { customerName: { contains: query, mode: "insensitive" } },
+        ],
+      },
+      orderBy: [{ date: "desc" }, { createdAt: "desc" }],
+      take: limit,
+      select: { id: true, number: true, customerName: true, total: true, currency: true, date: true },
+    });
+    return rows.map((r) => ({
+      id: r.id,
+      kind: "invoice",
+      title: `${r.number ?? "—"} · ${r.customerName}`,
+      subtitle: `${r.date.toISOString().slice(0, 10)} · ${r.total.toFixed(2)} ${r.currency}`,
+      href: `/sales/invoices?doc=${r.id}`,
+    }));
+  },
+});
+
+/** Pakkumised numbri või kliendi järgi. */
+registerSearchProvider({
+  id: "quotes",
+  module: "sales",
+  async search(ctx, query, limit) {
+    const rows = await ctx.cdb.quote.findMany({
+      where: {
+        OR: [{ number: { contains: query, mode: "insensitive" } }, { customerName: { contains: query, mode: "insensitive" } }],
+      },
+      orderBy: { date: "desc" },
+      take: limit,
+      select: { id: true, number: true, customerName: true, date: true },
+    });
+    return rows.map((r) => ({
+      id: r.id,
+      kind: "quote",
+      title: `${r.number} · ${r.customerName}`,
+      subtitle: r.date.toISOString().slice(0, 10),
+      href: `/sales/quotes?doc=${r.id}`,
+    }));
+  },
+});
+
+/** Kliendid nime, registrikoodi või e-posti järgi. */
+registerSearchProvider({
+  id: "customers",
+  module: "sales",
+  async search(ctx, query, limit) {
+    const rows = await ctx.cdb.customer.findMany({
+      where: {
+        OR: [
+          { name: { contains: query, mode: "insensitive" } },
+          { regCode: { startsWith: query } },
+          { email: { contains: query, mode: "insensitive" } },
+        ],
+      },
+      orderBy: { name: "asc" },
+      take: limit,
+      select: { id: true, name: true, regCode: true },
+    });
+    return rows.map((r) => ({ id: r.id, kind: "customer", title: r.name, subtitle: r.regCode ?? undefined, href: `/sales/customers/${r.id}` }));
+  },
+});
+
+/** Artiklid koodi või nime järgi. */
+registerSearchProvider({
+  id: "items",
+  module: "sales",
+  async search(ctx, query, limit) {
+    const rows = await ctx.cdb.item.findMany({
+      where: { OR: [{ code: { startsWith: query, mode: "insensitive" } }, { name: { contains: query, mode: "insensitive" } }] },
+      orderBy: { code: "asc" },
+      take: limit,
+      select: { id: true, code: true, name: true },
+    });
+    return rows.map((r) => ({ id: r.id, kind: "item", title: `${r.code} ${r.name}`, href: `/items?q=${encodeURIComponent(r.code)}` }));
+  },
+});
+
 export {};

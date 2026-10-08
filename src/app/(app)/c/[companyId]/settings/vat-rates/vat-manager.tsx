@@ -18,7 +18,7 @@ import { FormError, FormField } from "@/components/common/form-field";
 import { useActionRunner } from "@/components/common/use-action";
 import { deleteVatRate, saveVatRate } from "@/server/actions/settings/vat";
 
-const KINDS = ["TAXABLE", "ZERO_EXPORT", "ZERO_EU_GOODS", "EU_SERVICES", "EXEMPT", "REVERSE_CHARGE", "NOT_TAXABLE"] as const;
+const KINDS = ["TAXABLE", "ZERO_EXPORT", "ZERO_EU_GOODS", "EU_SERVICES", "EXEMPT", "REVERSE_CHARGE", "NOT_TAXABLE", "MARGIN"] as const;
 type Kind = (typeof KINDS)[number];
 type Period = { rate: string; validFrom: string; validTo: string };
 

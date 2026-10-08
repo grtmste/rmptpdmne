@@ -2,6 +2,7 @@ import "server-only";
 import { z } from "zod";
 import { loadCompanyContext, getCurrentUser, type CompanyContext, type CurrentUser } from "@/server/session";
 import { LedgerError } from "@/server/services/journal";
+import { SalesError } from "@/server/services/sales";
 import { can, type Level, type Module } from "./permissions";
 
 /**
@@ -38,11 +39,12 @@ async function run<T>(fn: () => Promise<T>): Promise<ActionResult<T>> {
     return { ok: true, data: await fn() };
   } catch (e) {
     if (e instanceof ActionError) return { ok: false, error: e.code };
-    if (e instanceof LedgerError) {
+    if (e instanceof LedgerError || e instanceof SalesError) {
       const params = { ...e.meta };
       // Rea number kasutajale 1-st alates
       if (typeof params.index === "number") params.row = params.index + 1;
-      return { ok: false, error: `ledger.${e.code}`, errorParams: params };
+      const ns = e instanceof SalesError ? "sales" : "ledger";
+      return { ok: false, error: `${ns}.${e.code}`, errorParams: params };
     }
     // Prisma: unikaalsuse rikkumine ja kasutuses oleva kirje kustutamine
     if (e && typeof e === "object" && "code" in e) {

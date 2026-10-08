@@ -193,7 +193,7 @@ export type VatTemplate = {
   code: string;
   name: string;
   nameEn: string;
-  kind: "TAXABLE" | "ZERO_EXPORT" | "ZERO_EU_GOODS" | "EU_SERVICES" | "EXEMPT" | "REVERSE_CHARGE" | "NOT_TAXABLE";
+  kind: "TAXABLE" | "ZERO_EXPORT" | "ZERO_EU_GOODS" | "EU_SERVICES" | "EXEMPT" | "REVERSE_CHARGE" | "NOT_TAXABLE" | "MARGIN";
   deductiblePct?: number;
   invoiceNote?: string;
   /** Konto koodid kontoplaanist */
@@ -292,6 +292,24 @@ export const VAT_TEMPLATES: VatTemplate[] = [
     deductiblePct: 50,
     salesAccount: "2300",
     purchaseAccount: "2310",
+    periods: STANDARD_PERIODS,
+  },
+  {
+    code: "KAS",
+    name: "Kasutatud kauba erikord",
+    nameEn: "Margin scheme – second-hand goods",
+    kind: "MARGIN",
+    invoiceNote: "Kasuminormi maksustamise kord – kasutatud kaup, KMS § 41",
+    salesAccount: "2300",
+    periods: STANDARD_PERIODS,
+  },
+  {
+    code: "REIS",
+    name: "Reisiteenuse erikord",
+    nameEn: "Margin scheme – travel agents",
+    kind: "MARGIN",
+    invoiceNote: "Kasuminormi maksustamise kord – reisiteenus, KMS § 40",
+    salesAccount: "2300",
     periods: STANDARD_PERIODS,
   },
   {

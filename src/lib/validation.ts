@@ -118,3 +118,29 @@ export const codeSchema = (max = 20) =>
     .regex(/^[0-9A-Za-zÕÄÖÜõäöü._\-/]+$/, { error: "code" });
 
 export const idSchema = z.string().min(1).max(64);
+
+/**
+ * Kümnendarv kasutaja sisendist (kogus, ühikuhind) → string. Tühi = "0".
+ * `places` – lubatud komakohtade arv, `negative` – kas negatiivne on lubatud.
+ */
+export const decimalInputSchema = (places: number, opts: { negative?: boolean; empty?: string } = {}) =>
+  z
+    .string()
+    .trim()
+    .max(40, { error: "tooLong" })
+    .transform((v, ctx) => {
+      if (v === "") return opts.empty ?? "0";
+      const d = parseMoneyInput(v);
+      if (!d || d.decimalPlaces() > places || (!opts.negative && d.isNegative()) || d.abs().greaterThan("1e13")) {
+        ctx.addIssue({ code: "custom", message: "amount" });
+        return z.NEVER;
+      }
+      return d.toString();
+    });
+
+/** Valikuline viide teisele kirjele: tühi string → null. */
+export const optionalIdSchema = z
+  .string()
+  .max(64)
+  .optional()
+  .transform((v) => (v ? v : null));

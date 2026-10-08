@@ -8,7 +8,7 @@ import { validateVatPeriods } from "@/lib/accounting/vat";
 import { toISODate } from "@/lib/accounting/dates";
 import { codeSchema, dateSchema, idSchema, optionalDateSchema, percentSchema, requiredText } from "@/lib/validation";
 
-const VAT_KINDS = ["TAXABLE", "ZERO_EXPORT", "ZERO_EU_GOODS", "EU_SERVICES", "EXEMPT", "REVERSE_CHARGE", "NOT_TAXABLE"] as const;
+const VAT_KINDS = ["TAXABLE", "ZERO_EXPORT", "ZERO_EU_GOODS", "EU_SERVICES", "EXEMPT", "REVERSE_CHARGE", "NOT_TAXABLE", "MARGIN"] as const;
 
 const vatSchema = z.object({
   id: idSchema.optional(),
