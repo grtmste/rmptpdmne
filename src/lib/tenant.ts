@@ -35,6 +35,8 @@ export const TENANT_MODELS = [
   "JournalEntry",
   "JournalLine",
   "JournalLineDimension",
+  "JournalTemplate",
+  "JournalTemplateLine",
 ] as const;
 export type TenantModel = (typeof TENANT_MODELS)[number];
 

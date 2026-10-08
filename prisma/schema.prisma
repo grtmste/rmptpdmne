@@ -139,18 +139,19 @@ model Company {
   updatedAt             DateTime    @updatedAt
   createdById           String?
 
-  organization   Organization      @relation(fields: [organizationId], references: [id])
-  memberships    Membership[]
-  invitations    Invitation[]
-  notifications  Notification[]
-  glAccounts     GlAccount[]
-  vatRates       VatRate[]
-  fiscalYears    FiscalYear[]
-  numberSeries   NumberSeries[]
-  currencies     CompanyCurrency[]
-  departments    Department[]
-  dimensions     Dimension[]
-  journalEntries JournalEntry[]
+  organization     Organization      @relation(fields: [organizationId], references: [id])
+  memberships      Membership[]
+  invitations      Invitation[]
+  notifications    Notification[]
+  glAccounts       GlAccount[]
+  vatRates         VatRate[]
+  fiscalYears      FiscalYear[]
+  numberSeries     NumberSeries[]
+  currencies       CompanyCurrency[]
+  departments      Department[]
+  dimensions       Dimension[]
+  journalEntries   JournalEntry[]
+  journalTemplates JournalTemplate[]
 
   @@index([organizationId])
   @@index([regCode])
@@ -240,11 +241,12 @@ model GlAccount {
   updatedAt            DateTime     @updatedAt
   createdById          String?
 
-  company          Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  defaultVatRate   VatRate?      @relation("AccountDefaultVat", fields: [defaultVatRateId], references: [id], onDelete: SetNull)
-  journalLines     JournalLine[]
-  salesVatRates    VatRate[]     @relation("VatSalesAccount")
-  purchaseVatRates VatRate[]     @relation("VatPurchaseAccount")
+  company              Company               @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  defaultVatRate       VatRate?              @relation("AccountDefaultVat", fields: [defaultVatRateId], references: [id], onDelete: SetNull)
+  journalLines         JournalLine[]
+  salesVatRates        VatRate[]             @relation("VatSalesAccount")
+  purchaseVatRates     VatRate[]             @relation("VatPurchaseAccount")
+  journalTemplateLines JournalTemplateLine[]
 
   @@unique([companyId, id])
   @@unique([companyId, code])
@@ -494,11 +496,21 @@ enum JournalSource {
   YEAR_END
 }
 
+enum JournalStatus {
+  /// Mustand: ei mõjuta pearaamatut, võib vabalt muuta
+  DRAFT
+  /// Postitatud: muuta ei saa, parandus käib stornoga
+  POSTED
+}
+
 model JournalEntry {
   id           String        @id @default(cuid())
   companyId    String
-  /// Kande number seeria sees (nt PR-15)
-  number       String
+  /// Kande number seeria sees (nt PR-15); mustandil puudub
+  number       String?
+  status       JournalStatus @default(POSTED)
+  postedAt     DateTime?
+  postedById   String?
   date         DateTime      @db.Date
   source       JournalSource
   /// Lähtedokumendi id (arve, makse …)
@@ -517,6 +529,7 @@ model JournalEntry {
 
   @@unique([companyId, id])
   @@index([companyId, date])
+  @@index([companyId, status, date])
   @@index([companyId, source, sourceId])
 }
 
@@ -647,4 +660,37 @@ model RateLimit {
   key     String   @id
   count   Int
   resetAt DateTime
+}
+
+/// Kandemall: korduva kande põhi (kontod, pooled, soovi korral summad).
+model JournalTemplate {
+  id          String   @id @default(cuid())
+  companyId   String
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById String?
+
+  company Company               @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  lines   JournalTemplateLine[]
+
+  @@unique([companyId, id])
+  @@unique([companyId, name])
+}
+
+model JournalTemplateLine {
+  id          String   @id @default(cuid())
+  companyId   String
+  templateId  String
+  accountId   String
+  debit       Decimal? @db.Decimal(18, 2)
+  credit      Decimal? @db.Decimal(18, 2)
+  description String?
+  sortOrder   Int      @default(0)
+
+  template JournalTemplate @relation(fields: [companyId, templateId], references: [companyId, id], onDelete: Cascade)
+  account  GlAccount       @relation(fields: [companyId, accountId], references: [companyId, id], onDelete: Cascade)
+
+  @@index([companyId, templateId])
 }
