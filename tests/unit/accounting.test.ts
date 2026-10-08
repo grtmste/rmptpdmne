@@ -173,6 +173,7 @@ describe("kanded", () => {
     expect(accountTypeFromCode("2110")).toBe("LIABILITY");
     expect(accountTypeFromCode("3000")).toBe("INCOME");
     expect(accountTypeFromCode("4190")).toBe("EXPENSE");
+    expect(accountTypeFromCode("2950")).toBe("EQUITY");
     expect(accountTypeFromCode("x")).toBeNull();
   });
 });

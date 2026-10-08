@@ -60,7 +60,9 @@ export function naturalBalance(
 }
 
 /** Konto tüüp koodi esimese numbri järgi (kasutajaliideses vaikimisi valik). */
-export function accountTypeFromCode(code: string): "ASSET" | "LIABILITY" | "EXPENSE" | "INCOME" | null {
+export function accountTypeFromCode(code: string): "ASSET" | "LIABILITY" | "EQUITY" | "EXPENSE" | "INCOME" | null {
+  // Vaikekontoplaanis on omakapital 29…
+  if (code.trim().startsWith("29")) return "EQUITY";
   switch (code.trim()[0]) {
     case "1":
       return "ASSET";

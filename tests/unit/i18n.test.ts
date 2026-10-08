@@ -54,3 +54,23 @@ describe("keele valik", () => {
     expect(negotiateLocale(null)).toBe("et");
   });
 });
+
+describe("faasi 1 tõlked", () => {
+  it("aruande read, KM liigid, dokumenditüübid ja pearaamatu vead on tõlgitud", async () => {
+    const { REPORT_LINES } = await import("@/lib/accounting/report-lines");
+    for (const l of REPORT_LINES) expect(get(et as Tree, `reportLines.${l.code}`), l.code).toBeTypeOf("string");
+    for (const k of ["TAXABLE", "ZERO_EXPORT", "ZERO_EU_GOODS", "EU_SERVICES", "EXEMPT", "REVERSE_CHARGE", "NOT_TAXABLE"]) {
+      expect(get(et as Tree, `vat.kinds.${k}`)).toBeTypeOf("string");
+      expect(get(et as Tree, `vat.kindHints.${k}`)).toBeTypeOf("string");
+    }
+    const { DEFAULT_NUMBER_SERIES } = await import("@/lib/accounting/templates");
+    for (const s of DEFAULT_NUMBER_SERIES) expect(get(et as Tree, `series.types.${s.documentType}`)).toBeTypeOf("string");
+    const ledgerCodes = [
+      "noLines", "lineBothSides", "lineEmpty", "negativeAmount", "tooManyDecimals", "unbalanced", "accountNotFound",
+      "accountInactive", "accountNotPostable", "currentYearProfitAccount", "departmentRequired", "departmentNotFound",
+      "dimensionRequired", "dimensionValueNotFound", "dimensionValueEnded", "duplicateDimension", "vatRateNotFound",
+      "locked", "closedYear", "noFiscalYear",
+    ];
+    for (const c of ledgerCodes) expect(get(et as Tree, `errors.ledger.${c}`), c).toBeTypeOf("string");
+  });
+});

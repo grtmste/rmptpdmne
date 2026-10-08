@@ -11,6 +11,7 @@ export function NewCompanyForm() {
   return (
     <CompanyForm
       submitLabel={t("create")}
+      withStartDate
       onSubmit={(values) => createCompany(values)}
       onSuccess={(data) => router.push(`/c/${(data as { companyId: string }).companyId}`)}
     />

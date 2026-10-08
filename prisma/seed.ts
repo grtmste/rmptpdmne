@@ -8,6 +8,9 @@ import "dotenv/config";
 import { createPrismaClient } from "../src/lib/prisma";
 import { hashPassword } from "../src/lib/password";
 import type { CompanyRole } from "../src/lib/permissions";
+import { parseISODate } from "../src/lib/accounting/dates";
+import { ensureCompanyDefaults } from "../src/server/services/company-setup";
+import { postJournalEntry } from "../src/server/services/journal";
 
 const db = createPrismaClient();
 const PASSWORD = "demo-parool-123";
@@ -33,7 +36,7 @@ async function main() {
   const passwordHash = await hashPassword(PASSWORD);
 
   const organization = await db.organization.create({ data: { name: "Demo Raamatupidamisbüroo" } });
-  const created = [];
+  const created: Array<(typeof users)[number] & { id: string }> = [];
   for (const u of users) {
     const user = await db.user.create({ data: { email: u.email, name: u.name, passwordHash, emailVerified: new Date() } });
     await db.organizationMember.create({
@@ -42,10 +45,23 @@ async function main() {
     created.push({ ...u, id: user.id });
   }
 
-  for (const c of companies) {
+  const year = new Date().getUTCFullYear();
+  const startDate = parseISODate(`${year}-01-01`)!;
+  for (const [index, c] of companies.entries()) {
     const company = await db.company.create({
-      data: { ...c, organizationId: organization.id, isDemo: true, createdById: created[0]!.id },
+      data: {
+        ...c,
+        organizationId: organization.id,
+        isDemo: true,
+        accountingStartDate: startDate,
+        addressStreet: index === 0 ? "Lille tn 5" : "Tuule tee 12",
+        addressCity: index === 0 ? "Tartu" : "Tallinn",
+        addressPostalCode: index === 0 ? "50101" : "10111",
+        email: index === 0 ? "info@lilleaed.example" : "info@pohjatuul.example",
+        createdById: created[0]!.id,
+      },
     });
+    await db.$transaction((tx) => ensureCompanyDefaults(tx, company.id, { userId: created[0]!.id }), { timeout: 30_000 });
     await db.membership.createMany({
       data: created.map((u) => ({ userId: u.id, companyId: company.id, role: u.role })),
     });
@@ -76,6 +92,38 @@ async function main() {
       },
     });
   }
+
+  // Esimesele ettevõttele projektid, osakond ja algsaldod
+  const first = await db.company.findFirstOrThrow({ where: { name: companies[0]!.name } });
+  const project = await db.dimension.findFirstOrThrow({ where: { companyId: first.id, name: "Projekt" } });
+  await db.dimensionValue.createMany({
+    data: [
+      { companyId: first.id, dimensionId: project.id, code: "AED", name: "Aiakujundus" },
+      { companyId: first.id, dimensionId: project.id, code: "KIRIK", name: "Kirikuaia hooldus" },
+    ],
+  });
+  await db.department.create({ data: { companyId: first.id, code: "TRT", name: "Tartu kontor" } });
+  const acc = Object.fromEntries(
+    (await db.glAccount.findMany({ where: { companyId: first.id } })).map((a) => [a.code, a.id]),
+  ) as Record<string, string>;
+  await db.$transaction((tx) =>
+    postJournalEntry(tx, first.id, created[0]!.id, {
+      date: parseISODate(`${year - 1}-12-31`)!,
+      source: "OPENING_BALANCE",
+      description: "Algsaldod",
+      lines: [
+        { accountId: acc["1020"]!, debit: "12480.35" },
+        { accountId: acc["1000"]!, debit: "150.00" },
+        { accountId: acc["1200"]!, debit: "3420.00" },
+        { accountId: acc["1740"]!, debit: "4800.00" },
+        { accountId: acc["1790"]!, credit: "1600.00" },
+        { accountId: acc["2110"]!, credit: "1870.40" },
+        { accountId: acc["2320"]!, credit: "640.00" },
+        { accountId: acc["2900"]!, credit: "2500.00" },
+        { accountId: acc["2950"]!, credit: "14239.95" },
+      ],
+    }),
+  );
 
   console.info(`Demoandmed loodud. Logi sisse nt ${users[0]!.email} / ${PASSWORD}`);
 }

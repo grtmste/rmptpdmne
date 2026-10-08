@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { FormError, FormField } from "@/components/common/form-field";
 import type { ActionResult } from "@/lib/action";
 
-export type CompanyFormValues = { name: string; regCode: string; vatNumber: string };
+export type CompanyFormValues = { name: string; regCode: string; vatNumber: string; accountingStartDate?: string };
 
 /** Ettevõtte põhiandmete vorm (lisamine ja muutmine). */
 export function CompanyForm({
@@ -17,12 +17,15 @@ export function CompanyForm({
   onSubmit,
   onSuccess,
   readOnly,
+  withStartDate,
 }: {
   defaultValues?: Partial<CompanyFormValues>;
   submitLabel: string;
   onSubmit: (values: CompanyFormValues) => Promise<ActionResult<unknown>>;
   onSuccess?: (data: unknown) => void;
   readOnly?: boolean;
+  /** Uue ettevõtte puhul küsitakse ka arvestuse alguse kuupäeva */
+  withStartDate?: boolean;
 }) {
   const t = useTranslations("companies");
   const te = useTranslations("errors");
@@ -38,6 +41,7 @@ export function CompanyForm({
       name: String(formData.get("name") ?? ""),
       regCode: String(formData.get("regCode") ?? ""),
       vatNumber: String(formData.get("vatNumber") ?? ""),
+      ...(withStartDate ? { accountingStartDate: String(formData.get("accountingStartDate") ?? "") } : {}),
     };
     startTransition(async () => {
       const res = await onSubmit(values);
@@ -66,6 +70,22 @@ export function CompanyForm({
             <Input id="vatNumber" name="vatNumber" defaultValue={defaultValues?.vatNumber} placeholder="EE100000000" />
           </FormField>
         </div>
+        {withStartDate && (
+          <FormField
+            label={t("accountingStart")}
+            htmlFor="accountingStartDate"
+            errors={fieldErrors.accountingStartDate}
+            hint={t("accountingStartHint")}
+            className="sm:w-1/2"
+          >
+            <Input
+              id="accountingStartDate"
+              name="accountingStartDate"
+              type="date"
+              defaultValue={`${new Date().getFullYear()}-01-01`}
+            />
+          </FormField>
+        )}
       </fieldset>
       {!readOnly && (
         <div className="flex justify-end">

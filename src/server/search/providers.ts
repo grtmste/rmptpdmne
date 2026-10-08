@@ -28,4 +28,27 @@ registerSearchProvider({
   },
 });
 
+/** Kontoplaan: otsing koodi algusest või nimest. */
+registerSearchProvider({
+  id: "accounts",
+  module: "settings",
+  async search(ctx, query, limit) {
+    const rows = await ctx.cdb.glAccount.findMany({
+      where: {
+        active: true,
+        OR: [{ code: { startsWith: query } }, { name: { contains: query, mode: "insensitive" } }],
+      },
+      orderBy: { code: "asc" },
+      take: limit,
+      select: { id: true, code: true, name: true },
+    });
+    return rows.map((r) => ({
+      id: r.id,
+      kind: "account",
+      title: `${r.code} ${r.name}`,
+      href: "/settings/accounts",
+    }));
+  },
+});
+
 export {};

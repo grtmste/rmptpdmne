@@ -1,5 +1,7 @@
 import { z } from "zod";
 import { PASSWORD_MIN_LENGTH } from "./password-policy";
+import { parseISODate } from "./accounting/dates";
+import { parseMoneyInput } from "./money";
 
 /**
  * Ühised Zod skeemid. Veateated on i18n võtmed nimeruumis `validation`
@@ -51,3 +53,68 @@ export function safeRedirect(value: unknown, fallback = "/"): string {
   if (!value.startsWith("/") || value.startsWith("//") || value.startsWith("/\\")) return fallback;
   return value;
 }
+
+/** Kuupäev kujul YYYY-MM-DD → Date (UTC kesköö). */
+export const dateSchema = z
+  .string()
+  .trim()
+  .transform((v, ctx) => {
+    const d = parseISODate(v);
+    if (!d) {
+      ctx.addIssue({ code: "custom", message: "date" });
+      return z.NEVER;
+    }
+    return d;
+  });
+
+export const optionalDateSchema = z
+  .string()
+  .trim()
+  .optional()
+  .transform((v, ctx) => {
+    if (!v) return null;
+    const d = parseISODate(v);
+    if (!d) {
+      ctx.addIssue({ code: "custom", message: "date" });
+      return z.NEVER;
+    }
+    return d;
+  });
+
+/** Rahasumma kasutaja sisendist ("1 234,50") → string "1234.50". Tühi = "0.00". */
+export const moneyInputSchema = z
+  .string()
+  .trim()
+  .transform((v, ctx) => {
+    if (v === "") return "0.00";
+    const d = parseMoneyInput(v);
+    if (!d || d.decimalPlaces() > 2) {
+      ctx.addIssue({ code: "custom", message: "amount" });
+      return z.NEVER;
+    }
+    return d.toFixed(2);
+  });
+
+/** Protsent 0–100, kuni 2 komakohta. */
+export const percentSchema = z
+  .string()
+  .trim()
+  .transform((v, ctx) => {
+    const d = parseMoneyInput(v);
+    if (!d || d.isNegative() || d.greaterThan(100) || d.decimalPlaces() > 2) {
+      ctx.addIssue({ code: "custom", message: "percent" });
+      return z.NEVER;
+    }
+    return d.toFixed(2);
+  });
+
+/** Kood (konto, dimensiooni väärtus, osakond): tähed, numbrid, -, _, . */
+export const codeSchema = (max = 20) =>
+  z
+    .string()
+    .trim()
+    .min(1, { error: "required" })
+    .max(max, { error: "tooLong" })
+    .regex(/^[0-9A-Za-zÕÄÖÜõäöü._\-/]+$/, { error: "code" });
+
+export const idSchema = z.string().min(1).max(64);

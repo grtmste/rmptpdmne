@@ -31,8 +31,11 @@ export default async function DashboardPage({ params, searchParams }: PageProps<
   const locale = await getLocale();
   const base = `/c/${companyId}`;
 
-  const [memberCount, notifications] = await Promise.all([
+  const [memberCount, fiscalYears, accountCount, openingEntries, notifications] = await Promise.all([
     ctx.cdb.membership.count(),
+    ctx.cdb.fiscalYear.count(),
+    ctx.cdb.glAccount.count(),
+    ctx.cdb.journalEntry.count({ where: { source: "OPENING_BALANCE" } }),
     ctx.cdb.notification.findMany({
       where: { OR: [{ userId: null }, { userId: ctx.user.id }] },
       orderBy: { createdAt: "desc" },
@@ -45,10 +48,10 @@ export default async function DashboardPage({ params, searchParams }: PageProps<
   const vatDays = daysUntil(today, vat.dueDate);
 
   const checklist = [
-    { key: "fiscalYear", href: "/settings/fiscal-years", phase: 1, done: false },
-    { key: "accounts", href: "/settings/accounts", phase: 1, done: false },
+    { key: "fiscalYear", href: "/settings/fiscal-years", phase: 1, done: fiscalYears > 0 },
+    { key: "accounts", href: "/settings/accounts", phase: 1, done: accountCount > 0 },
     { key: "banks", href: "/payments/accounts", phase: 5, done: false },
-    { key: "openingBalances", href: "/settings/opening-balances", phase: 1, done: false },
+    { key: "openingBalances", href: "/settings/opening-balances", phase: 1, done: openingEntries > 0 },
     { key: "users", href: "/settings/users", phase: 0, done: memberCount > 1 },
   ];
   const doneCount = checklist.filter((c) => c.done).length;
