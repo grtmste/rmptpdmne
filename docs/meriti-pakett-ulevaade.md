@@ -67,8 +67,8 @@ erijuhud peavad olema kaetud. Disaini, tekste ega struktuuri üle ei võta (CLAU
 | Kapitalirent (ka käibemaksulaenuga) | kandemall „Kapitalirendi lühiajaline osa“ (pikaajalisest lühiajaliseks); ostuarve tasumine kohustise kontoga | 2 ✔ (mall), 4 (ostuarve) |
 | Finantsinvesteeringud | kandemallid väärtuse tõusuks ja languseks (RTJ 3 õiglane väärtus); koguseline arvestus laos | 2 ✔ (mallid), 8 (ladu) |
 | Proportsionaalne KM, sõiduauto | KM-kood „Sõiduauto 50%“ ja mahaarvatav osa; kandemall „Sisendkäibemaksu korrigeerimine“ (KMD rida 10) | 1 ✔, 2 ✔, 6 (KMD) |
-| Kasutatud kauba ja reisiteenuste erikord (marginaalimaksustamine) | uus KM liik „marginaal“, käibemaks arvutatakse juurdehindlusest | 3–4 |
-| Tax-free müük | müügiarve märge ja KMD käsitlus | 3 |
+| Kasutatud kauba ja reisiteenuste erikord (marginaalimaksustamine) | KM liik „kasuminormi erikord“ (koodid KAS ja REIS), arvel KM-i ei näidata, maks arvutatakse juurdehindlusest (soetushind real) | 3 ✔, 4 (ost) |
+| Tax-free müük | kinnitatud arvest „Tax-free korrigeerimine“: kreeditarve tühistab maksustatava käibe ja lisab 0% ekspordi, KM tagastatakse | 3 ✔, 6 (KMD) |
 | Faktooring | faktooringu ettemaksete konto, tasaarveldus kliendi ja faktooringuandja vahel | 5 |
 | Korteriühistu | KÜ kontoplaan ja aruanded, näidupõhised perioodilised arved, laenud | 7 |
 | FIE ja MTÜ | eraldi kontoplaanid ja aruannete skeemid (tulemiaruanne) | 6 |
@@ -89,3 +89,32 @@ erijuhud peavad olema kaetud. Disaini, tekste ega struktuuri üle ei võta (CLAU
   jaotamata kasumis (sulgemiskanne tehakse faasis 6).
 
 Hiljem: korduvad kanded (faas 7), kande numbrite ümberjärjestamine ja manused (faas 4 koos failidega).
+
+## Faas 3 (müük) – tehtud
+
+- **Kliendid**: põhiandmed, eraisik, riik, kontaktid, koopia saajad, maksetähtaeg ja viivis kliendi kaupa,
+  dokumentide keel ja valuuta, püsiviitenumber, vaikimisi käibemaks (nt EL teenuste klient), kliendigrupid.
+- **Artiklid** (ühised ostuga): kaup/teenus, ühik, müügi- ja ostuhind, käibemaks, tulu- ja kulukonto, grupid.
+  Kasutatud artiklit ei kustutata, vaid see muudetakse passiivseks.
+- **Müügiarve**: mustand → kinnitamine. Kinnitamisel arvutatakse summad uuesti, antakse number
+  numbriseeriast, viitenumber (7-3-1, arve numbrist või kliendi püsiviide) ja tehakse kanne
+  (D 1200 / K tulu KM koodiga / K 2300). Kinnitatud arvet muuta ei saa.
+- **Käibemaks**: määr kuupäeva järgi kehtivusperioodidest; arvutus määra kaupa dokumendi tasemel,
+  jaotus ridadele täpselt (kanne ja KMD); hinnad KM-ga või ilma; allahindlus real.
+- **Kreeditarve** kinnitatud arvest algse arve määraga; kreeditarve ei saa ületada krediteerimata osa.
+- **Ettemaksuarve** (ettemaksete konto 2500 koos KM-ga) ja selle mahaarvamine lõpparvel
+  („Arvesta ettemaks maha“ – ettemaksuarve määraga, avatud jääk jälgitakse).
+- **Valuutaarve**: EKP kurss arve kuupäeval (või käsitsi), kanne eurodes.
+- **Erijuhud**: kasuminormi erikord (kasutatud kaup, reisiteenus) ja tax-free korrigeerimine.
+- **Pakkumised**: olekud (koostamisel, saadetud, vastu võetud, tagasi lükatud, arve tehtud), pakkumisest
+  arve mustand ühe klikiga.
+- **PDF** (@react-pdf/renderer, Noto Sans – ka kirillitsa) kliendi keeles; arve värv, pangarekvisiidid,
+  märkus ja jalus arve seadistuses.
+- **E-post** (Resend) PDF-manusega: muudetav saaja, koopia, teema ja tekst kliendi keeles; saatmise logi
+  arve juures (EmailLog); piirang 60 kirja tunnis ettevõtte kohta.
+- Käsupalett otsib arveid, pakkumisi, kliente ja artikleid; kiirtoimingud „Uus müügiarve“, „Uus klient“,
+  „Uus pakkumine“. Pearaamatu kandest saab avada arve.
+
+Hiljem: laekumised ja arve tasumise seis (faas 5), kliendi võlasaldo arvel ja müügiaruanded (faas 6),
+perioodilised arved, meeldetuletused ja viivised (faas 7), manused (faas 4), e-arved (faas 10).
+Kasuminormi erikorra KMD read (maksustatav väärtus = KM × 100 / määr) arvutatakse faasis 6.

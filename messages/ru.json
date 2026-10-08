@@ -100,7 +100,8 @@
       "quoteNotFound": "Предложение не найдено.",
       "quoteInvoiced": "По этому предложению уже выставлен счёт.",
       "vatAccountMissing": "У кода НСО {vat} не указан счёт начисленного НСО. Укажите его в настройках НСО."
-    }
+    },
+    "emailNotConfigured": "Отправка почты не настроена: добавьте RESEND_API_KEY и EMAIL_FROM в переменные окружения Vercel."
   },
   "validation": {
     "required": "Обязательное поле.",

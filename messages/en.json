@@ -100,7 +100,8 @@
       "quoteNotFound": "Quote not found.",
       "quoteInvoiced": "This quote has already been invoiced.",
       "vatAccountMissing": "VAT code {vat} has no output VAT account. Set it in VAT settings."
-    }
+    },
+    "emailNotConfigured": "Email sending isn't set up: add RESEND_API_KEY and EMAIL_FROM to the Vercel environment variables."
   },
   "validation": {
     "required": "Required.",

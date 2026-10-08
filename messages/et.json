@@ -100,7 +100,8 @@
       "quoteNotFound": "Pakkumist ei leitud.",
       "quoteInvoiced": "Pakkumisest on juba arve tehtud.",
       "vatAccountMissing": "Käibemaksul {vat} puudub arvestatud käibemaksu konto. Määra see käibemaksude seadistuses."
-    }
+    },
+    "emailNotConfigured": "E-posti saatmine pole seadistatud: lisa Verceli keskkonnamuutujatesse RESEND_API_KEY ja EMAIL_FROM."
   },
   "validation": {
     "required": "Kohustuslik väli.",

@@ -40,6 +40,18 @@ async function send(mail: Mail): Promise<string | null> {
  * Dokumendi (arve, pakkumine) saatmine kliendile PDF-manusega. Saatjaks on rakenduse aadress,
  * vastused lähevad ettevõtte e-posti aadressile.
  */
+export class EmailNotConfiguredError extends Error {
+  constructor() {
+    super("RESEND_API_KEY puudub");
+    this.name = "EmailNotConfiguredError";
+  }
+}
+
+/** Kas klientidele saab päriselt kirju saata (tootmises on vaja Resendi võtit). */
+export function canSendExternalEmail(): boolean {
+  return Boolean(process.env.RESEND_API_KEY) || process.env.NODE_ENV !== "production" || process.env.EMAIL_LOG_ONLY === "1";
+}
+
 export async function sendDocumentEmail(mail: {
   to: string;
   cc?: string[];
@@ -49,6 +61,8 @@ export async function sendDocumentEmail(mail: {
   companyName: string;
   attachment: { filename: string; content: Buffer };
 }) {
+  // Tootmises ei tohi arve „saadetuks“ märkida, kui kiri läheks ainult logisse
+  if (!canSendExternalEmail()) throw new EmailNotConfiguredError();
   const paragraphs = mail.body
     .split(/\n{2,}/)
     .map((p) => `<p style="line-height:1.6;margin:0 0 12px">${escapeHtml(p).replace(/\n/g, "<br>")}</p>`)

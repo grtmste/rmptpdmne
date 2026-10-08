@@ -100,7 +100,8 @@
       "quoteNotFound": "Tarjousta ei löytynyt.",
       "quoteInvoiced": "Tarjouksesta on jo tehty lasku.",
       "vatAccountMissing": "ALV-koodilta {vat} puuttuu myynnin ALV-tili. Määritä se ALV-asetuksissa."
-    }
+    },
+    "emailNotConfigured": "Sähköpostin lähetystä ei ole määritetty: lisää RESEND_API_KEY ja EMAIL_FROM Vercelin ympäristömuuttujiin."
   },
   "validation": {
     "required": "Pakollinen kenttä.",

@@ -193,7 +193,8 @@ export async function invoicePdf(companyId: string, invoiceId: string) {
       if (invoice.creditOf?.number) rows.push([t("creditOf"), invoice.creditOf.number]);
       if (invoice.yourReference) rows.push([t("yourReference"), invoice.yourReference]);
       if (invoice.type === "INVOICE" && invoice.lateInterestPct && !invoice.lateInterestPct.isZero()) {
-        rows.push([t("lateInterest"), t("lateInterestValue", { pct: invoice.lateInterestPct.toString() })]);
+        const locale = isLocale(invoice.locale) ? invoice.locale : "et";
+        rows.push([t("lateInterest"), t("lateInterestValue", { pct: trimNumber(invoice.lateInterestPct, 3, locale) })]);
       }
       return rows;
     },

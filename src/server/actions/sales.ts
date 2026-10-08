@@ -7,7 +7,7 @@ import { db } from "@/lib/db";
 import { ActionError, companyAction } from "@/lib/action";
 import { audit } from "@/lib/audit";
 import { toISODate } from "@/lib/accounting/dates";
-import { sendDocumentEmail } from "@/lib/email";
+import { EmailNotConfiguredError, sendDocumentEmail } from "@/lib/email";
 import { rateLimit } from "@/lib/rate-limit";
 import {
   dateSchema,
@@ -215,6 +215,7 @@ async function sendDocument(
       attachment: { filename: pdf.filename, content: pdf.buffer },
     });
   } catch (e) {
+    if (e instanceof EmailNotConfiguredError) throw new ActionError("emailNotConfigured");
     error = e instanceof Error ? e.message.slice(0, 500) : "unknown";
   }
   await ctx.cdb.emailLog.create({

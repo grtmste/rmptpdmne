@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
   th: { flexDirection: "row", borderBottomWidth: 1, paddingBottom: 4, marginBottom: 2 },
   thText: { fontSize: 7.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, color: "#57534e" },
   tr: { flexDirection: "row", paddingVertical: 4, borderBottomWidth: 0.5, borderBottomColor: "#e7e5e4" },
-  cCode: { width: 50 },
+  cCode: { width: 62, paddingRight: 4 },
   cDesc: { flex: 1, paddingRight: 6 },
   cQty: { width: 42, textAlign: "right" },
   cUnit: { width: 34, paddingLeft: 4 },
