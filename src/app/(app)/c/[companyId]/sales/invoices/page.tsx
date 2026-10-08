@@ -95,11 +95,16 @@ export default async function InvoicesPage({ params, searchParams }: PageProps<"
       },
     });
     if (inv) {
-      const [emails, vatRates, quote, journal] = await Promise.all([
+      const [emails, vatRates, quote, journal, attachments] = await Promise.all([
         ctx.cdb.emailLog.findMany({ where: { documentType: "SalesInvoice", documentId: inv.id }, orderBy: { createdAt: "desc" }, take: 10 }),
         ctx.cdb.vatRate.findMany({ where: { id: { in: inv.lines.map((l) => l.vatRateId).filter((x): x is string => Boolean(x)) } }, select: { id: true, name: true } }),
         inv.quoteId ? ctx.cdb.quote.findFirst({ where: { id: inv.quoteId }, select: { id: true, number: true } }) : null,
         inv.journalEntryId ? ctx.cdb.journalEntry.findFirst({ where: { id: inv.journalEntryId }, select: { id: true, number: true } }) : null,
+        ctx.cdb.attachment.findMany({
+          where: { documentType: "SalesInvoice", documentId: inv.id },
+          orderBy: { createdAt: "asc" },
+          select: { id: true, fileName: true, contentType: true, size: true },
+        }),
       ]);
       const vatName = new Map(vatRates.map((v) => [v.id, v.name]));
       const confirmer = inv.confirmedById ? await db.user.findUnique({ where: { id: inv.confirmedById }, select: { name: true, email: true } }) : null;
@@ -144,6 +149,7 @@ export default async function InvoicesPage({ params, searchParams }: PageProps<"
         })),
         emails: emails.map((e) => ({ id: e.id, to: e.to, status: e.status, createdAt: e.createdAt.toISOString(), error: e.error })),
         email: inv.status === "CONFIRMED" ? await emailDefaults(ctx.company.id, inv, customer) : null,
+        attachments,
       };
     }
   }

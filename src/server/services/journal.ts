@@ -12,6 +12,7 @@ export type JournalSource =
   | "MANUAL"
   | "SALES_INVOICE"
   | "PURCHASE_INVOICE"
+  | "EXPENSE_REPORT"
   | "PAYMENT"
   | "INVENTORY"
   | "DEPRECIATION"

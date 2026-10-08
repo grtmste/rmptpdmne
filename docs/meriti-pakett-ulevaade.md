@@ -64,9 +64,9 @@ erijuhud peavad olema kaetud. Disaini, tekste ega struktuuri üle ei võta (CLAU
 
 | Erijuht | Kus ja kuidas | Faas |
 |---|---|---|
-| Kapitalirent (ka käibemaksulaenuga) | kandemall „Kapitalirendi lühiajaline osa“ (pikaajalisest lühiajaliseks); ostuarve tasumine kohustise kontoga | 2 ✔ (mall), 4 (ostuarve) |
+| Kapitalirent (ka käibemaksulaenuga) | kandemall „Kapitalirendi lühiajaline osa“ (pikaajalisest lühiajaliseks); ostuarve rida kohustise kontole (2020/2710) | 2 ✔, 4 ✔ |
 | Finantsinvesteeringud | kandemallid väärtuse tõusuks ja languseks (RTJ 3 õiglane väärtus); koguseline arvestus laos | 2 ✔ (mallid), 8 (ladu) |
-| Proportsionaalne KM, sõiduauto | KM-kood „Sõiduauto 50%“ ja mahaarvatav osa; kandemall „Sisendkäibemaksu korrigeerimine“ (KMD rida 10) | 1 ✔, 2 ✔, 6 (KMD) |
+| Proportsionaalne KM, sõiduauto | KM-kood „Sõiduauto 50%“ ja mahaarvatav osa (ostuarvel ja kuluaruandes mitte mahaarvatav osa kulusse); kandemall „Sisendkäibemaksu korrigeerimine“ (KMD rida 10) | 1 ✔, 2 ✔, 4 ✔, 6 (KMD) |
 | Kasutatud kauba ja reisiteenuste erikord (marginaalimaksustamine) | KM liik „kasuminormi erikord“ (koodid KAS ja REIS), arvel KM-i ei näidata, maks arvutatakse juurdehindlusest (soetushind real) | 3 ✔, 4 (ost) |
 | Tax-free müük | kinnitatud arvest „Tax-free korrigeerimine“: kreeditarve tühistab maksustatava käibe ja lisab 0% ekspordi, KM tagastatakse | 3 ✔, 6 (KMD) |
 | Faktooring | faktooringu ettemaksete konto, tasaarveldus kliendi ja faktooringuandja vahel | 5 |
@@ -118,3 +118,26 @@ Hiljem: korduvad kanded (faas 7), kande numbrite ümberjärjestamine ja manused 
 Hiljem: laekumised ja arve tasumise seis (faas 5), kliendi võlasaldo arvel ja müügiaruanded (faas 6),
 perioodilised arved, meeldetuletused ja viivised (faas 7), manused (faas 4), e-arved (faas 10).
 Kasuminormi erikorra KMD read (maksustatav väärtus = KM × 100 / määr) arvutatakse faasis 6.
+
+## Faas 4 (ost) – tehtud
+
+- **Tarnijad** (+ grupid): arvelduskonto (IBAN kontrollsummaga), püsiviitenumber, maksetähtaeg, vaikimisi
+  kulukonto ja käibemaks (nt EL teenuse pakkuja), valuuta.
+- **Ostuarve**: tarnija arve number (sama tarnija sama numbrit ei saa kaks korda kinnitada), sisemine
+  registreerimisnumber (OA-1 …) kinnitamisel, kanne D kulu / D sisend-KM / K võlad tarnijatele.
+  Konto valik: rea oma → artikli kulukonto → tarnija vaikimisi → ettevõtte vaikimisi.
+- **Käibemaks ostul**: mahaarvatav osa koodi järgi (sõiduauto 50% – ülejäänu kulusse); pöördmaksustamine
+  EL teenustele, EL kaubale ja siseriiklikule pöördmaksustamisele – ostja arvestab KM standardmääraga
+  (D sisend-KM / K arvestatud KM), võlg tarnijale ilma KM-ita.
+- **Tarnija kreeditarve** kinnitatud ostuarvest; valuutaarve kanne eurodes.
+- **Kinnitamata ostuarved**: PDF/foto üleslaadimine (lohistades, failivalikust või mobiilis kaamerast), iga fail
+  saab mustandi, mida täidetakse faili eelvaate kõrval ja kinnitatakse.
+- **Manused** (Vercel Blob; kui `BLOB_READ_WRITE_TOKEN` puudub, andmebaasis): ostuarvetel, kuluaruannetel ja
+  müügiarvetel; allalaadimine õigusi kontrolliva aadressi kaudu; kinnitatud dokumendi manust ei kustutata.
+- **Ostutellimused**: olekud, tellimusest ostuarve mustand.
+- **Kuluaruanded** ja aruandvad isikud: tšekid brutosummaga, KM eraldatakse tšeki kuupäeva määraga,
+  kanne D kulud / D sisend-KM / K võlad aruandvatele isikutele (2410).
+- Käsupalett otsib ostuarveid ja tarnijaid; kiirtoimingud „Uus ostuarve“, „Laadi üles ostuarve“, „Uus kuluaruanne“.
+
+Hiljem: ostuarvete tasumine ja maksekorraldused (faas 5), ostuaruanded ja võlgnevused (faas 6),
+kulude periodiseerimine (faas 7 korduvate kannetena), andmete automaatne tuvastamine dokumendilt (hilisem faas).

@@ -9,7 +9,12 @@ export default defineConfig({
     locale: "et-EE",
   },
   projects: [
-    { name: "desktop", use: { ...devices["Desktop Chrome"], launchOptions: { executablePath: process.env.CHROMIUM_PATH } } },
+    { name: "setup", testMatch: /auth\.setup\.ts/, use: { launchOptions: { executablePath: process.env.CHROMIUM_PATH } } },
+    {
+      name: "desktop",
+      dependencies: ["setup"],
+      use: { ...devices["Desktop Chrome"], launchOptions: { executablePath: process.env.CHROMIUM_PATH } },
+    },
   ],
   webServer: process.env.E2E_BASE_URL
     ? undefined

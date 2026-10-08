@@ -15,6 +15,7 @@ import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTi
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { FormField } from "@/components/common/form-field";
+import { AttachmentsPanel, type AttachmentInfo } from "@/components/common/attachments-panel";
 import { useActionRunner } from "@/components/common/use-action";
 import {
   confirmSalesInvoiceById,
@@ -66,6 +67,7 @@ export type InvoicePreviewData = {
   }>;
   emails: Array<{ id: string; to: string; status: "SENT" | "FAILED"; createdAt: string; error: string | null }>;
   email: EmailDraft | null;
+  attachments: AttachmentInfo[];
 };
 
 export function InvoicePreview({
@@ -319,6 +321,10 @@ export function InvoicePreview({
           ))}
         </div>
       )}
+
+      <div className="border-t px-5 py-4">
+        <AttachmentsPanel companyId={companyId} documentType="SalesInvoice" documentId={invoice.id} attachments={invoice.attachments} canEdit={canEdit} preview={false} />
+      </div>
 
       {dateAction && (
         <DateActionDialog

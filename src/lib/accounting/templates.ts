@@ -335,7 +335,9 @@ export const DEFAULT_NUMBER_SERIES: Array<{
     | "PURCHASE_ORDER"
     | "JOURNAL_ENTRY"
     | "PAYMENT"
-    | "INTEREST_INVOICE";
+    | "INTEREST_INVOICE"
+    | "PURCHASE_INVOICE"
+    | "EXPENSE_REPORT";
   prefix: string;
   nextNumber: number;
 }> = [
@@ -347,4 +349,6 @@ export const DEFAULT_NUMBER_SERIES: Array<{
   { documentType: "JOURNAL_ENTRY", prefix: "PR-", nextNumber: 1 },
   { documentType: "PAYMENT", prefix: "M-", nextNumber: 1 },
   { documentType: "INTEREST_INVOICE", prefix: "V-", nextNumber: 1 },
+  { documentType: "PURCHASE_INVOICE", prefix: "OA-", nextNumber: 1 },
+  { documentType: "EXPENSE_REPORT", prefix: "KA-", nextNumber: 1 },
 ];

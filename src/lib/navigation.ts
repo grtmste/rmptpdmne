@@ -12,7 +12,9 @@ import {
   Settings,
   ShoppingCart,
   TrendingUp,
+  Upload,
   Users,
+  Wallet,
 } from "lucide-react";
 import { can, type Level, type MembershipLike, type Module } from "./permissions";
 
@@ -23,7 +25,7 @@ import { can, type Level, type MembershipLike, type Module } from "./permissions
  */
 
 /** Faas, mis on hetkel valmis. Kõrgema faasi vaated näitavad „tulekul“ lehte. */
-export const CURRENT_PHASE = 3;
+export const CURRENT_PHASE = 4;
 
 export type NavItem = {
   id: string;
@@ -119,7 +121,7 @@ export const NAVIGATION: NavGroup[] = [
       {
         label: "registers",
         items: [
-          item("purchases.suppliers", "/purchases/suppliers", "purchases", 4),
+          item("purchases.suppliers", "/purchases/suppliers", "purchases", 4, ["tarnija", "hankija"]),
           item("purchases.employees", "/purchases/employees", "purchases", 4),
         ],
       },
@@ -250,6 +252,8 @@ export type QuickAction = {
 export const QUICK_ACTIONS: QuickAction[] = [
   { id: "newSalesInvoice", label: "newSalesInvoice", href: "/sales/invoices/new", module: "sales", level: "edit", phase: 3, icon: FileText },
   { id: "newPurchaseInvoice", label: "newPurchaseInvoice", href: "/purchases/invoices/new", module: "purchases", level: "edit", phase: 4, icon: Receipt },
+  { id: "uploadPurchase", label: "uploadPurchase", href: "/purchases/inbox", module: "purchases", level: "edit", phase: 4, icon: Upload },
+  { id: "newExpenseReport", label: "newExpenseReport", href: "/purchases/expenses/new", module: "purchases", level: "edit", phase: 4, icon: Wallet },
   { id: "newPayment", label: "newPayment", href: "/payments/new", module: "payments", level: "edit", phase: 5, icon: Banknote },
   { id: "newJournalEntry", label: "newJournalEntry", href: "/finance/journal/new", module: "finance", level: "edit", phase: 2, icon: Landmark },
   { id: "newCustomer", label: "newCustomer", href: "/sales/customers/new", module: "sales", level: "edit", phase: 3, icon: Users },

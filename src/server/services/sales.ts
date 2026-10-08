@@ -30,9 +30,20 @@ export type SalesErrorCode =
   | "nothingTaxable"
   | "quoteNotFound"
   | "quoteInvoiced"
-  | "vatAccountMissing";
+  | "vatAccountMissing"
+  // Ost (faas 4)
+  | "supplierNotFound"
+  | "supplierRequired"
+  | "invoiceNumberRequired"
+  | "duplicateInvoiceNumber"
+  | "orderNotFound"
+  | "orderInvoiced"
+  | "employeeNotFound"
+  | "reportNotFound"
+  | "attachmentTooLarge"
+  | "attachmentType";
 
-/** Müügi reegli rikkumine; `code` on i18n võti nimeruumis `errors.sales`. */
+/** Müügi ja ostu dokumendireegli rikkumine; `code` on i18n võti nimeruumis `errors.sales`. */
 export class SalesError extends Error {
   constructor(
     public code: SalesErrorCode,
@@ -93,7 +104,11 @@ export function customerAddress(c: {
   return parts.length ? parts.join(", ") : null;
 }
 
-async function roleAccount(tx: Tx, companyId: string, role: "RECEIVABLES" | "DEFAULT_SALES" | "CUSTOMER_PREPAYMENTS") {
+export async function roleAccount(
+  tx: Tx,
+  companyId: string,
+  role: "RECEIVABLES" | "DEFAULT_SALES" | "CUSTOMER_PREPAYMENTS" | "PAYABLES" | "DEFAULT_PURCHASE" | "EMPLOYEE_PAYABLES",
+) {
   const a = await tx.glAccount.findFirst({ where: { companyId, role }, select: { id: true } });
   if (!a) throw new SalesError("missingRoleAccount", { role });
   return a.id;

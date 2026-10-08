@@ -46,6 +46,16 @@ export const TENANT_MODELS = [
   "Quote",
   "QuoteLine",
   "EmailLog",
+  "SupplierGroup",
+  "Supplier",
+  "Employee",
+  "PurchaseInvoice",
+  "PurchaseInvoiceLine",
+  "PurchaseOrder",
+  "PurchaseOrderLine",
+  "ExpenseReport",
+  "ExpenseReportLine",
+  "Attachment",
 ] as const;
 export type TenantModel = (typeof TENANT_MODELS)[number];
 

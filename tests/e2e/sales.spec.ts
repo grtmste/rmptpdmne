@@ -1,14 +1,14 @@
 import { expect, test } from "@playwright/test";
+import { ACCOUNTANT_STATE } from "./auth-state";
 
 /**
  * Faas 3: müügiarve klaviatuuriga, kinnitamine, PDF, saatmine ja kreeditarve; pakkumisest arve.
  * Eeldab demoandmeid (pnpm db:seed).
  */
+test.use({ storageState: ACCOUNTANT_STATE });
+
 test.beforeEach(async ({ page }) => {
-  await page.goto("/login");
-  await page.getByLabel("E-post").fill("raamatupidaja@demo.ee");
-  await page.getByLabel("Parool", { exact: true }).fill("demo-parool-123");
-  await page.getByRole("button", { name: "Logi sisse" }).click();
+  await page.goto("/");
   await page.waitForURL(/\/c\//);
 });
 

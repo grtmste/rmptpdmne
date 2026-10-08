@@ -85,3 +85,15 @@ describe("CSV", () => {
     expect(csvAmount("1234.5", "en")).toBe("1234.50");
   });
 });
+
+describe("IBAN", () => {
+  it("kontrollsumma ja vormindus", async () => {
+    const { isValidIban, formatIban, normalizeIban } = await import("@/lib/iban");
+    expect(isValidIban("EE38 2200 2210 2014 5685")).toBe(true);
+    expect(isValidIban("EE382200221020145684")).toBe(false);
+    expect(isValidIban("FI2112345600000785")).toBe(true);
+    expect(isValidIban("EE3822002210201456")).toBe(false);
+    expect(normalizeIban("ee38 2200")).toBe("EE382200");
+    expect(formatIban("EE382200221020145685")).toBe("EE38 2200 2210 2014 5685");
+  });
+});

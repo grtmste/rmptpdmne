@@ -24,7 +24,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 const PAGE_SIZE = 50;
-const SOURCES = ["OPENING_BALANCE", "MANUAL", "SALES_INVOICE", "PURCHASE_INVOICE", "PAYMENT", "INVENTORY", "DEPRECIATION", "VAT_CLOSING", "YEAR_END"] as const;
+const SOURCES = ["OPENING_BALANCE", "MANUAL", "SALES_INVOICE", "PURCHASE_INVOICE", "EXPENSE_REPORT", "PAYMENT", "INVENTORY", "DEPRECIATION", "VAT_CLOSING", "YEAR_END"] as const;
 
 export default async function JournalPage({ params, searchParams }: PageProps<"/c/[companyId]/finance/journal">) {
   const { companyId } = await params;

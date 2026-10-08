@@ -13,6 +13,7 @@ import { todayLocal } from "../src/lib/dates";
 import { ensureCompanyDefaults } from "../src/server/services/company-setup";
 import { postJournalEntry } from "../src/server/services/journal";
 import { confirmInvoice, saveInvoiceDraft, saveQuote } from "../src/server/services/sales";
+import { confirmExpenseReport, confirmPurchase, saveExpenseReport, savePurchaseDraft, savePurchaseOrder } from "../src/server/services/purchases";
 
 const db = createPrismaClient();
 const PASSWORD = "demo-parool-123";
@@ -248,6 +249,72 @@ async function main() {
         { itemId: roos!.id, description: roos!.name, quantity: "24", unitPrice: "18.50", vatRateId: vat.KM },
       ],
     }),
+  );
+
+  // Ost (faas 4): tarnijad, ostuarved, tellimus ja kuluaruanne
+  const [taimla, telia] = await Promise.all([
+    db.supplier.create({
+      data: {
+        companyId: first.id,
+        name: "Taimla Puukool OÜ",
+        regCode: "10987654",
+        vatNumber: "EE100987654",
+        bankAccount: "EE382200221020145685",
+        defaultAccountId: acc["4010"],
+        paymentTermDays: 14,
+      },
+    }),
+    db.supplier.create({
+      data: { companyId: first.id, name: "Sidefirma AS", regCode: "10234567", bankAccount: "EE471000001020145685", defaultAccountId: acc["4150"] },
+    }),
+  ]);
+  const purchases = [
+    {
+      supplierId: taimla.id,
+      invoiceNumber: "TP-2291",
+      date: ago(30),
+      lines: [{ description: "Roosipõõsad 40 tk", quantity: "40", unitPrice: "9.20", vatRateId: vat.KM }],
+    },
+    {
+      supplierId: telia.id,
+      invoiceNumber: "S-88123",
+      date: ago(8),
+      lines: [{ description: "Internet ja mobiil", quantity: "1", unitPrice: "39.90", vatRateId: vat.KM }],
+    },
+  ];
+  for (const p of purchases) {
+    await db.$transaction(
+      async (tx) => {
+        const id = await savePurchaseDraft(tx, first.id, owner, { pricesIncludeVat: false, ...p });
+        await confirmPurchase(tx, first.id, owner, id);
+      },
+      { timeout: 30_000 },
+    );
+  }
+  await db.$transaction((tx) =>
+    savePurchaseOrder(tx, first.id, owner, {
+      supplierId: taimla.id,
+      date: ago(1),
+      expectedDate: addDays(today, 6),
+      pricesIncludeVat: false,
+      lines: [{ description: "Hortensiad 15 tk", quantity: "15", unitPrice: "12.50", vatRateId: vat.KM, accountId: acc["4010"] }],
+    }),
+  );
+  const employee = await db.employee.create({ data: { companyId: first.id, name: "Mari Maasikas", bankAccount: "EE471000001020145685" } });
+  await db.$transaction(
+    async (tx) => {
+      const id = await saveExpenseReport(tx, first.id, owner, {
+        employeeId: employee.id,
+        date: ago(5),
+        description: "Messikülastus",
+        lines: [
+          { date: ago(7), vendor: "Rimi", description: "Kohv ja küpsised", grossAmount: "18.60", vatRateId: vat.KM, accountId: acc["4190"] },
+          { date: ago(6), vendor: "Parkla AS", description: "Parkimine", grossAmount: "6.00", vatRateId: vat.KM, accountId: acc["4120"] },
+        ],
+      });
+      await confirmExpenseReport(tx, first.id, owner, id);
+    },
+    { timeout: 30_000 },
   );
 
   console.info(`Demoandmed loodud. Logi sisse nt ${users[0]!.email} / ${PASSWORD}`);

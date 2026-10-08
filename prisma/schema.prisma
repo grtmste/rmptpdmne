@@ -171,6 +171,13 @@ model Company {
   salesInvoices    SalesInvoice[]
   quotes           Quote[]
   emailLogs        EmailLog[]
+  suppliers        Supplier[]
+  supplierGroups   SupplierGroup[]
+  employees        Employee[]
+  purchaseInvoices PurchaseInvoice[]
+  purchaseOrders   PurchaseOrder[]
+  expenseReports   ExpenseReport[]
+  attachments      Attachment[]
 
   @@index([organizationId])
   @@index([regCode])
@@ -370,6 +377,9 @@ enum DocumentType {
   JOURNAL_ENTRY
   PAYMENT
   INTEREST_INVOICE
+  /// Ostuarve sisemine registreerimisnumber
+  PURCHASE_INVOICE
+  EXPENSE_REPORT
 }
 
 model NumberSeries {
@@ -511,6 +521,7 @@ enum JournalSource {
   MANUAL
   SALES_INVOICE
   PURCHASE_INVOICE
+  EXPENSE_REPORT
   PAYMENT
   INVENTORY
   DEPRECIATION
@@ -737,14 +748,14 @@ model CustomerGroup {
 }
 
 model Customer {
-  id                String    @id @default(cuid())
+  id                String   @id @default(cuid())
   companyId         String
   name              String
   /// Eraisik (registrikoodi asemel isikukood või puudub)
-  isPerson          Boolean   @default(false)
+  isPerson          Boolean  @default(false)
   regCode           String?
   vatNumber         String?
-  countryCode       String    @default("EE") @db.Char(2)
+  countryCode       String   @default("EE") @db.Char(2)
   addressStreet     String?
   addressCity       String?
   addressPostalCode String?
@@ -757,19 +768,19 @@ model Customer {
   /// null = ettevõtte vaikimisi maksetähtaeg
   paymentTermDays   Int?
   /// Viivis % päevas; null = ettevõtte vaikimisi
-  lateInterestPct   Decimal?  @db.Decimal(6, 3)
+  lateInterestPct   Decimal? @db.Decimal(6, 3)
   /// Arvete keel
-  locale            String    @default("et")
-  currency          String    @default("EUR") @db.Char(3)
+  locale            String   @default("et")
+  currency          String   @default("EUR") @db.Char(3)
   /// Püsiviitenumber (kui klient maksab alati sama viitega); muidu arve numbrist
   referenceNumber   String?
   groupId           String?
   /// Vaikimisi käibemaks kliendi arvetel (nt EL teenused)
   defaultVatRateId  String?
   notes             String?
-  active            Boolean   @default(true)
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  active            Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
   createdById       String?
 
   company  Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
@@ -849,50 +860,50 @@ enum DocumentStatus {
 }
 
 model SalesInvoice {
-  id                 String           @id @default(cuid())
-  companyId          String
-  type               SalesInvoiceType @default(INVOICE)
-  status             DocumentStatus   @default(DRAFT)
+  id                String           @id @default(cuid())
+  companyId         String
+  type              SalesInvoiceType @default(INVOICE)
+  status            DocumentStatus   @default(DRAFT)
   /// Number antakse kinnitamisel
-  number             String?
-  customerId         String
+  number            String?
+  customerId        String
   /// Kliendi andmed arve koostamise hetkel (arvel ei muutu, kui klient hiljem muutub)
-  customerName       String
-  customerRegCode    String?
-  customerVatNumber  String?
-  customerAddress    String?
-  customerEmail      String?
-  date               DateTime         @db.Date
-  dueDate            DateTime         @db.Date
+  customerName      String
+  customerRegCode   String?
+  customerVatNumber String?
+  customerAddress   String?
+  customerEmail     String?
+  date              DateTime         @db.Date
+  dueDate           DateTime         @db.Date
   /// Kauba/teenuse üleandmise kuupäev, kui erineb
-  deliveryDate       DateTime?        @db.Date
-  referenceNumber    String?
-  currency           String           @default("EUR") @db.Char(3)
+  deliveryDate      DateTime?        @db.Date
+  referenceNumber   String?
+  currency          String           @default("EUR") @db.Char(3)
   /// 1 EUR = rate valuutat
-  currencyRate       Decimal          @default(1) @db.Decimal(18, 6)
-  pricesIncludeVat   Boolean          @default(false)
-  locale             String           @default("et")
-  yourReference      String?
-  notes              String?
-  lateInterestPct    Decimal?         @db.Decimal(6, 3)
+  currencyRate      Decimal          @default(1) @db.Decimal(18, 6)
+  pricesIncludeVat  Boolean          @default(false)
+  locale            String           @default("et")
+  yourReference     String?
+  notes             String?
+  lateInterestPct   Decimal?         @db.Decimal(6, 3)
   /// Kreeditarve korral algne arve
-  creditOfId         String?
+  creditOfId        String?
   /// Tax-free korrigeerimine (KMS § 15 lg 3 p 2): müük reisijale muudetakse 0% ekspordiks
-  taxFree            Boolean          @default(false)
+  taxFree           Boolean          @default(false)
   /// Pakkumine, millest arve tehti
-  quoteId            String?
-  netTotal           Decimal          @default(0) @db.Decimal(18, 2)
-  vatTotal           Decimal          @default(0) @db.Decimal(18, 2)
-  total              Decimal          @default(0) @db.Decimal(18, 2)
+  quoteId           String?
+  netTotal          Decimal          @default(0) @db.Decimal(18, 2)
+  vatTotal          Decimal          @default(0) @db.Decimal(18, 2)
+  total             Decimal          @default(0) @db.Decimal(18, 2)
   /// Kogusumma eurodes (pearaamatu summa)
-  totalBase          Decimal          @default(0) @db.Decimal(18, 2)
-  journalEntryId     String?
-  confirmedAt        DateTime?
-  confirmedById      String?
-  sentAt             DateTime?
-  createdAt          DateTime         @default(now())
-  updatedAt          DateTime         @updatedAt
-  createdById        String?
+  totalBase         Decimal          @default(0) @db.Decimal(18, 2)
+  journalEntryId    String?
+  confirmedAt       DateTime?
+  confirmedById     String?
+  sentAt            DateTime?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  createdById       String?
 
   company  Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
   customer Customer           @relation(fields: [companyId, customerId], references: [companyId, id], onDelete: Restrict)
@@ -908,31 +919,31 @@ model SalesInvoice {
 }
 
 model SalesInvoiceLine {
-  id                  String    @id @default(cuid())
+  id                  String   @id @default(cuid())
   companyId           String
   invoiceId           String
   itemId              String?
   code                String?
   description         String
-  quantity            Decimal   @db.Decimal(18, 4)
+  quantity            Decimal  @db.Decimal(18, 4)
   unit                String?
-  unitPrice           Decimal   @db.Decimal(18, 4)
-  discountPct         Decimal   @default(0) @db.Decimal(5, 2)
+  unitPrice           Decimal  @db.Decimal(18, 4)
+  discountPct         Decimal  @default(0) @db.Decimal(5, 2)
   vatRateId           String?
   /// Rakendatud määr (kreeditarvel algse arve määr)
-  vatPct              Decimal   @default(0) @db.Decimal(5, 2)
+  vatPct              Decimal  @default(0) @db.Decimal(5, 2)
   accountId           String
   departmentId        String?
-  dimensionValueIds   String[]  @default([])
+  dimensionValueIds   String[] @default([])
   /// Kasuminormi erikorra korral soetusmaksumus ühiku kohta
-  unitCost            Decimal?  @db.Decimal(18, 4)
+  unitCost            Decimal? @db.Decimal(18, 4)
   /// Lõpparvel tasaarveldatud ettemaksuarve
   prepaymentInvoiceId String?
-  netAmount           Decimal   @default(0) @db.Decimal(18, 2)
-  vatAmount           Decimal   @default(0) @db.Decimal(18, 2)
+  netAmount           Decimal  @default(0) @db.Decimal(18, 2)
+  vatAmount           Decimal  @default(0) @db.Decimal(18, 2)
   /// Kasuminormi erikorra käibemaks (arvel ei näidata)
-  marginVatAmount     Decimal   @default(0) @db.Decimal(18, 2)
-  sortOrder           Int       @default(0)
+  marginVatAmount     Decimal  @default(0) @db.Decimal(18, 2)
+  sortOrder           Int      @default(0)
 
   invoice SalesInvoice @relation(fields: [companyId, invoiceId], references: [companyId, id], onDelete: Cascade)
 
@@ -1035,4 +1046,319 @@ model EmailLog {
 
   @@index([companyId, documentType, documentId])
   @@index([companyId, createdAt(sort: Desc)])
+}
+
+// ---------------------------------------------------------------------------
+// Faas 4: ost
+// ---------------------------------------------------------------------------
+
+model SupplierGroup {
+  id          String   @id @default(cuid())
+  companyId   String
+  name        String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById String?
+
+  company   Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  suppliers Supplier[]
+
+  @@unique([companyId, id])
+  @@unique([companyId, name])
+}
+
+model Supplier {
+  id                String   @id @default(cuid())
+  companyId         String
+  name              String
+  isPerson          Boolean  @default(false)
+  regCode           String?
+  vatNumber         String?
+  countryCode       String   @default("EE") @db.Char(2)
+  addressStreet     String?
+  addressCity       String?
+  addressPostalCode String?
+  addressCounty     String?
+  email             String?
+  phone             String?
+  contactPerson     String?
+  /// Arvelduskonto (IBAN) maksekorralduste jaoks
+  bankAccount       String?
+  /// Tarnija püsiviitenumber maksetel
+  referenceNumber   String?
+  paymentTermDays   Int?
+  currency          String   @default("EUR") @db.Char(3)
+  groupId           String?
+  /// Vaikimisi kulukonto ostuarve ridadel
+  defaultAccountId  String?
+  defaultVatRateId  String?
+  notes             String?
+  active            Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  createdById       String?
+
+  company  Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  group    SupplierGroup?    @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  invoices PurchaseInvoice[]
+  orders   PurchaseOrder[]
+
+  @@unique([companyId, id])
+  @@index([companyId, name])
+  @@index([companyId, regCode])
+}
+
+/// Aruandev isik (töötaja, kes esitab kuluaruandeid).
+model Employee {
+  id           String   @id @default(cuid())
+  companyId    String
+  name         String
+  personalCode String?
+  email        String?
+  bankAccount  String?
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  createdById  String?
+
+  company Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  reports ExpenseReport[]
+
+  @@unique([companyId, id])
+  @@unique([companyId, name])
+}
+
+enum PurchaseSource {
+  /// Sisestatud käsitsi
+  MANUAL
+  /// Üles laaditud fail (kinnitamata ostuarvete kaust)
+  UPLOAD
+  /// Ostutellimusest
+  ORDER
+}
+
+model PurchaseInvoice {
+  id                String         @id @default(cuid())
+  companyId         String
+  status            DocumentStatus @default(DRAFT)
+  /// Kreeditarve (summad negatiivsed)
+  isCredit          Boolean        @default(false)
+  source            PurchaseSource @default(MANUAL)
+  /// Sisemine registreerimisnumber, antakse kinnitamisel
+  number            String?
+  /// Üleslaaditud arvel võib tarnija veel puududa
+  supplierId        String?
+  supplierName      String         @default("")
+  supplierRegCode   String?
+  supplierVatNumber String?
+  /// Tarnija arve number
+  invoiceNumber     String?
+  date              DateTime       @db.Date
+  dueDate           DateTime       @db.Date
+  referenceNumber   String?
+  /// Tarnija IBAN arve koostamise hetkel (maksekorralduse jaoks)
+  bankAccount       String?
+  currency          String         @default("EUR") @db.Char(3)
+  currencyRate      Decimal        @default(1) @db.Decimal(18, 6)
+  pricesIncludeVat  Boolean        @default(false)
+  notes             String?
+  creditOfId        String?
+  purchaseOrderId   String?
+  netTotal          Decimal        @default(0) @db.Decimal(18, 2)
+  vatTotal          Decimal        @default(0) @db.Decimal(18, 2)
+  total             Decimal        @default(0) @db.Decimal(18, 2)
+  totalBase         Decimal        @default(0) @db.Decimal(18, 2)
+  journalEntryId    String?
+  confirmedAt       DateTime?
+  confirmedById     String?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  createdById       String?
+
+  company  Company               @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  supplier Supplier?             @relation(fields: [supplierId], references: [id], onDelete: Restrict)
+  creditOf PurchaseInvoice?      @relation("PurchaseCreditOf", fields: [creditOfId], references: [id], onDelete: Restrict)
+  credits  PurchaseInvoice[]     @relation("PurchaseCreditOf")
+  lines    PurchaseInvoiceLine[]
+
+  @@unique([companyId, id])
+  @@index([companyId, date])
+  @@index([companyId, status, date])
+  @@index([companyId, supplierId])
+}
+
+model PurchaseInvoiceLine {
+  id                String   @id @default(cuid())
+  companyId         String
+  invoiceId         String
+  itemId            String?
+  code              String?
+  description       String
+  quantity          Decimal  @db.Decimal(18, 4)
+  unit              String?
+  unitPrice         Decimal  @db.Decimal(18, 4)
+  discountPct       Decimal  @default(0) @db.Decimal(5, 2)
+  vatRateId         String?
+  vatPct            Decimal  @default(0) @db.Decimal(5, 2)
+  accountId         String
+  departmentId      String?
+  dimensionValueIds String[] @default([])
+  netAmount         Decimal  @default(0) @db.Decimal(18, 2)
+  /// Tarnija arvel olev käibemaks
+  vatAmount         Decimal  @default(0) @db.Decimal(18, 2)
+  /// Pöördmaksustatav käibemaks (ostja arvestab ise)
+  reverseVatAmount  Decimal  @default(0) @db.Decimal(18, 2)
+  /// Mahaarvatav sisendkäibemaks
+  deductibleVat     Decimal  @default(0) @db.Decimal(18, 2)
+  sortOrder         Int      @default(0)
+
+  invoice PurchaseInvoice @relation(fields: [companyId, invoiceId], references: [companyId, id], onDelete: Cascade)
+
+  @@unique([companyId, id])
+  @@index([companyId, invoiceId])
+}
+
+enum PurchaseOrderStatus {
+  DRAFT
+  ORDERED
+  RECEIVED
+  INVOICED
+  CANCELLED
+}
+
+model PurchaseOrder {
+  id               String              @id @default(cuid())
+  companyId        String
+  status           PurchaseOrderStatus @default(DRAFT)
+  number           String
+  supplierId       String
+  supplierName     String
+  date             DateTime            @db.Date
+  expectedDate     DateTime?           @db.Date
+  currency         String              @default("EUR") @db.Char(3)
+  pricesIncludeVat Boolean             @default(false)
+  notes            String?
+  netTotal         Decimal             @default(0) @db.Decimal(18, 2)
+  vatTotal         Decimal             @default(0) @db.Decimal(18, 2)
+  total            Decimal             @default(0) @db.Decimal(18, 2)
+  invoiceId        String?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  createdById      String?
+
+  company  Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  supplier Supplier            @relation(fields: [companyId, supplierId], references: [companyId, id], onDelete: Restrict)
+  lines    PurchaseOrderLine[]
+
+  @@unique([companyId, id])
+  @@unique([companyId, number])
+  @@index([companyId, date])
+}
+
+model PurchaseOrderLine {
+  id                String   @id @default(cuid())
+  companyId         String
+  orderId           String
+  itemId            String?
+  code              String?
+  description       String
+  quantity          Decimal  @db.Decimal(18, 4)
+  unit              String?
+  unitPrice         Decimal  @db.Decimal(18, 4)
+  discountPct       Decimal  @default(0) @db.Decimal(5, 2)
+  vatRateId         String?
+  vatPct            Decimal  @default(0) @db.Decimal(5, 2)
+  accountId         String?
+  departmentId      String?
+  dimensionValueIds String[] @default([])
+  netAmount         Decimal  @default(0) @db.Decimal(18, 2)
+  vatAmount         Decimal  @default(0) @db.Decimal(18, 2)
+  sortOrder         Int      @default(0)
+
+  order PurchaseOrder @relation(fields: [companyId, orderId], references: [companyId, id], onDelete: Cascade)
+
+  @@index([companyId, orderId])
+}
+
+/// Aruandva isiku kuluaruanne: kuludokumendid (tšekid), mille töötaja tasus oma rahaga.
+model ExpenseReport {
+  id             String         @id @default(cuid())
+  companyId      String
+  status         DocumentStatus @default(DRAFT)
+  number         String?
+  employeeId     String
+  employeeName   String
+  date           DateTime       @db.Date
+  description    String?
+  netTotal       Decimal        @default(0) @db.Decimal(18, 2)
+  vatTotal       Decimal        @default(0) @db.Decimal(18, 2)
+  total          Decimal        @default(0) @db.Decimal(18, 2)
+  journalEntryId String?
+  confirmedAt    DateTime?
+  confirmedById  String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  createdById    String?
+
+  company  Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  employee Employee            @relation(fields: [companyId, employeeId], references: [companyId, id], onDelete: Restrict)
+  lines    ExpenseReportLine[]
+
+  @@unique([companyId, id])
+  @@index([companyId, date])
+}
+
+model ExpenseReportLine {
+  id                String   @id @default(cuid())
+  companyId         String
+  reportId          String
+  date              DateTime @db.Date
+  /// Kuludokumendi väljastaja (pood, hotell …)
+  vendor            String?
+  documentNumber    String?
+  description       String
+  accountId         String
+  vatRateId         String?
+  vatPct            Decimal  @default(0) @db.Decimal(5, 2)
+  /// Summa koos käibemaksuga (nagu tšekil)
+  grossAmount       Decimal  @db.Decimal(18, 2)
+  netAmount         Decimal  @default(0) @db.Decimal(18, 2)
+  vatAmount         Decimal  @default(0) @db.Decimal(18, 2)
+  deductibleVat     Decimal  @default(0) @db.Decimal(18, 2)
+  departmentId      String?
+  dimensionValueIds String[] @default([])
+  sortOrder         Int      @default(0)
+
+  report ExpenseReport @relation(fields: [companyId, reportId], references: [companyId, id], onDelete: Cascade)
+
+  @@index([companyId, reportId])
+}
+
+enum AttachmentStorage {
+  /// Vercel Blob (tootmine)
+  BLOB
+  /// Andmebaasis (arendus ja testid, kui Blob pole seadistatud)
+  DATABASE
+}
+
+/// Dokumendi manus (ostuarve skaneering, tšekk, leping …).
+model Attachment {
+  id           String            @id @default(cuid())
+  companyId    String
+  /// "PurchaseInvoice" | "ExpenseReport" | "SalesInvoice" | "JournalEntry" | ...
+  documentType String
+  documentId   String
+  fileName     String
+  contentType  String
+  size         Int
+  storage      AttachmentStorage
+  url          String?
+  data         Bytes?
+  uploadedById String?
+  createdAt    DateTime          @default(now())
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, id])
+  @@index([companyId, documentType, documentId])
 }

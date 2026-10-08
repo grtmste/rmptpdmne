@@ -1,14 +1,14 @@
 import { expect, test } from "@playwright/test";
+import { ACCOUNTANT_STATE } from "./auth-state";
+
+test.use({ storageState: ACCOUNTANT_STATE });
 
 /**
  * Faas 2: käsitsi kanne klaviatuuriga, postitamine, storno, aruanded ja CSV.
  * Eeldab demoandmeid (pnpm db:seed).
  */
 test("kanne, storno ja pearaamatu aruanded", async ({ page }) => {
-  await page.goto("/login");
-  await page.getByLabel("E-post").fill("raamatupidaja@demo.ee");
-  await page.getByLabel("Parool", { exact: true }).fill("demo-parool-123");
-  await page.getByRole("button", { name: "Logi sisse" }).click();
+  await page.goto("/");
   await page.waitForURL(/\/c\//);
   const base = new URL(page.url()).pathname.split("/").slice(0, 3).join("/");
 

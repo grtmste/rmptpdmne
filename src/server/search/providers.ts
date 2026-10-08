@@ -163,4 +163,52 @@ registerSearchProvider({
   },
 });
 
+/** Ostuarved registreerimis- või tarnija arve numbri või tarnija järgi. */
+registerSearchProvider({
+  id: "purchaseInvoices",
+  module: "purchases",
+  async search(ctx, query, limit) {
+    const rows = await ctx.cdb.purchaseInvoice.findMany({
+      where: {
+        OR: [
+          { number: { contains: query, mode: "insensitive" } },
+          { invoiceNumber: { contains: query, mode: "insensitive" } },
+          { supplierName: { contains: query, mode: "insensitive" } },
+        ],
+      },
+      orderBy: [{ date: "desc" }, { createdAt: "desc" }],
+      take: limit,
+      select: { id: true, number: true, invoiceNumber: true, supplierName: true, total: true, currency: true, date: true },
+    });
+    return rows.map((r) => ({
+      id: r.id,
+      kind: "purchaseInvoice",
+      title: `${r.number ?? "—"} · ${r.supplierName || "?"}${r.invoiceNumber ? ` (${r.invoiceNumber})` : ""}`,
+      subtitle: `${r.date.toISOString().slice(0, 10)} · ${r.total.toFixed(2)} ${r.currency}`,
+      href: `/purchases/invoices?doc=${r.id}`,
+    }));
+  },
+});
+
+/** Tarnijad nime, registrikoodi või IBAN-i järgi. */
+registerSearchProvider({
+  id: "suppliers",
+  module: "purchases",
+  async search(ctx, query, limit) {
+    const rows = await ctx.cdb.supplier.findMany({
+      where: {
+        OR: [
+          { name: { contains: query, mode: "insensitive" } },
+          { regCode: { startsWith: query } },
+          { bankAccount: { contains: query.replace(/\s+/g, "").toUpperCase() } },
+        ],
+      },
+      orderBy: { name: "asc" },
+      take: limit,
+      select: { id: true, name: true, regCode: true },
+    });
+    return rows.map((r) => ({ id: r.id, kind: "supplier", title: r.name, subtitle: r.regCode ?? undefined, href: `/purchases/suppliers/${r.id}` }));
+  },
+});
+
 export {};

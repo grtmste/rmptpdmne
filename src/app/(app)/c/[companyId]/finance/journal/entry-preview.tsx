@@ -42,6 +42,13 @@ export type PreviewEntry = {
   }>;
 };
 
+/** Dokumendid, millest kanne võib tekkida, ja nende nimekirja aadress. */
+const SOURCE_PATHS: Record<string, string> = {
+  SALES_INVOICE: "/sales/invoices",
+  PURCHASE_INVOICE: "/purchases/invoices",
+  EXPENSE_REPORT: "/purchases/expenses",
+};
+
 export function EntryPreview({
   companyId,
   entry,
@@ -90,9 +97,9 @@ export function EntryPreview({
         </Button>
       </div>
 
-      {entry.source === "SALES_INVOICE" && entry.sourceId && (
+      {entry.sourceId && SOURCE_PATHS[entry.source] && (
         <div className="border-b bg-muted/40 px-5 py-2 text-sm">
-          <Link className="text-primary hover:underline" href={`/c/${companyId}/sales/invoices?doc=${entry.sourceId}`}>
+          <Link className="text-primary hover:underline" href={`/c/${companyId}${SOURCE_PATHS[entry.source]}?doc=${entry.sourceId}`}>
             {t("openDocument")}
           </Link>
         </div>
