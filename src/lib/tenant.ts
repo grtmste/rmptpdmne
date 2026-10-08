@@ -17,7 +17,25 @@ import type { PrismaClient } from "./prisma";
  */
 
 /** Mudelid, millel on `companyId`. Test `tenant-models.test.ts` kontrollib, et nimekiri vastab skeemile. */
-export const TENANT_MODELS = ["Membership", "Invitation", "Notification", "AuditLog"] as const;
+export const TENANT_MODELS = [
+  "Membership",
+  "Invitation",
+  "Notification",
+  "AuditLog",
+  "GlAccount",
+  "VatRate",
+  "VatRatePeriod",
+  "FiscalYear",
+  "NumberSeries",
+  "NumberSeriesCounter",
+  "CompanyCurrency",
+  "Department",
+  "Dimension",
+  "DimensionValue",
+  "JournalEntry",
+  "JournalLine",
+  "JournalLineDimension",
+] as const;
 export type TenantModel = (typeof TENANT_MODELS)[number];
 
 const tenantModels = new Set<string>(TENANT_MODELS);

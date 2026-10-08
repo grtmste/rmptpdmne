@@ -107,30 +107,455 @@ model VerificationToken {
 }
 
 model Company {
-  id             String    @id @default(cuid())
-  organizationId String
-  name           String
+  id                    String      @id @default(cuid())
+  organizationId        String
+  name                  String
   /// Registrikood
-  regCode        String?
+  regCode               String?
   /// KMKR number
-  vatNumber      String?
-  countryCode    String    @default("EE") @db.Char(2)
-  baseCurrency   String    @default("EUR") @db.Char(3)
+  vatNumber             String?
+  countryCode           String      @default("EE") @db.Char(2)
+  baseCurrency          String      @default("EUR") @db.Char(3)
   /// Dokumentide (arved jm) vaikimisi keel
-  documentLocale String    @default("et")
-  isDemo         Boolean   @default(false)
-  archivedAt     DateTime?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  createdById    String?
+  documentLocale        String      @default("et")
+  /// Ettevõtte liik – määrab vaikimisi kontoplaani ja aruannete skeemi
+  type                  CompanyType @default(BUSINESS)
+  /// Kasumiaruande skeem (1 = kulude liigi järgi, 2 = funktsiooni järgi)
+  incomeStatementScheme Int         @default(1)
+  /// Arvestuse algus LILY SOKID-is; algsaldod on sellele eelneva päeva seisuga
+  accountingStartDate   DateTime?   @db.Date
+  /// Sellest kuupäevast varasemaid (kaasa arvatud) kandeid ei saa lisada ega muuta
+  lockedUntil           DateTime?   @db.Date
+  addressStreet         String?
+  addressCity           String?
+  addressCounty         String?
+  addressPostalCode     String?
+  phone                 String?
+  email                 String?
+  website               String?
+  isDemo                Boolean     @default(false)
+  archivedAt            DateTime?
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+  createdById           String?
 
-  organization Organization @relation(fields: [organizationId], references: [id])
-  memberships   Membership[]
-  invitations   Invitation[]
-  notifications Notification[]
+  organization   Organization      @relation(fields: [organizationId], references: [id])
+  memberships    Membership[]
+  invitations    Invitation[]
+  notifications  Notification[]
+  glAccounts     GlAccount[]
+  vatRates       VatRate[]
+  fiscalYears    FiscalYear[]
+  numberSeries   NumberSeries[]
+  currencies     CompanyCurrency[]
+  departments    Department[]
+  dimensions     Dimension[]
+  journalEntries JournalEntry[]
 
   @@index([organizationId])
   @@index([regCode])
+}
+
+enum CompanyType {
+  /// Äriühing (OÜ, AS jt)
+  BUSINESS
+  /// Füüsilisest isikust ettevõtja
+  SOLE_PROPRIETOR
+  /// MTÜ, SA
+  NONPROFIT
+}
+
+// ---------------------------------------------------------------------------
+// Faas 1: raamatupidamise seadistused
+// ---------------------------------------------------------------------------
+
+enum AccountType {
+  ASSET
+  LIABILITY
+  EQUITY
+  INCOME
+  EXPENSE
+}
+
+enum AccountKind {
+  /// Kontole saab kandeid teha
+  DETAIL
+  /// Koondkonto: summeerib koodi algusega sobivad detailkontod, kandeid ei tehta
+  SUMMARY
+}
+
+/// Kuidas konto tehingud käibedeklaratsioonis kajastuvad
+enum VatTurnover {
+  NONE
+  SALES
+  PURCHASE
+}
+
+/// Süsteemne roll – programm kasutab neid kontosid automaatsetes kannetes
+enum AccountRole {
+  RECEIVABLES
+  CUSTOMER_PREPAYMENTS
+  PAYABLES
+  SUPPLIER_PREPAYMENTS
+  EMPLOYEE_PAYABLES
+  EMPLOYEE_RECEIVABLES
+  INVENTORY
+  COST_OF_GOODS_SOLD
+  DEFAULT_SALES
+  DEFAULT_PURCHASE
+  ROUNDING_INCOME
+  ROUNDING_EXPENSE
+  FX_GAIN_LOSS
+  BANK_FEES
+  VAT_PAYABLE
+  RETAINED_EARNINGS
+  CURRENT_YEAR_PROFIT
+}
+
+/// Pearaamatu konto (nimi GlAccount, sest Auth.js kasutab mudelit Account).
+model GlAccount {
+  id                   String       @id @default(cuid())
+  companyId            String
+  /// 1… varad, 2… kohustised ja omakapital, 3… tulud, 4… kulud
+  code                 String
+  name                 String
+  nameEn               String?
+  type                 AccountType
+  kind                 AccountKind  @default(DETAIL)
+  /// Bilansi või kasumiaruande rea kood (src/lib/accounting/report-lines.ts)
+  reportLine           String?
+  /// Vaikimisi käibemaks selle konto kasutamisel
+  defaultVatRateId     String?
+  vatTurnover          VatTurnover  @default(NONE)
+  /// Makseviisina kasutatav konto (pank, kassa)
+  isPaymentMethod      Boolean      @default(false)
+  /// Osakond kohustuslik
+  requiresDepartment   Boolean      @default(false)
+  /// Dimensioonid, mille väärtus on kohustuslik (Dimension.id)
+  requiredDimensionIds String[]     @default([])
+  showOnDashboard      Boolean      @default(false)
+  role                 AccountRole?
+  active               Boolean      @default(true)
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+  createdById          String?
+
+  company          Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  defaultVatRate   VatRate?      @relation("AccountDefaultVat", fields: [defaultVatRateId], references: [id], onDelete: SetNull)
+  journalLines     JournalLine[]
+  salesVatRates    VatRate[]     @relation("VatSalesAccount")
+  purchaseVatRates VatRate[]     @relation("VatPurchaseAccount")
+
+  @@unique([companyId, id])
+  @@unique([companyId, code])
+  @@unique([companyId, role])
+  @@index([companyId, type])
+}
+
+/// Käibemaksu liik – määrab, kuidas tehing KMD-l kajastub
+enum VatKind {
+  /// Maksustatav käive määraga (24%, 13%, 9% …)
+  TAXABLE
+  /// 0% eksport
+  ZERO_EXPORT
+  /// 0% kauba ühendusesisene käive
+  ZERO_EU_GOODS
+  /// Teenused teise liikmesriigi maksukohustuslasele
+  EU_SERVICES
+  /// Maksuvaba käive (KMS § 16)
+  EXEMPT
+  /// Siseriiklik pöördmaksustamine (KMS § 41¹)
+  REVERSE_CHARGE
+  /// Ei ole käive / ei kajastu KMD-l
+  NOT_TAXABLE
+}
+
+/// Käibemaks. Määr sõltub kuupäevast (VatRatePeriod), mitte ei ole koodi sisse kirjutatud.
+model VatRate {
+  id                String   @id @default(cuid())
+  companyId         String
+  code              String
+  name              String
+  nameEn            String?
+  kind              VatKind  @default(TAXABLE)
+  /// Mahaarvatav osa sisendkäibemaksust protsentides (sõiduauto 50%, proportsionaalne)
+  deductiblePct     Decimal  @default(100) @db.Decimal(5, 2)
+  /// Viide arvel (nt KMS § 15 lg 3 p 1)
+  invoiceNote       String?
+  /// Arvestatud (müügi) käibemaksu konto
+  salesAccountId    String?
+  /// Sisendkäibemaksu konto
+  purchaseAccountId String?
+  active            Boolean  @default(true)
+  sortOrder         Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  createdById       String?
+
+  company            Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  salesAccount       GlAccount?      @relation("VatSalesAccount", fields: [salesAccountId], references: [id], onDelete: SetNull)
+  purchaseAccount    GlAccount?      @relation("VatPurchaseAccount", fields: [purchaseAccountId], references: [id], onDelete: SetNull)
+  periods            VatRatePeriod[]
+  defaultForAccounts GlAccount[]     @relation("AccountDefaultVat")
+  journalLines       JournalLine[]
+
+  @@unique([companyId, id])
+  @@unique([companyId, code])
+}
+
+/// Käibemaksumäär kehtivusvahemikuga.
+model VatRatePeriod {
+  id        String    @id @default(cuid())
+  companyId String
+  vatRateId String
+  rate      Decimal   @db.Decimal(5, 2)
+  validFrom DateTime  @db.Date
+  /// null = kehtib edasi
+  validTo   DateTime? @db.Date
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  vatRate VatRate @relation(fields: [companyId, vatRateId], references: [companyId, id], onDelete: Cascade)
+
+  @@index([companyId, vatRateId, validFrom])
+}
+
+model FiscalYear {
+  id          String    @id @default(cuid())
+  companyId   String
+  startDate   DateTime  @db.Date
+  endDate     DateTime  @db.Date
+  /// Suletud aastasse ei saa kandeid lisada ega muuta
+  closedAt    DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdById String?
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, id])
+  @@unique([companyId, startDate])
+}
+
+enum DocumentType {
+  SALES_INVOICE
+  CREDIT_INVOICE
+  PREPAYMENT_INVOICE
+  QUOTE
+  PURCHASE_ORDER
+  JOURNAL_ENTRY
+  PAYMENT
+  INTEREST_INVOICE
+}
+
+model NumberSeries {
+  id           String       @id @default(cuid())
+  companyId    String
+  documentType DocumentType
+  prefix       String       @default("")
+  suffix       String       @default("")
+  /// Kas loendur algab igal kalendriaastal uuesti (number kujul aasta/number)
+  yearBased    Boolean      @default(false)
+  /// Mitmekohaliseks täiendatakse nullidega (0 = ei täiendata)
+  padding      Int          @default(0)
+  /// Järgmine number, kui seeria ei ole aastapõhine
+  nextNumber   Int          @default(1)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  createdById  String?
+
+  company  Company               @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  counters NumberSeriesCounter[]
+
+  @@unique([companyId, id])
+  @@unique([companyId, documentType])
+}
+
+/// Aastapõhise seeria loendur.
+model NumberSeriesCounter {
+  id         String @id @default(cuid())
+  companyId  String
+  seriesId   String
+  year       Int
+  nextNumber Int    @default(1)
+
+  series NumberSeries @relation(fields: [companyId, seriesId], references: [companyId, id], onDelete: Cascade)
+
+  @@unique([companyId, seriesId, year])
+}
+
+/// Ettevõttes kasutusel olevad valuutad (EUR on alati olemas).
+model CompanyCurrency {
+  id        String   @id @default(cuid())
+  companyId String
+  code      String   @db.Char(3)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, code])
+}
+
+/// Valuutakursid (1 EUR = rate valuutat). Üldine, mitte ettevõttepõhine.
+model ExchangeRate {
+  id        String   @id @default(cuid())
+  currency  String   @db.Char(3)
+  date      DateTime @db.Date
+  rate      Decimal  @db.Decimal(18, 6)
+  /// "ECB" või "MANUAL"
+  source    String   @default("ECB")
+  createdAt DateTime @default(now())
+
+  @@unique([currency, date])
+}
+
+/// Osakond (tulude-kulude ja arvete jaotus, eraldi numeratsioon).
+model Department {
+  id          String   @id @default(cuid())
+  companyId   String
+  code        String
+  name        String
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById String?
+
+  company      Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  journalLines JournalLine[]
+
+  @@unique([companyId, id])
+  @@unique([companyId, code])
+}
+
+enum DimensionKind {
+  DETAIL
+  SUMMARY
+}
+
+/// Vaba dimensioon (nt projekt, kulukoht).
+model Dimension {
+  id            String        @id @default(cuid())
+  companyId     String
+  name          String
+  kind          DimensionKind @default(DETAIL)
+  /// Üldine dimensioon, mille alla see detailne kuulub
+  parentId      String?
+  /// Summa deebetis positiivne (kulude jälgimiseks); muidu kreeditis (tulud)
+  debitPositive Boolean       @default(false)
+  active        Boolean       @default(true)
+  sortOrder     Int           @default(0)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  createdById   String?
+
+  company  Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  parent   Dimension?       @relation("DimensionParent", fields: [parentId], references: [id], onDelete: SetNull)
+  children Dimension[]      @relation("DimensionParent")
+  values   DimensionValue[]
+
+  @@unique([companyId, id])
+  @@unique([companyId, name])
+}
+
+model DimensionValue {
+  id          String    @id @default(cuid())
+  companyId   String
+  dimensionId String
+  code        String
+  name        String
+  /// Pärast seda kuupäeva väärtust tehingutes ei pakuta
+  endDate     DateTime? @db.Date
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdById String?
+
+  dimension Dimension              @relation(fields: [companyId, dimensionId], references: [companyId, id], onDelete: Cascade)
+  lines     JournalLineDimension[]
+
+  @@unique([companyId, id])
+  @@unique([companyId, dimensionId, code])
+}
+
+// ---------------------------------------------------------------------------
+// Pearaamat (algsaldod faasis 1, käsitsi kanded faasis 2)
+// ---------------------------------------------------------------------------
+
+enum JournalSource {
+  OPENING_BALANCE
+  MANUAL
+  SALES_INVOICE
+  PURCHASE_INVOICE
+  PAYMENT
+  INVENTORY
+  DEPRECIATION
+  VAT_CLOSING
+  YEAR_END
+}
+
+model JournalEntry {
+  id           String        @id @default(cuid())
+  companyId    String
+  /// Kande number seeria sees (nt PR-15)
+  number       String
+  date         DateTime      @db.Date
+  source       JournalSource
+  /// Lähtedokumendi id (arve, makse …)
+  sourceId     String?
+  description  String?
+  /// Storno korral viide algsele kandele
+  reversalOfId String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  createdById  String?
+
+  company    Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  reversalOf JournalEntry?  @relation("Reversal", fields: [reversalOfId], references: [id], onDelete: Restrict)
+  reversedBy JournalEntry[] @relation("Reversal")
+  lines      JournalLine[]
+
+  @@unique([companyId, id])
+  @@index([companyId, date])
+  @@index([companyId, source, sourceId])
+}
+
+model JournalLine {
+  id           String   @id @default(cuid())
+  companyId    String
+  entryId      String
+  accountId    String
+  debit        Decimal  @default(0) @db.Decimal(18, 2)
+  credit       Decimal  @default(0) @db.Decimal(18, 2)
+  description  String?
+  departmentId String?
+  vatRateId    String?
+  /// Käibemaksu summa, mille alusel rida KMD-l kajastub
+  vatAmount    Decimal? @db.Decimal(18, 2)
+  sortOrder    Int      @default(0)
+
+  entry      JournalEntry           @relation(fields: [companyId, entryId], references: [companyId, id], onDelete: Cascade)
+  account    GlAccount              @relation(fields: [companyId, accountId], references: [companyId, id], onDelete: Restrict)
+  department Department?            @relation(fields: [departmentId], references: [id], onDelete: Restrict)
+  vatRate    VatRate?               @relation(fields: [vatRateId], references: [id], onDelete: Restrict)
+  dimensions JournalLineDimension[]
+
+  @@unique([companyId, id])
+  @@index([companyId, accountId])
+  @@index([companyId, entryId])
+}
+
+/// Kanderea seos dimensiooni väärtusega (igast dimensioonist üks väärtus).
+model JournalLineDimension {
+  id               String @id @default(cuid())
+  companyId        String
+  lineId           String
+  dimensionValueId String
+
+  line  JournalLine    @relation(fields: [companyId, lineId], references: [companyId, id], onDelete: Cascade)
+  value DimensionValue @relation(fields: [companyId, dimensionValueId], references: [companyId, id], onDelete: Restrict)
+
+  @@unique([companyId, lineId, dimensionValueId])
 }
 
 /// Kasutaja ligipääs ettevõttele.

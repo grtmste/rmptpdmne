@@ -1,4 +1,5 @@
 import type { PrismaClient } from "@/lib/prisma";
+import { ensureCompanyDefaults } from "./company-setup";
 import type { CompanyRole } from "@/lib/permissions";
 
 /**
@@ -26,41 +27,53 @@ export type NewCompanyInput = {
   regCode: string | null;
   vatNumber: string | null;
   isDemo?: boolean;
+  /** Arvestuse algus; vaikimisi jooksva aasta 1. jaanuar */
+  accountingStartDate?: Date;
 };
 
 /**
  * Loob ettevõtte kasutaja organisatsiooni alla ja teeb kasutaja selle omanikuks.
  * Kasutaja peab olema organisatsiooni ADMIN.
  */
-export async function createCompanyForUser(db: PrismaClient, userId: string, organizationId: string, input: NewCompanyInput) {
-  return db.$transaction(async (tx) => {
-    const orgMember = await tx.organizationMember.findUnique({
-      where: { organizationId_userId: { organizationId, userId } },
-    });
-    if (!orgMember || orgMember.role !== "ADMIN") throw new Error("forbidden");
-    const company = await tx.company.create({
-      data: {
-        organizationId,
-        name: input.name,
-        regCode: input.regCode,
-        vatNumber: input.vatNumber,
-        isDemo: input.isDemo ?? false,
-        createdById: userId,
-        memberships: { create: { userId, role: "OWNER", lastAccessedAt: new Date() } },
-      },
-    });
-    await tx.auditLog.create({
-      data: {
-        companyId: company.id,
-        userId,
-        action: "company.create",
-        entityType: "Company",
-        entityId: company.id,
-        diff: { after: { name: company.name, regCode: company.regCode, vatNumber: company.vatNumber } },
-      },
-    });
-    return company;
-  });
+export async function createCompanyForUser(
+  db: PrismaClient,
+  userId: string,
+  organizationId: string,
+  input: NewCompanyInput,
+) {
+  return db.$transaction(
+    async (tx) => {
+      const orgMember = await tx.organizationMember.findUnique({
+        where: { organizationId_userId: { organizationId, userId } },
+      });
+      if (!orgMember || orgMember.role !== "ADMIN") throw new Error("forbidden");
+      const company = await tx.company.create({
+        data: {
+          organizationId,
+          name: input.name,
+          regCode: input.regCode,
+          vatNumber: input.vatNumber,
+          isDemo: input.isDemo ?? false,
+          accountingStartDate: input.accountingStartDate,
+          createdById: userId,
+          memberships: { create: { userId, role: "OWNER", lastAccessedAt: new Date() } },
+        },
+      });
+      await ensureCompanyDefaults(tx, company.id, { userId });
+      await tx.auditLog.create({
+        data: {
+          companyId: company.id,
+          userId,
+          action: "company.create",
+          entityType: "Company",
+          entityId: company.id,
+          diff: { after: { name: company.name, regCode: company.regCode, vatNumber: company.vatNumber } },
+        },
+      });
+      return company;
+    },
+    { timeout: 20_000 },
+  );
 }
 
 /** Kasutaja organisatsioon, kuhu uus ettevõte luuakse (esimene, kus ta on ADMIN). */
