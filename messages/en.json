@@ -70,7 +70,12 @@
       "vatRateNotFound": "The VAT code on line {row} wasn't found.",
       "locked": "The period is locked – you can't post entries on {date}.",
       "closedYear": "The financial year is closed – you can't post entries on {date}.",
-      "noFiscalYear": "{date} isn't in any financial year. Add a financial year."
+      "noFiscalYear": "{date} isn't in any financial year. Add a financial year.",
+      "entryNotFound": "Entry not found.",
+      "notDraft": "The entry is already posted and can't be changed or deleted. Correct it with a reversal.",
+      "notPosted": "Only posted entries can be reversed.",
+      "alreadyReversed": "This entry has already been reversed.",
+      "cannotReverse": "This entry can't be reversed here. Opening balances are changed in settings and document entries through the document."
     }
   },
   "validation": {
@@ -293,7 +298,8 @@
     "results": "Results",
     "kinds": {
       "member": "User",
-      "account": "Account"
+      "account": "Account",
+      "entry": "Entry"
     },
     "actions": "Actions",
     "navigation": "Views",
@@ -738,5 +744,181 @@
       "unknownAccounts": "These accounts aren't in the chart: {codes}",
       "imported": "{count, plural, one {Imported # line.} other {Imported # lines.}}"
     }
+  },
+  "journal": {
+    "newTitle": "New journal entry",
+    "newSubtitle": "A manual general ledger entry. Save it as a draft or post it right away.",
+    "editTitle": "Draft entry",
+    "draftSubtitle": "A draft doesn't affect the ledger until it's posted.",
+    "listSubtitle": "All general ledger entries – manual ones and those created by documents.",
+    "listLabel": "Entries",
+    "new": "New entry",
+    "emptyTitle": "No entries yet",
+    "emptyBody": "Manual entries appear here, and later also entries from invoices and payments.",
+    "draftNumber": "Draft",
+    "statusDraft": "Draft",
+    "statusPosted": "Posted",
+    "reversed": "Reversed",
+    "reversal": "Reversal",
+    "sources": {
+      "OPENING_BALANCE": "Opening balances",
+      "MANUAL": "Manual entry",
+      "SALES_INVOICE": "Sales invoice",
+      "PURCHASE_INVOICE": "Purchase invoice",
+      "PAYMENT": "Payment",
+      "INVENTORY": "Stock movement",
+      "DEPRECIATION": "Depreciation",
+      "VAT_CLOSING": "VAT closing",
+      "YEAR_END": "Year-end closing"
+    },
+    "pageOf": "Page {page}/{pages} · {total} entries",
+    "search": "Search by number or description",
+    "from": "From",
+    "to": "To",
+    "status": "Status",
+    "allStatuses": "All statuses",
+    "source": "Source",
+    "allSources": "All sources",
+    "filter": "Filter",
+    "clearFilters": "Clear",
+    "closePreview": "Close preview",
+    "reversalOfLabel": "This reverses entry",
+    "reversedByLabel": "Reversed by entry",
+    "createdBy": "Created by {name}",
+    "postedBy": "Posted by {name} · {date}",
+    "edit": "Edit",
+    "copy": "Copy",
+    "copied": "The copy is open as a draft.",
+    "reverse": "Reverse",
+    "print": "Print",
+    "deleteDraft": "Delete draft",
+    "deleteDraftConfirm": "Delete the draft?",
+    "draftDeleted": "Draft deleted.",
+    "reverseTitle": "Reverse entry",
+    "reverseBody": "A new entry is created with debit and credit swapped. The original entry stays and both are linked.",
+    "reverseDate": "Reversal date",
+    "reversedDone": "Reversal posted.",
+    "date": "Date",
+    "description": "Description",
+    "descriptionPlaceholder": "E.g. share capital contribution",
+    "fromTemplate": "From template",
+    "companyTemplates": "Company templates",
+    "builtinTemplates": "Ready-made templates",
+    "deleteTemplate": "Delete template “{name}”",
+    "templateDeleted": "Template deleted.",
+    "templateMissingAccounts": "Accounts {codes} aren't in the chart – please choose them yourself.",
+    "replaceLinesConfirm": "Replace the current lines with the template lines?",
+    "account": "Account",
+    "accountPlaceholder": "Code or name",
+    "noAccounts": "No account found",
+    "lineDescription": "Line description",
+    "debit": "Debit",
+    "credit": "Credit",
+    "department": "Department",
+    "vat": "VAT",
+    "vatAmount": "VAT amount",
+    "removeLine": "Remove line {n}",
+    "addLine": "Add line",
+    "showColumns": "Department, dimensions, VAT",
+    "hideColumns": "Hide extra columns",
+    "hintNextRow": "next line",
+    "hintSave": "save",
+    "hintPost": "post",
+    "totals": "Total",
+    "balanced": "Balanced",
+    "difference": "Difference {amount}",
+    "saveAsTemplate": "Save as template",
+    "saveDraft": "Save draft",
+    "post": "Post",
+    "draftSaved": "Draft saved.",
+    "posted": "Entry posted.",
+    "templateSaved": "Template saved.",
+    "templateHint": "A template remembers the accounts, sides and any amounts entered. A template with the same name is overwritten.",
+    "templateName": "Template name",
+    "builtin": {
+      "shareCapital": {
+        "name": "Share capital contribution",
+        "hint": "Bank D · Share capital C"
+      },
+      "loanReceived": {
+        "name": "Loan received",
+        "hint": "Bank D · Long-term loan C"
+      },
+      "leaseReclass": {
+        "name": "Current portion of finance lease",
+        "hint": "From long-term to short-term per payment schedule"
+      },
+      "investmentUp": {
+        "name": "Increase in investment value",
+        "hint": "Fair value at the balance sheet date"
+      },
+      "investmentDown": {
+        "name": "Decrease in investment value",
+        "hint": "Fair value or write-off of the sold part"
+      },
+      "inputVatCorrection": {
+        "name": "Input VAT adjustment",
+        "hint": "Proportional VAT, passenger cars – VAT return line 10"
+      },
+      "accruedExpense": {
+        "name": "Accrued expense",
+        "hint": "A cost of the period invoiced later"
+      },
+      "prepaidExpense": {
+        "name": "Prepaid expense allocation",
+        "hint": "Current month's share of a prepaid cost"
+      },
+      "holidayAccrual": {
+        "name": "Holiday pay accrual",
+        "hint": "Unused holiday liability at period end"
+      },
+      "badDebt": {
+        "name": "Bad debt write-off",
+        "hint": "Customer receivable to expense"
+      },
+      "statutoryReserve": {
+        "name": "Statutory reserve",
+        "hint": "From retained earnings to statutory reserve"
+      },
+      "dividend": {
+        "name": "Dividends and income tax",
+        "hint": "Dividend payable and dividend income tax"
+      }
+    }
+  },
+  "reports": {
+    "from": "From",
+    "to": "To",
+    "account": "Account",
+    "allAccounts": "All accounts",
+    "department": "Department",
+    "dimension": "Dimension",
+    "all": "All",
+    "includeZero": "Include zero-balance accounts",
+    "show": "Show",
+    "print": "Print",
+    "periodLabel": "Period {from} – {to}",
+    "opening": "Opening",
+    "turnover": "Turnover",
+    "closing": "Closing",
+    "debit": "Debit",
+    "credit": "Credit",
+    "subtotal": "Total: {type}",
+    "total": "Total",
+    "noData": "No entries in this period.",
+    "balancedNote": "Debits and credits balance.",
+    "unbalancedNote": "Attention: totals don't balance – please contact support.",
+    "pnlNote": "Income and expense accounts start from zero at the beginning of the financial year; earlier years' result is in the retained earnings opening balance.",
+    "dShort": "D",
+    "cShort": "C",
+    "truncated": "The report has very many lines – showing the first 5,000. Narrow the period or choose an account.",
+    "openingBalance": "Opening balance",
+    "date": "Date",
+    "entry": "Entry",
+    "description": "Description",
+    "balance": "Balance",
+    "periodTotal": "Period turnover and closing balance",
+    "code": "Code",
+    "name": "Name"
   }
 }

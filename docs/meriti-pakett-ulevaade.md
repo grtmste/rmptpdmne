@@ -60,6 +60,32 @@ erijuhud peavad olema kaetud. Disaini, tekste ega struktuuri üle ei võta (CLAU
 | 9 | Põhivara | grupid (meetod, määr, kontod), asukohad ja vastutajad, import |
 | 10 | Koondvaade, audit log, import, arhiveerimine, API, e-arved | e-arvete operaatorid, impordiformaadid, API allkirja skeem |
 
-**Väljaspool praegust ulatust** (eraldi otsus, kui vaja): avaliku sektori raamatupidamine
-(eraldi kontoplaan ja klassifikaatorid), korteriühistud, reisiteenuste ja kasutatud kauba
-erikorrad, tax-free, faktooring, kapitalirent käibemaksulaenuga.
+## Erijuhud (kasutaja otsus 08.10.2026: võtame sisse)
+
+| Erijuht | Kus ja kuidas | Faas |
+|---|---|---|
+| Kapitalirent (ka käibemaksulaenuga) | kandemall „Kapitalirendi lühiajaline osa“ (pikaajalisest lühiajaliseks); ostuarve tasumine kohustise kontoga | 2 ✔ (mall), 4 (ostuarve) |
+| Finantsinvesteeringud | kandemallid väärtuse tõusuks ja languseks (RTJ 3 õiglane väärtus); koguseline arvestus laos | 2 ✔ (mallid), 8 (ladu) |
+| Proportsionaalne KM, sõiduauto | KM-kood „Sõiduauto 50%“ ja mahaarvatav osa; kandemall „Sisendkäibemaksu korrigeerimine“ (KMD rida 10) | 1 ✔, 2 ✔, 6 (KMD) |
+| Kasutatud kauba ja reisiteenuste erikord (marginaalimaksustamine) | uus KM liik „marginaal“, käibemaks arvutatakse juurdehindlusest | 3–4 |
+| Tax-free müük | müügiarve märge ja KMD käsitlus | 3 |
+| Faktooring | faktooringu ettemaksete konto, tasaarveldus kliendi ja faktooringuandja vahel | 5 |
+| Korteriühistu | KÜ kontoplaan ja aruanded, näidupõhised perioodilised arved, laenud | 7 |
+| FIE ja MTÜ | eraldi kontoplaanid ja aruannete skeemid (tulemiaruanne) | 6 |
+| Avalik sektor | eraldi kontoplaan ja klassifikaatorid (tehingupartner, tegevusala, allikas, rahavoog), saldoandmike eksport | 11 (eraldi faas) |
+
+## Faas 2 (pearaamat) – tehtud
+
+- Käsitsi kanded: mustand → postitamine (kontroll ja number alles postitamisel), muutmine ainult mustandina,
+  storno (uus kanne vahetatud pooltega, mõlemad seotud), kopeerimine, mustandi kustutamine.
+- Sisestus klaviatuuriga: konto valik koodi või nime järgi, Enter liigub järgmisele reale, uus rida
+  pakub tasakaalustavat summat, Ctrl+S salvestab, Ctrl+Enter postitab; osakond, dimensioonid ja KM
+  lisaveergudes (kohustuslikud ilmuvad ise).
+- Kandemallid: ettevõtte oma mallid (salvesta mallina) ja 12 valmis malli, sh erijuhud.
+- Kannete nimekiri: otsing, filtrid, lehekülgedeks jagamine, eelvaade kõrval (split view), printimine.
+- Aruanded: käibeandmik (alg- ja lõppsaldo, käive, vahesummad), pearaamat (jooksev saldo, link kandele),
+  päevaraamat; filtrid perioodi, konto, osakonna ja dimensiooni järgi; CSV eksport (Exceli jaoks).
+- Tulu- ja kulukontode saldo algab igal majandusaastal nullist, varasemate aastate tulem kajastub
+  jaotamata kasumis (sulgemiskanne tehakse faasis 6).
+
+Hiljem: korduvad kanded (faas 7), kande numbrite ümberjärjestamine ja manused (faas 4 koos failidega).

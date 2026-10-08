@@ -76,3 +76,12 @@ describe("audit diff", () => {
     expect(diffRecords({ name: "A" }, { name: "A" })).toBeNull();
   });
 });
+
+describe("CSV", () => {
+  it("semikoolon, BOM, jutumärgid ja koma", async () => {
+    const { toCsv, csvAmount } = await import("@/lib/csv");
+    expect(toCsv([["a", 'b"c', "d;e"], [1, null, "x"]])).toBe('﻿a;"b""c";"d;e"\r\n1;;x\r\n');
+    expect(csvAmount("1234.5", "et")).toBe("1234,50");
+    expect(csvAmount("1234.5", "en")).toBe("1234.50");
+  });
+});

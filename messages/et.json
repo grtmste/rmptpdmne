@@ -70,7 +70,12 @@
       "vatRateNotFound": "Rea {row} käibemaksu ei leitud.",
       "locked": "Periood on lukustatud – kuupäevale {date} ei saa kandeid lisada.",
       "closedYear": "Majandusaasta on suletud – kuupäevale {date} ei saa kandeid lisada.",
-      "noFiscalYear": "Kuupäev {date} ei jää ühtegi majandusaastasse. Lisa majandusaasta."
+      "noFiscalYear": "Kuupäev {date} ei jää ühtegi majandusaastasse. Lisa majandusaasta.",
+      "entryNotFound": "Kannet ei leitud.",
+      "notDraft": "Kanne on juba postitatud – seda ei saa enam muuta ega kustutada. Paranda stornoga.",
+      "notPosted": "Stornida saab ainult postitatud kannet.",
+      "alreadyReversed": "See kanne on juba stornitud.",
+      "cannotReverse": "Seda kannet ei saa siin stornida. Algsaldosid muudetakse seadistustes ja dokumentide kandeid dokumendi kaudu."
     }
   },
   "validation": {
@@ -293,7 +298,8 @@
     "results": "Leitud",
     "kinds": {
       "member": "Kasutaja",
-      "account": "Konto"
+      "account": "Konto",
+      "entry": "Kanne"
     },
     "actions": "Toimingud",
     "navigation": "Vaated",
@@ -738,5 +744,181 @@
       "unknownAccounts": "Neid kontosid kontoplaanis pole: {codes}",
       "imported": "{count, plural, one {Imporditi # rida.} other {Imporditi # rida.}}"
     }
+  },
+  "journal": {
+    "newTitle": "Uus kanne",
+    "newSubtitle": "Käsitsi pearaamatu kanne. Salvesta mustandina või postita kohe.",
+    "editTitle": "Kande mustand",
+    "draftSubtitle": "Mustand ei mõjuta pearaamatut enne postitamist.",
+    "listSubtitle": "Kõik pearaamatu kanded – käsitsi tehtud ja dokumentidest tekkinud.",
+    "listLabel": "Kanded",
+    "new": "Uus kanne",
+    "emptyTitle": "Kandeid pole",
+    "emptyBody": "Siia ilmuvad käsitsi tehtud kanded ning hiljem ka arvete ja maksete kanded.",
+    "draftNumber": "Mustand",
+    "statusDraft": "Mustand",
+    "statusPosted": "Postitatud",
+    "reversed": "Stornitud",
+    "reversal": "Storno",
+    "sources": {
+      "OPENING_BALANCE": "Algsaldod",
+      "MANUAL": "Käsitsi kanne",
+      "SALES_INVOICE": "Müügiarve",
+      "PURCHASE_INVOICE": "Ostuarve",
+      "PAYMENT": "Makse",
+      "INVENTORY": "Laoliikumine",
+      "DEPRECIATION": "Kulum",
+      "VAT_CLOSING": "KMD sulgemine",
+      "YEAR_END": "Aasta sulgemine"
+    },
+    "pageOf": "Leht {page}/{pages} · {total} kannet",
+    "search": "Otsi numbri või selgituse järgi",
+    "from": "Alates",
+    "to": "Kuni",
+    "status": "Olek",
+    "allStatuses": "Kõik olekud",
+    "source": "Allikas",
+    "allSources": "Kõik allikad",
+    "filter": "Filtreeri",
+    "clearFilters": "Tühjenda",
+    "closePreview": "Sulge eelvaade",
+    "reversalOfLabel": "See on storno kandele",
+    "reversedByLabel": "Stornitud kandega",
+    "createdBy": "Koostas {name}",
+    "postedBy": "Postitas {name} · {date}",
+    "edit": "Muuda",
+    "copy": "Kopeeri",
+    "copied": "Koopia on mustandina avatud.",
+    "reverse": "Storneeri",
+    "print": "Prindi",
+    "deleteDraft": "Kustuta mustand",
+    "deleteDraftConfirm": "Kas kustutada mustand?",
+    "draftDeleted": "Mustand kustutati.",
+    "reverseTitle": "Kande storno",
+    "reverseBody": "Luuakse uus kanne, kus deebet ja kreedit on vahetatud. Algne kanne jääb alles ja mõlemad on omavahel seotud.",
+    "reverseDate": "Storno kuupäev",
+    "reversedDone": "Storno on postitatud.",
+    "date": "Kuupäev",
+    "description": "Selgitus",
+    "descriptionPlaceholder": "Nt osakapitali sissemakse",
+    "fromTemplate": "Mallist",
+    "companyTemplates": "Ettevõtte mallid",
+    "builtinTemplates": "Valmis mallid",
+    "deleteTemplate": "Kustuta mall „{name}“",
+    "templateDeleted": "Mall kustutati.",
+    "templateMissingAccounts": "Kontoplaanis puuduvad kontod {codes} – vali need ise.",
+    "replaceLinesConfirm": "Kas asendada praegused read malli ridadega?",
+    "account": "Konto",
+    "accountPlaceholder": "Kood või nimi",
+    "noAccounts": "Kontot ei leitud",
+    "lineDescription": "Rea selgitus",
+    "debit": "Deebet",
+    "credit": "Kreedit",
+    "department": "Osakond",
+    "vat": "KM",
+    "vatAmount": "KM summa",
+    "removeLine": "Eemalda rida {n}",
+    "addLine": "Lisa rida",
+    "showColumns": "Osakond, dimensioonid, KM",
+    "hideColumns": "Peida lisaveerud",
+    "hintNextRow": "järgmine rida",
+    "hintSave": "salvesta",
+    "hintPost": "postita",
+    "totals": "Kokku",
+    "balanced": "Tasakaalus",
+    "difference": "Vahe {amount}",
+    "saveAsTemplate": "Salvesta mallina",
+    "saveDraft": "Salvesta mustand",
+    "post": "Postita",
+    "draftSaved": "Mustand on salvestatud.",
+    "posted": "Kanne on postitatud.",
+    "templateSaved": "Mall on salvestatud.",
+    "templateHint": "Mall jätab meelde kontod, pooled ja sisestatud summad. Sama nimega mall kirjutatakse üle.",
+    "templateName": "Malli nimi",
+    "builtin": {
+      "shareCapital": {
+        "name": "Osakapitali sissemakse",
+        "hint": "Pank D · Osakapital K"
+      },
+      "loanReceived": {
+        "name": "Laenu saamine",
+        "hint": "Pank D · Pikaajaline laen K"
+      },
+      "leaseReclass": {
+        "name": "Kapitalirendi lühiajaline osa",
+        "hint": "Maksegraafiku järgi pikaajalisest lühiajaliseks"
+      },
+      "investmentUp": {
+        "name": "Finantsinvesteeringu väärtuse tõus",
+        "hint": "Õiglane väärtus bilansipäeval (RTJ 3)"
+      },
+      "investmentDown": {
+        "name": "Finantsinvesteeringu väärtuse langus",
+        "hint": "Õiglane väärtus või müüdud osa mahakandmine"
+      },
+      "inputVatCorrection": {
+        "name": "Sisendkäibemaksu korrigeerimine",
+        "hint": "Proportsionaalne KM, sõiduauto – KMD rida 10"
+      },
+      "accruedExpense": {
+        "name": "Viitvõlg",
+        "hint": "Perioodi kulu, mille arve tuleb hiljem"
+      },
+      "prepaidExpense": {
+        "name": "Ettemakstud kulu periodiseerimine",
+        "hint": "Ettemakstud kulu jooksva kuu osa kuluks"
+      },
+      "holidayAccrual": {
+        "name": "Puhkusetasude kohustis",
+        "hint": "Kasutamata puhkuse kohustis perioodi lõpus"
+      },
+      "badDebt": {
+        "name": "Lootusetu nõude mahakandmine",
+        "hint": "Ostjate nõue kuluks"
+      },
+      "statutoryReserve": {
+        "name": "Reservkapitali moodustamine",
+        "hint": "Jaotamata kasumist kohustuslikku reservi"
+      },
+      "dividend": {
+        "name": "Dividendid ja tulumaks",
+        "hint": "Dividendivõlg ja dividendi tulumaks"
+      }
+    }
+  },
+  "reports": {
+    "from": "Alates",
+    "to": "Kuni",
+    "account": "Konto",
+    "allAccounts": "Kõik kontod",
+    "department": "Osakond",
+    "dimension": "Dimensioon",
+    "all": "Kõik",
+    "includeZero": "Näita ka nullsaldoga kontosid",
+    "show": "Näita",
+    "print": "Prindi",
+    "periodLabel": "Periood {from} – {to}",
+    "opening": "Algsaldo",
+    "turnover": "Käive",
+    "closing": "Lõppsaldo",
+    "debit": "Deebet",
+    "credit": "Kreedit",
+    "subtotal": "Kokku: {type}",
+    "total": "Kokku",
+    "noData": "Selles perioodis kandeid pole.",
+    "balancedNote": "Deebet ja kreedit on tasakaalus.",
+    "unbalancedNote": "Tähelepanu: summad ei ole tasakaalus – võta ühendust toega.",
+    "pnlNote": "Tulu- ja kulukontode algsaldo algab majandusaasta alguses nullist; varasemate aastate tulem on jaotamata kasumi algsaldos.",
+    "dShort": "D",
+    "cShort": "K",
+    "truncated": "Aruandes on väga palju ridu – näidatakse esimesed 5000. Kitsenda perioodi või vali konto.",
+    "openingBalance": "Algsaldo",
+    "date": "Kuupäev",
+    "entry": "Kanne",
+    "description": "Selgitus",
+    "balance": "Saldo",
+    "periodTotal": "Perioodi käive ja lõppsaldo",
+    "code": "Kood",
+    "name": "Nimetus"
   }
 }

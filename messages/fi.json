@@ -70,7 +70,12 @@
       "vatRateNotFound": "Rivin {row} ALV-koodia ei löytynyt.",
       "locked": "Kausi on lukittu – päivälle {date} ei voi kirjata.",
       "closedYear": "Tilikausi on suljettu – päivälle {date} ei voi kirjata.",
-      "noFiscalYear": "Päivä {date} ei kuulu millekään tilikaudelle. Lisää tilikausi."
+      "noFiscalYear": "Päivä {date} ei kuulu millekään tilikaudelle. Lisää tilikausi.",
+      "entryNotFound": "Kirjausta ei löytynyt.",
+      "notDraft": "Kirjaus on jo kirjattu, eikä sitä voi enää muuttaa tai poistaa. Korjaa se oikaisukirjauksella.",
+      "notPosted": "Vain kirjatun kirjauksen voi oikaista.",
+      "alreadyReversed": "Tämä kirjaus on jo oikaistu.",
+      "cannotReverse": "Tätä kirjausta ei voi oikaista tässä. Avaavia saldoja muutetaan asetuksissa ja asiakirjojen kirjauksia asiakirjan kautta."
     }
   },
   "validation": {
@@ -293,7 +298,8 @@
     "results": "Tulokset",
     "kinds": {
       "member": "Käyttäjä",
-      "account": "Tili"
+      "account": "Tili",
+      "entry": "Kirjaus"
     },
     "actions": "Toiminnot",
     "navigation": "Näkymät",
@@ -738,5 +744,181 @@
       "unknownAccounts": "Näitä tilejä ei ole tilikartassa: {codes}",
       "imported": "{count, plural, one {Tuotiin # rivi.} other {Tuotiin # riviä.}}"
     }
+  },
+  "journal": {
+    "newTitle": "Uusi kirjaus",
+    "newSubtitle": "Manuaalinen pääkirjan kirjaus. Tallenna luonnoksena tai kirjaa heti.",
+    "editTitle": "Kirjausluonnos",
+    "draftSubtitle": "Luonnos ei vaikuta pääkirjaan ennen kirjaamista.",
+    "listSubtitle": "Kaikki pääkirjan kirjaukset – manuaaliset ja asiakirjoista syntyneet.",
+    "listLabel": "Kirjaukset",
+    "new": "Uusi kirjaus",
+    "emptyTitle": "Ei kirjauksia",
+    "emptyBody": "Tähän tulevat manuaaliset kirjaukset ja myöhemmin myös laskujen ja maksujen kirjaukset.",
+    "draftNumber": "Luonnos",
+    "statusDraft": "Luonnos",
+    "statusPosted": "Kirjattu",
+    "reversed": "Oikaistu",
+    "reversal": "Oikaisu",
+    "sources": {
+      "OPENING_BALANCE": "Avaavat saldot",
+      "MANUAL": "Manuaalinen kirjaus",
+      "SALES_INVOICE": "Myyntilasku",
+      "PURCHASE_INVOICE": "Ostolasku",
+      "PAYMENT": "Maksu",
+      "INVENTORY": "Varastotapahtuma",
+      "DEPRECIATION": "Poisto",
+      "VAT_CLOSING": "ALV:n päättäminen",
+      "YEAR_END": "Tilinpäätös"
+    },
+    "pageOf": "Sivu {page}/{pages} · {total} kirjausta",
+    "search": "Hae numerolla tai selitteellä",
+    "from": "Alkaen",
+    "to": "Asti",
+    "status": "Tila",
+    "allStatuses": "Kaikki tilat",
+    "source": "Lähde",
+    "allSources": "Kaikki lähteet",
+    "filter": "Suodata",
+    "clearFilters": "Tyhjennä",
+    "closePreview": "Sulje esikatselu",
+    "reversalOfLabel": "Tämä oikaisee kirjauksen",
+    "reversedByLabel": "Oikaistu kirjauksella",
+    "createdBy": "Laatinut {name}",
+    "postedBy": "Kirjannut {name} · {date}",
+    "edit": "Muokkaa",
+    "copy": "Kopioi",
+    "copied": "Kopio avattiin luonnoksena.",
+    "reverse": "Oikaise",
+    "print": "Tulosta",
+    "deleteDraft": "Poista luonnos",
+    "deleteDraftConfirm": "Poistetaanko luonnos?",
+    "draftDeleted": "Luonnos poistettiin.",
+    "reverseTitle": "Kirjauksen oikaisu",
+    "reverseBody": "Luodaan uusi kirjaus, jossa debet ja kredit on vaihdettu. Alkuperäinen kirjaus säilyy, ja ne linkitetään toisiinsa.",
+    "reverseDate": "Oikaisun päivämäärä",
+    "reversedDone": "Oikaisu kirjattiin.",
+    "date": "Päivämäärä",
+    "description": "Selite",
+    "descriptionPlaceholder": "Esim. osakepääoman maksu",
+    "fromTemplate": "Mallista",
+    "companyTemplates": "Yrityksen mallit",
+    "builtinTemplates": "Valmiit mallit",
+    "deleteTemplate": "Poista malli ”{name}”",
+    "templateDeleted": "Malli poistettiin.",
+    "templateMissingAccounts": "Tilit {codes} puuttuvat tilikartasta – valitse ne itse.",
+    "replaceLinesConfirm": "Korvataanko nykyiset rivit mallin riveillä?",
+    "account": "Tili",
+    "accountPlaceholder": "Koodi tai nimi",
+    "noAccounts": "Tiliä ei löytynyt",
+    "lineDescription": "Rivin selite",
+    "debit": "Debet",
+    "credit": "Kredit",
+    "department": "Osasto",
+    "vat": "ALV",
+    "vatAmount": "ALV-summa",
+    "removeLine": "Poista rivi {n}",
+    "addLine": "Lisää rivi",
+    "showColumns": "Osasto, dimensiot, ALV",
+    "hideColumns": "Piilota lisäsarakkeet",
+    "hintNextRow": "seuraava rivi",
+    "hintSave": "tallenna",
+    "hintPost": "kirjaa",
+    "totals": "Yhteensä",
+    "balanced": "Täsmää",
+    "difference": "Erotus {amount}",
+    "saveAsTemplate": "Tallenna malliksi",
+    "saveDraft": "Tallenna luonnos",
+    "post": "Kirjaa",
+    "draftSaved": "Luonnos tallennettiin.",
+    "posted": "Kirjaus kirjattiin.",
+    "templateSaved": "Malli tallennettiin.",
+    "templateHint": "Malli muistaa tilit, puolet ja syötetyt summat. Samanniminen malli korvataan.",
+    "templateName": "Mallin nimi",
+    "builtin": {
+      "shareCapital": {
+        "name": "Osakepääoman maksu",
+        "hint": "Pankki D · Osakepääoma K"
+      },
+      "loanReceived": {
+        "name": "Lainan nosto",
+        "hint": "Pankki D · Pitkäaikainen laina K"
+      },
+      "leaseReclass": {
+        "name": "Rahoitusleasingin lyhytaikainen osa",
+        "hint": "Maksuohjelman mukaan pitkäaikaisesta lyhytaikaiseksi"
+      },
+      "investmentUp": {
+        "name": "Sijoituksen arvonnousu",
+        "hint": "Käypä arvo tilinpäätöspäivänä"
+      },
+      "investmentDown": {
+        "name": "Sijoituksen arvonlasku",
+        "hint": "Käypä arvo tai myydyn osan kirjaus"
+      },
+      "inputVatCorrection": {
+        "name": "Ostojen ALV:n oikaisu",
+        "hint": "Osittainen vähennys, henkilöauto – ALV-ilmoituksen rivi 10"
+      },
+      "accruedExpense": {
+        "name": "Siirtovelka",
+        "hint": "Kauden kulu, jonka lasku tulee myöhemmin"
+      },
+      "prepaidExpense": {
+        "name": "Ennakkoon maksetun kulun jaksotus",
+        "hint": "Kuluvan kuukauden osuus kuluksi"
+      },
+      "holidayAccrual": {
+        "name": "Lomapalkkavelka",
+        "hint": "Pitämättömien lomien velka kauden lopussa"
+      },
+      "badDebt": {
+        "name": "Luottotappio",
+        "hint": "Myyntisaaminen kuluksi"
+      },
+      "statutoryReserve": {
+        "name": "Vararahaston kartuttaminen",
+        "hint": "Voittovaroista lakisääteiseen rahastoon"
+      },
+      "dividend": {
+        "name": "Osingot ja tulovero",
+        "hint": "Osinkovelka ja osingon tulovero"
+      }
+    }
+  },
+  "reports": {
+    "from": "Alkaen",
+    "to": "Asti",
+    "account": "Tili",
+    "allAccounts": "Kaikki tilit",
+    "department": "Osasto",
+    "dimension": "Dimensio",
+    "all": "Kaikki",
+    "includeZero": "Näytä myös nollasaldoiset tilit",
+    "show": "Näytä",
+    "print": "Tulosta",
+    "periodLabel": "Kausi {from} – {to}",
+    "opening": "Alkusaldo",
+    "turnover": "Liikevaihto",
+    "closing": "Loppusaldo",
+    "debit": "Debet",
+    "credit": "Kredit",
+    "subtotal": "Yhteensä: {type}",
+    "total": "Yhteensä",
+    "noData": "Tällä kaudella ei ole kirjauksia.",
+    "balancedNote": "Debet ja kredit täsmäävät.",
+    "unbalancedNote": "Huomio: summat eivät täsmää – ota yhteyttä tukeen.",
+    "pnlNote": "Tuotto- ja kulutilien alkusaldo alkaa tilikauden alussa nollasta; aiempien vuosien tulos on edellisten tilikausien voiton alkusaldossa.",
+    "dShort": "D",
+    "cShort": "K",
+    "truncated": "Raportissa on hyvin paljon rivejä – näytetään ensimmäiset 5 000. Rajaa kautta tai valitse tili.",
+    "openingBalance": "Alkusaldo",
+    "date": "Päivämäärä",
+    "entry": "Kirjaus",
+    "description": "Selite",
+    "balance": "Saldo",
+    "periodTotal": "Kauden liikevaihto ja loppusaldo",
+    "code": "Koodi",
+    "name": "Nimi"
   }
 }

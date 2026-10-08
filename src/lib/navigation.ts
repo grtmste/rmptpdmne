@@ -23,7 +23,7 @@ import { can, type Level, type MembershipLike, type Module } from "./permissions
  */
 
 /** Faas, mis on hetkel valmis. Kõrgema faasi vaated näitavad „tulekul“ lehte. */
-export const CURRENT_PHASE = 1;
+export const CURRENT_PHASE = 2;
 
 export type NavItem = {
   id: string;

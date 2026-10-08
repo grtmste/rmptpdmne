@@ -51,4 +51,30 @@ registerSearchProvider({
   },
 });
 
+/** Pearaamatu kanded numbri või selgituse järgi. */
+registerSearchProvider({
+  id: "journal",
+  module: "finance",
+  async search(ctx, query, limit) {
+    const rows = await ctx.cdb.journalEntry.findMany({
+      where: {
+        OR: [
+          { number: { contains: query, mode: "insensitive" } },
+          { description: { contains: query, mode: "insensitive" } },
+        ],
+      },
+      orderBy: { date: "desc" },
+      take: limit,
+      select: { id: true, number: true, description: true, date: true },
+    });
+    return rows.map((r) => ({
+      id: r.id,
+      kind: "entry",
+      title: `${r.number ?? "—"} ${r.description ?? ""}`.trim(),
+      subtitle: r.date.toISOString().slice(0, 10),
+      href: `/finance/journal?entry=${r.id}`,
+    }));
+  },
+});
+
 export {};

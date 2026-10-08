@@ -74,3 +74,26 @@ describe("faasi 1 tõlked", () => {
     for (const c of ledgerCodes) expect(get(et as Tree, `errors.ledger.${c}`), c).toBeTypeOf("string");
   });
 });
+
+describe("faasi 2 tõlked", () => {
+  it("kandemallid ja kande allikad on tõlgitud", async () => {
+    const { BUILTIN_TEMPLATES } = await import("@/lib/accounting/builtin-templates");
+    for (const tpl of BUILTIN_TEMPLATES) {
+      expect(get(et as Tree, `journal.builtin.${tpl.id}.name`), tpl.id).toBeTypeOf("string");
+      expect(get(et as Tree, `journal.builtin.${tpl.id}.hint`), tpl.id).toBeTypeOf("string");
+    }
+    for (const s of ["OPENING_BALANCE", "MANUAL", "SALES_INVOICE", "PURCHASE_INVOICE", "PAYMENT", "INVENTORY", "DEPRECIATION", "VAT_CLOSING", "YEAR_END"]) {
+      expect(get(et as Tree, `journal.sources.${s}`), s).toBeTypeOf("string");
+    }
+    for (const c of ["entryNotFound", "notDraft", "notPosted", "alreadyReversed", "cannotReverse"]) {
+      expect(get(et as Tree, `errors.ledger.${c}`), c).toBeTypeOf("string");
+    }
+  });
+
+  it("valmis mallide kontod on vaikekontoplaanis", async () => {
+    const { BUILTIN_TEMPLATES } = await import("@/lib/accounting/builtin-templates");
+    const { BUSINESS_CHART } = await import("@/lib/accounting/templates");
+    const codes = new Set(BUSINESS_CHART.map((a) => a.code));
+    for (const tpl of BUILTIN_TEMPLATES) for (const l of tpl.lines) expect(codes.has(l.account), `${tpl.id} ${l.account}`).toBe(true);
+  });
+});
