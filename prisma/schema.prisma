@@ -178,6 +178,10 @@ model Company {
   purchaseOrders   PurchaseOrder[]
   expenseReports   ExpenseReport[]
   attachments      Attachment[]
+  bankAccounts     BankAccount[]
+  payments         Payment[]
+  bankStatements   BankStatement[]
+  paymentOrders    PaymentOrder[]
 
   @@index([organizationId])
   @@index([regCode])
@@ -897,6 +901,8 @@ model SalesInvoice {
   total             Decimal          @default(0) @db.Decimal(18, 2)
   /// Kogusumma eurodes (pearaamatu summa)
   totalBase         Decimal          @default(0) @db.Decimal(18, 2)
+  /// Tasutud summa arve valuutas (kinnitatud maksete sidumistest)
+  paidTotal         Decimal          @default(0) @db.Decimal(18, 2)
   journalEntryId    String?
   confirmedAt       DateTime?
   confirmedById     String?
@@ -1168,6 +1174,7 @@ model PurchaseInvoice {
   vatTotal          Decimal        @default(0) @db.Decimal(18, 2)
   total             Decimal        @default(0) @db.Decimal(18, 2)
   totalBase         Decimal        @default(0) @db.Decimal(18, 2)
+  paidTotal         Decimal        @default(0) @db.Decimal(18, 2)
   journalEntryId    String?
   confirmedAt       DateTime?
   confirmedById     String?
@@ -1293,6 +1300,7 @@ model ExpenseReport {
   netTotal       Decimal        @default(0) @db.Decimal(18, 2)
   vatTotal       Decimal        @default(0) @db.Decimal(18, 2)
   total          Decimal        @default(0) @db.Decimal(18, 2)
+  paidTotal      Decimal        @default(0) @db.Decimal(18, 2)
   journalEntryId String?
   confirmedAt    DateTime?
   confirmedById  String?
@@ -1361,4 +1369,243 @@ model Attachment {
 
   @@unique([companyId, id])
   @@index([companyId, documentType, documentId])
+}
+
+// ---------------------------------------------------------------------------
+// Faas 5: maksed
+// ---------------------------------------------------------------------------
+
+enum MoneyAccountKind {
+  BANK
+  CASH
+}
+
+/// Pangakonto või kassa; seotud pearaamatu kontoga.
+model BankAccount {
+  id            String           @id @default(cuid())
+  companyId     String
+  kind          MoneyAccountKind @default(BANK)
+  name          String
+  iban          String?
+  bic           String?
+  currency      String           @default("EUR") @db.Char(3)
+  /// Pearaamatu konto (nt 1020 Pangakonto, 1000 Kassa)
+  accountId     String
+  /// Kuvatakse arvetel pangarekvisiitidena
+  showOnInvoice Boolean          @default(true)
+  active        Boolean          @default(true)
+  sortOrder     Int              @default(0)
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  createdById   String?
+
+  company    Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  payments   Payment[]
+  statements BankStatement[]
+
+  @@unique([companyId, id])
+  @@unique([companyId, name])
+}
+
+enum PaymentDirection {
+  /// Laekumine (klient maksab)
+  IN
+  /// Väljamakse (tarnijale, töötajale, maksud)
+  OUT
+  /// Tasaarveldus või mahakandmine ilma rahaliikumiseta
+  NETTING
+}
+
+enum PartyType {
+  CUSTOMER
+  SUPPLIER
+  EMPLOYEE
+  OTHER
+}
+
+model Payment {
+  id              String           @id @default(cuid())
+  companyId       String
+  status          DocumentStatus   @default(DRAFT)
+  number          String?
+  direction       PaymentDirection
+  /// Tasaarveldusel puudub
+  bankAccountId   String?
+  date            DateTime         @db.Date
+  /// Summa maksekonto valuutas (alati positiivne; tasaarveldusel 0)
+  amount          Decimal          @default(0) @db.Decimal(18, 2)
+  currency        String           @default("EUR") @db.Char(3)
+  currencyRate    Decimal          @default(1) @db.Decimal(18, 6)
+  amountBase      Decimal          @default(0) @db.Decimal(18, 2)
+  partyType       PartyType        @default(OTHER)
+  customerId      String?
+  supplierId      String?
+  employeeId      String?
+  partyName       String           @default("")
+  partyIban       String?
+  referenceNumber String?
+  description     String?
+  /// Pangaväljavõtte rida, millega makse on kooskõlastatud
+  statementLineId String?
+  paymentOrderId  String?
+  journalEntryId  String?
+  confirmedAt     DateTime?
+  confirmedById   String?
+  /// Tühistatud makse (storno): sidumised ei loe, kanne on tagasi pööratud
+  cancelledAt     DateTime?
+  cancelEntryId   String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  createdById     String?
+
+  company     Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  bankAccount BankAccount?        @relation(fields: [bankAccountId], references: [id], onDelete: Restrict)
+  allocations PaymentAllocation[]
+
+  @@unique([companyId, id])
+  @@index([companyId, date])
+  @@index([companyId, status, date])
+  @@index([companyId, bankAccountId, date])
+}
+
+enum AllocationType {
+  SALES_INVOICE
+  PURCHASE_INVOICE
+  EXPENSE_REPORT
+  /// Ettemaks ilma arveta (kliendi ettemaks / ettemaks tarnijale)
+  PREPAYMENT
+  /// Otse pearaamatu kontole (teenustasu, maks, laen, mahakandmine …)
+  ACCOUNT
+}
+
+model PaymentAllocation {
+  id                String         @id @default(cuid())
+  companyId         String
+  paymentId         String
+  type              AllocationType
+  salesInvoiceId    String?
+  purchaseInvoiceId String?
+  expenseReportId   String?
+  accountId         String?
+  /// Summa makse valuutas. Tasaarveldusel märgiga: + vähendab nõuet/kohustust arve poolel.
+  amount            Decimal        @db.Decimal(18, 2)
+  description       String?
+  sortOrder         Int            @default(0)
+
+  payment Payment @relation(fields: [companyId, paymentId], references: [companyId, id], onDelete: Cascade)
+
+  @@index([companyId, paymentId])
+  @@index([companyId, salesInvoiceId])
+  @@index([companyId, purchaseInvoiceId])
+  @@index([companyId, expenseReportId])
+}
+
+enum StatementFormat {
+  CAMT053
+  CSV
+}
+
+model BankStatement {
+  id             String          @id @default(cuid())
+  companyId      String
+  bankAccountId  String
+  format         StatementFormat
+  fileName       String
+  /// Panga väljavõtte tunnus (camt Stmt/Id)
+  externalId     String?
+  fromDate       DateTime?       @db.Date
+  toDate         DateTime?       @db.Date
+  openingBalance Decimal?        @db.Decimal(18, 2)
+  closingBalance Decimal?        @db.Decimal(18, 2)
+  createdAt      DateTime        @default(now())
+  createdById    String?
+
+  company     Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  bankAccount BankAccount         @relation(fields: [bankAccountId], references: [id], onDelete: Restrict)
+  lines       BankStatementLine[]
+
+  @@unique([companyId, id])
+  @@index([companyId, bankAccountId, createdAt(sort: Desc)])
+}
+
+enum StatementLineStatus {
+  /// Sobivust ei leitud
+  NEW
+  /// Leitud soovitus, ootab kinnitust
+  SUGGESTED
+  /// Makse loodud või seotud
+  DONE
+  /// Kasutaja jättis vahele
+  IGNORED
+}
+
+model BankStatementLine {
+  id              String              @id @default(cuid())
+  companyId       String
+  statementId     String
+  bankAccountId   String
+  date            DateTime            @db.Date
+  /// Märgiga: + laekumine, − väljamakse
+  amount          Decimal             @db.Decimal(18, 2)
+  currency        String              @default("EUR") @db.Char(3)
+  partyName       String?
+  partyIban       String?
+  referenceNumber String?
+  description     String?
+  /// Panga unikaalne tehingu tunnus (topeltimpordi vältimiseks)
+  bankReference   String?
+  status          StatementLineStatus @default(NEW)
+  /// Sobitamise soovitus (JSON: { kind, ids, confidence, … })
+  suggestion      Json?
+  paymentId       String?
+  sortOrder       Int                 @default(0)
+
+  statement BankStatement @relation(fields: [companyId, statementId], references: [companyId, id], onDelete: Cascade)
+
+  @@unique([companyId, id])
+  @@index([companyId, statementId])
+  @@index([companyId, bankAccountId, bankReference])
+}
+
+enum PaymentOrderStatus {
+  CREATED
+  PAID
+}
+
+/// Maksekorralduste fail (pain.001) tasumata ostuarvetest ja kuluaruannetest.
+model PaymentOrder {
+  id            String             @id @default(cuid())
+  companyId     String
+  status        PaymentOrderStatus @default(CREATED)
+  /// pain.001 MsgId
+  messageId     String
+  bankAccountId String
+  executionDate DateTime           @db.Date
+  total         Decimal            @default(0) @db.Decimal(18, 2)
+  createdAt     DateTime           @default(now())
+  createdById   String?
+
+  company Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  lines   PaymentOrderLine[]
+
+  @@unique([companyId, id])
+  @@index([companyId, createdAt(sort: Desc)])
+}
+
+model PaymentOrderLine {
+  id                String  @id @default(cuid())
+  companyId         String
+  orderId           String
+  purchaseInvoiceId String?
+  expenseReportId   String?
+  partyName         String
+  iban              String
+  amount            Decimal @db.Decimal(18, 2)
+  referenceNumber   String?
+  description       String?
+  sortOrder         Int     @default(0)
+
+  order PaymentOrder @relation(fields: [companyId, orderId], references: [companyId, id], onDelete: Cascade)
+
+  @@index([companyId, orderId])
 }

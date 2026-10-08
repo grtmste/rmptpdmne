@@ -56,6 +56,13 @@ export const TENANT_MODELS = [
   "ExpenseReport",
   "ExpenseReportLine",
   "Attachment",
+  "BankAccount",
+  "Payment",
+  "PaymentAllocation",
+  "BankStatement",
+  "BankStatementLine",
+  "PaymentOrder",
+  "PaymentOrderLine",
 ] as const;
 export type TenantModel = (typeof TENANT_MODELS)[number];
 

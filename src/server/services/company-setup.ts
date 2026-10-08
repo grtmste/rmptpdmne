@@ -110,6 +110,23 @@ export async function ensureCompanyDefaults(
     result.numberSeries = missing.length;
   }
 
+  // Pangakonto ja kassa
+  if ((await tx.bankAccount.count({ where: { companyId } })) === 0) {
+    const money = await tx.glAccount.findMany({ where: { companyId, code: { in: ["1020", "1000"] } }, select: { id: true, code: true } });
+    const byCode = new Map(money.map((a) => [a.code, a.id]));
+    const defaults = [
+      { kind: "BANK" as const, name: "Pangakonto", code: "1020", sortOrder: 0 },
+      { kind: "CASH" as const, name: "Kassa", code: "1000", sortOrder: 1 },
+    ];
+    for (const d of defaults) {
+      const accountId = byCode.get(d.code);
+      if (!accountId) continue;
+      await tx.bankAccount.create({
+        data: { companyId, kind: d.kind, name: d.name, accountId, currency: company.baseCurrency, showOnInvoice: d.kind === "BANK", sortOrder: d.sortOrder, createdById: opts.userId },
+      });
+    }
+  }
+
   // Dimensioonid
   if ((await tx.dimension.count({ where: { companyId } })) === 0) {
     await tx.dimension.createMany({
