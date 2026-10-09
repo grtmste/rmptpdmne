@@ -141,3 +141,29 @@ Kasuminormi erikorra KMD read (maksustatav väärtus = KM × 100 / määr) arvut
 
 Hiljem: ostuarvete tasumine ja maksekorraldused (faas 5), ostuaruanded ja võlgnevused (faas 6),
 kulude periodiseerimine (faas 7 korduvate kannetena), andmete automaatne tuvastamine dokumendilt (hilisem faas).
+
+## Faas 5 (maksed) – tehtud
+
+- **Pangakontod ja kassad**: mitu, eri valuutades; IBAN (kontrollsummaga) ja BIC; seos pearaamatu kontoga
+  (vaikimisi 1020 Pangakonto ja 1000 Kassa); „näita arvetel“ prindib IBAN-i müügiarve jalusesse; saldo pearaamatust.
+- **Laekumised ja väljamaksed**: ühe maksega mitu arvet, osaline tasumine, ülejääk ettemaksuks (klient 2350 /
+  tarnija 1350), lisaread suvalisele kontole (pangatasu, maks, laen). Sidumiste summa peab klappima makse summaga.
+  Arve tasutud summa (`paidTotal`) uueneb ja nimekirjades on märgid „Tasutud“ / „Osaliselt tasutud“.
+  Eelvaates on arve maksed ja nupp „Lisa laekumine“ / „Tasu“ / „Hüvita“ (kuluaruanne).
+- **Tasaarveldus** (kliendi ja tarnija arve vastastikku, ilma pangata) ja väikesaldo mahakandmine kontole.
+- **Valuutamaksed**: makse kurss maksepäeval; vahe arve kursiga läheb kursivahe kontole (FX_GAIN_LOSS).
+- **Makse tühistamine** kinnitatud maksest: vastupidine kanne valitud kuupäeval, arved avanevad uuesti,
+  väljavõtte rida vabaneb.
+- **Pangaväljavõtte import**: camt.053 XML (kõik Eesti pangad) ja CSV (Swedbank, SEB, LHV, Luminor, Coop
+  päiseridade järgi). Topeltimport välditakse panga tehinguviite järgi, väljavõtte IBAN peab klappima.
+  Automaatne sobitamine: laekumisel viitenumber → arve number selgituses → nimi + summa (ülejääk ettemaksuks);
+  väljamaksel olemasolev makse (maksekorraldusest) → tarnija IBAN/nimi → aruandev isik → pangateenustasu.
+  Kasutaja kinnitab soovituse reahaaval või kõik korraga, saab rea käsitsi siduda (arvetega või kontole) või vahele jätta.
+- **Maksekorraldused pain.001.001.03**: tasumata ostuarvetest ja kuluaruannetest, struktureeritud viitenumber
+  (SCOR) + selgitus; „märgi tasutuks“ loob kinnitatud väljamaksed (või sobitatakse hiljem väljavõttelt).
+- **Kassaraamat** perioodi ja kassa kaupa (algsaldo, sissetulek, väljaminek, jääk), prinditav.
+- **Faktooring** käib sidumistega: laekumine faktoorilt seotakse arvega ja vahe (tasu) kontole.
+- Käsupalett otsib makseid; demoandmetes on laekumised, osamakse ja tarnija tasumine pangatasuga.
+
+Hiljem: avatud valuutasaldode ümberhindamine perioodi lõpus (faas 6/7), e-arvete koondfail panka (faas 10),
+pangaliidesed otse (API) – praegu failiga.

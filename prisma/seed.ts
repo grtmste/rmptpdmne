@@ -12,7 +12,9 @@ import { addDays, parseISODate } from "../src/lib/accounting/dates";
 import { todayLocal } from "../src/lib/dates";
 import { ensureCompanyDefaults } from "../src/server/services/company-setup";
 import { postJournalEntry } from "../src/server/services/journal";
+import { dec } from "../src/lib/money";
 import { confirmInvoice, saveInvoiceDraft, saveQuote } from "../src/server/services/sales";
+import { confirmPayment, savePayment, type PaymentInput } from "../src/server/services/payments";
 import { confirmExpenseReport, confirmPurchase, saveExpenseReport, savePurchaseDraft, savePurchaseOrder } from "../src/server/services/purchases";
 
 const db = createPrismaClient();
@@ -219,11 +221,13 @@ async function main() {
       lines: [{ itemId: hool!.id, description: "Muru niitmine ja hekilõikus", quantity: "4.5", unitPrice: "35", vatRateId: vat.KM }],
     },
   ];
+  const salesIds: string[] = [];
   for (const inv of invoices) {
     await db.$transaction(
       async (tx) => {
         const id = await saveInvoiceDraft(tx, first.id, owner, { type: "INVOICE", pricesIncludeVat: false, ...inv });
         await confirmInvoice(tx, first.id, owner, id);
+        salesIds.push(id);
       },
       { timeout: 30_000 },
     );
@@ -282,11 +286,13 @@ async function main() {
       lines: [{ description: "Internet ja mobiil", quantity: "1", unitPrice: "39.90", vatRateId: vat.KM }],
     },
   ];
+  const purchaseIds: string[] = [];
   for (const p of purchases) {
     await db.$transaction(
       async (tx) => {
         const id = await savePurchaseDraft(tx, first.id, owner, { pricesIncludeVat: false, ...p });
         await confirmPurchase(tx, first.id, owner, id);
+        purchaseIds.push(id);
       },
       { timeout: 30_000 },
     );
@@ -316,6 +322,60 @@ async function main() {
     },
     { timeout: 30_000 },
   );
+
+  // Maksed (faas 5): pangakonto IBAN, laekumised ja tarnija tasumine
+  const bank = await db.bankAccount.findFirstOrThrow({ where: { companyId: first.id, kind: "BANK" } });
+  await db.bankAccount.update({ where: { id: bank.id }, data: { name: "LHV arvelduskonto", iban: "EE717700771001735865", bic: "LHVBEE22", showOnInvoice: true } });
+  const [koolInvoice, kohvikInvoice] = await Promise.all(
+    salesIds.slice(0, 2).map((id) => db.salesInvoice.findUniqueOrThrow({ where: { id }, select: { total: true, referenceNumber: true, number: true } })),
+  );
+  const taimlaInvoice = await db.purchaseInvoice.findUniqueOrThrow({ where: { id: purchaseIds[0]! }, select: { total: true } });
+  const payments: PaymentInput[] = [
+    {
+      direction: "IN",
+      bankAccountId: bank.id,
+      date: ago(25),
+      amount: koolInvoice!.total.toFixed(2),
+      partyType: "CUSTOMER",
+      customerId: kool.id,
+      referenceNumber: koolInvoice!.referenceNumber,
+      description: `Arve ${koolInvoice!.number}`,
+      allocations: [{ type: "SALES_INVOICE", salesInvoiceId: salesIds[0], amount: koolInvoice!.total.toFixed(2) }],
+    },
+    {
+      direction: "IN",
+      bankAccountId: bank.id,
+      date: ago(4),
+      amount: "100.00",
+      partyType: "CUSTOMER",
+      customerId: kohvik.id,
+      referenceNumber: kohvikInvoice!.referenceNumber,
+      description: `Arve ${kohvikInvoice!.number} osamakse`,
+      allocations: [{ type: "SALES_INVOICE", salesInvoiceId: salesIds[1], amount: "100.00" }],
+    },
+    {
+      direction: "OUT",
+      bankAccountId: bank.id,
+      date: ago(18),
+      amount: dec(taimlaInvoice.total).plus("0.35").toFixed(2),
+      partyType: "SUPPLIER",
+      supplierId: taimla.id,
+      description: "TP-2291",
+      allocations: [
+        { type: "PURCHASE_INVOICE", purchaseInvoiceId: purchaseIds[0], amount: taimlaInvoice.total.toFixed(2) },
+        { type: "ACCOUNT", accountId: acc["4180"], amount: "0.35", description: "Makse teenustasu" },
+      ],
+    },
+  ];
+  for (const payment of payments) {
+    await db.$transaction(
+      async (tx) => {
+        const id = await savePayment(tx, first.id, owner, payment);
+        await confirmPayment(tx, first.id, owner, id);
+      },
+      { timeout: 30_000 },
+    );
+  }
 
   console.info(`Demoandmed loodud. Logi sisse nt ${users[0]!.email} / ${PASSWORD}`);
 }

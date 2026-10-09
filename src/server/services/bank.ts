@@ -400,11 +400,13 @@ export async function createPaymentOrder(
 export async function paymentOrderXml(tx: Tx, companyId: string, orderId: string) {
   const order = await tx.paymentOrder.findFirst({ where: { companyId, id: orderId }, include: { lines: { orderBy: { sortOrder: "asc" } } } });
   if (!order) throw new PaymentError("paymentNotFound");
-  const [bank, company, invoices] = await Promise.all([
-    tx.bankAccount.findFirstOrThrow({ where: { companyId, id: order.bankAccountId } }),
-    tx.company.findUniqueOrThrow({ where: { id: companyId }, select: { name: true, regCode: true } }),
-    tx.purchaseInvoice.findMany({ where: { companyId, id: { in: order.lines.map((l) => l.purchaseInvoiceId).filter((x): x is string => Boolean(x)) } }, select: { id: true, number: true } }),
-  ]);
+  // Tehingu sees päringud järjest (pg ei luba ühel ühendusel paralleelseid päringuid).
+  const bank = await tx.bankAccount.findFirstOrThrow({ where: { companyId, id: order.bankAccountId } });
+  const company = await tx.company.findUniqueOrThrow({ where: { id: companyId }, select: { name: true, regCode: true } });
+  const invoices = await tx.purchaseInvoice.findMany({
+    where: { companyId, id: { in: order.lines.map((l) => l.purchaseInvoiceId).filter((x): x is string => Boolean(x)) } },
+    select: { id: true, number: true },
+  });
   const numbers = new Map(invoices.map((i) => [i.id, i.number]));
   return {
     fileName: `maksekorraldus-${toISODate(order.executionDate)}-${order.messageId.slice(-4)}.xml`,
