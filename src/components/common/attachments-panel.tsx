@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { deleteAttachment, uploadAttachment } from "@/server/actions/purchases";
 import { useActionRunner } from "./use-action";
+import { DocumentViewer } from "./document-viewer";
 
 export type AttachmentInfo = { id: string; fileName: string; contentType: string; size: number };
 
@@ -106,18 +107,7 @@ export function AttachmentsPanel({
           ))}
         </ul>
       )}
-      {preview && current && (
-        <div className="overflow-hidden rounded-lg border bg-muted/30">
-          {current.contentType === "application/pdf" ? (
-            <iframe title={current.fileName} src={href(current.id)} className="h-[70vh] w-full" />
-          ) : current.contentType.startsWith("image/") ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={href(current.id)} alt={current.fileName} className="max-h-[70vh] w-full object-contain" />
-          ) : (
-            <p className="p-4 text-sm text-muted-foreground">{t("noPreview")}</p>
-          )}
-        </div>
-      )}
+      {preview && current && <DocumentViewer key={current.id} src={href(current.id)} contentType={current.contentType} fileName={current.fileName} />}
     </div>
   );
 }

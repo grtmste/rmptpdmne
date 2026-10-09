@@ -221,3 +221,18 @@ aruanne (VD).
 - IBAN-i veateade eristab nüüd vale pikkuse (nt puuduv pangakood) ja vale kontrollsumma.
 
 Hiljem: näidupõhised perioodilised arved, makselink e-kirjas, saldoteatised tarnijatele (faas 10 koos e-arvetega).
+
+## Ostuarve manused ja andmete tuvastus (kasutaja soov 09.10.2026)
+
+- **Uuel ostuarvel saab faili lisada kohe** (lohistades, failivalikust või mobiilis kaamerast). Eelvaade tekib
+  samasse aknasse vormi kõrvale juba enne salvestamist; failid salvestatakse koos arvega (mustand või kinnitus).
+- **Oma eelvaade** (pdf.js) PDF-ile ja piltidele: hiireratas suumib kursori kohalt, lohistamine liigutab,
+  topeltklõps suumib, nupud suurenda/vähenda/mahuta/pööra, klahvid + / − / 0. Pärast suumimist joonistatakse
+  lehed uuesti suurema eraldusvõimega. Kasutusel kõigis manuste paneelides (ostuarved, kuluaruanded jm).
+- **Andmete tuvastus tekstiga PDF-ist** (`src/lib/purchases/extract.ts`, brauseris): tarnija (registrikood,
+  KMKR või IBAN; meie enda andmed jäetakse välja), tarnija arve nr, kuupäev, maksetähtaeg, viitenumber, summa ilma
+  KM-ita, KM ja kogusumma (sildid et/en/fi/ru), KM määr summade suhtest. Tühja vormi korral luuakse rida summaga
+  tarnija vaikimisi kontole. Tundmatu tarnija korral nupp „Uus tarnija“ tuvastatud andmetega. Üleslaaditud
+  (ootel) arve avamisel tuvastatakse kohe.
+- Skaneeritud PDF-id ja fotod (tšekid) tekstikihti ei sisalda – nende ja arve ridade/artiklite tuvastus vajab
+  OCR-i või tehisintellekti teenust (järgmine samm, kasutaja otsusel).

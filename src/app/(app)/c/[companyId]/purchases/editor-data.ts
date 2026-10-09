@@ -6,12 +6,22 @@ import type { PurchaseEditorData } from "./purchase-editor";
 /** Ostudokumendi vormi valikud. */
 export async function loadPurchaseEditorData(ctx: CompanyContext): Promise<PurchaseEditorData> {
   const today = new Date();
-  const [suppliers, items, vatRates, accounts, departments, dimensions, currencies, company, defaultPurchase] = await Promise.all([
+  const [suppliers, items, vatRates, accounts, departments, dimensions, currencies, company, defaultPurchase, ownBanks] = await Promise.all([
     ctx.cdb.supplier.findMany({
       where: { active: true },
       orderBy: { name: "asc" },
       take: 5000,
-      select: { id: true, name: true, regCode: true, paymentTermDays: true, currency: true, defaultAccountId: true, defaultVatRateId: true },
+      select: {
+        id: true,
+        name: true,
+        regCode: true,
+        vatNumber: true,
+        bankAccount: true,
+        paymentTermDays: true,
+        currency: true,
+        defaultAccountId: true,
+        defaultVatRateId: true,
+      },
     }),
     ctx.cdb.item.findMany({
       where: { active: true, forPurchases: true },
@@ -38,8 +48,9 @@ export async function loadPurchaseEditorData(ctx: CompanyContext): Promise<Purch
       },
     }),
     ctx.cdb.companyCurrency.findMany({ orderBy: { code: "asc" }, select: { code: true } }),
-    ctx.cdb.company.findFirstOrThrow({ select: { paymentTermDays: true, baseCurrency: true } }),
+    ctx.cdb.company.findFirstOrThrow({ select: { paymentTermDays: true, baseCurrency: true, regCode: true, vatNumber: true } }),
     ctx.cdb.glAccount.findFirst({ where: { role: "DEFAULT_PURCHASE" }, select: { id: true, defaultVatRateId: true } }),
+    ctx.cdb.bankAccount.findMany({ where: { iban: { not: null } }, select: { iban: true } }),
   ]);
   return {
     suppliers,
@@ -60,5 +71,7 @@ export async function loadPurchaseEditorData(ctx: CompanyContext): Promise<Purch
     paymentTermDays: company.paymentTermDays,
     defaultAccountId: defaultPurchase?.id ?? null,
     defaultVatRateId: defaultPurchase?.defaultVatRateId ?? null,
+    // Ostja (meie) andmed – tuvastamisel neid tarnijaks ei peeta
+    own: { regCode: company.regCode, vatNumber: company.vatNumber, ibans: ownBanks.map((b) => b.iban!) },
   };
 }

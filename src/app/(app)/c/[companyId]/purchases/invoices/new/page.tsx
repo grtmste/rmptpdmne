@@ -25,7 +25,7 @@ export default async function NewPurchaseInvoicePage({ params, searchParams }: P
   const supplier = data.suppliers.find((s) => s.id === sp.supplier);
   const today = todayLocal();
   return (
-    <div className="mx-auto max-w-7xl">
+    <div className="mx-auto max-w-[96rem]">
       <PageHeader title={t("newTitle")} description={t("newSubtitle")} />
       <PurchaseEditor
         companyId={companyId}

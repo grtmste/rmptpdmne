@@ -1529,11 +1529,27 @@
     "dropTitle": "Drop invoices here",
     "dropBody": "PDF, JPG, PNG or XML, up to 4 MB per file, up to 10 files at once.",
     "chooseFiles": "Choose files",
-    "takePhoto": "Take a photo",
+    "takePhoto": "Take photo",
     "fileTooLarge": "File {name} is too large (max 4 MB).",
     "filesUploaded": "{count, plural, one {File uploaded.} other {# files uploaded.}}",
     "pay": "Pay",
-    "addRefund": "Add refund"
+    "addRefund": "Add refund",
+    "dropInvoice": "Drop the invoice PDF or a photo of the receipt here – the preview appears at once and we try to read the data.",
+    "pendingHint": "Files are saved together with the invoice.",
+    "uploadFailed": "Uploading “{name}” failed.",
+    "extractIntro": "Data can be read from the file (PDF with text).",
+    "extractButton": "Read from file",
+    "extracting": "Reading the file…",
+    "extractFilled": "Found: {fields}. Review before confirming.",
+    "extractNoText": "The file has no text layer (scanned document) – fill in the fields manually.",
+    "extractImage": "Reading data from images (receipts, photos) comes later – fill in the fields manually.",
+    "extractFailed": "Reading the file failed.",
+    "extractSupplierMissing": "No supplier with code {code} – add them as a new supplier.",
+    "extractTotalsMismatch": "Net + VAT doesn't equal the invoice total – check the lines.",
+    "extractNothing": "Nothing could be read from the file.",
+    "extractAmount": "amount {amount}",
+    "extractLine": "Invoice {number}",
+    "extractLineNoNumber": "Purchase invoice"
   },
   "suppliers": {
     "listSubtitle": "Suppliers you buy from – bank accounts for payment orders.",
@@ -2174,5 +2190,18 @@
     "page": "Page",
     "fileReminder": "reminder",
     "fileStatement": "statement"
+  },
+  "viewer": {
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "fit": "Fit",
+    "rotate": "Rotate",
+    "open": "Open in new window",
+    "download": "Download",
+    "pages": "{count, plural, one {# page} other {# pages}}",
+    "label": "Preview: {name}",
+    "noPreview": "No preview for this file – download it.",
+    "loading": "Loading preview…",
+    "hint": "Wheel zooms · drag to move · double-click"
   }
 }

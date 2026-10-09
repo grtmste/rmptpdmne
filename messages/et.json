@@ -1529,11 +1529,27 @@
     "dropTitle": "Lohista arved siia",
     "dropBody": "PDF, JPG, PNG või XML, kuni 4 MB faili kohta, korraga kuni 10 faili.",
     "chooseFiles": "Vali failid",
-    "takePhoto": "Pildista arve",
+    "takePhoto": "Pildista",
     "fileTooLarge": "Fail {name} on liiga suur (kuni 4 MB).",
     "filesUploaded": "{count, plural, one {Fail üles laaditud.} other {# faili üles laaditud.}}",
     "pay": "Tasu",
-    "addRefund": "Lisa tagasimakse"
+    "addRefund": "Lisa tagasimakse",
+    "dropInvoice": "Lohista siia arve PDF või tšeki foto – eelvaade tekib kohe ja andmed püütakse tuvastada.",
+    "pendingHint": "Failid salvestatakse koos arvega.",
+    "uploadFailed": "Faili „{name}“ üleslaadimine ebaõnnestus.",
+    "extractIntro": "Andmeid saab tuvastada failist (tekstiga PDF).",
+    "extractButton": "Tuvasta failist",
+    "extracting": "Loen faili…",
+    "extractFilled": "Tuvastatud: {fields}. Vaata andmed üle enne kinnitamist.",
+    "extractNoText": "Failis pole tekstikihti (skaneeritud dokument) – täida väljad käsitsi.",
+    "extractImage": "Pildilt (tšekk, foto) andmete tuvastamine lisandub hiljem – täida väljad käsitsi.",
+    "extractFailed": "Faili lugemine ebaõnnestus.",
+    "extractSupplierMissing": "Tarnijat koodiga {code} ei leitud – lisa ta uue tarnijana.",
+    "extractTotalsMismatch": "Summa ilma KM-ita + KM ei võrdu arve kogusummaga – kontrolli ridu.",
+    "extractNothing": "Failist ei õnnestunud midagi tuvastada.",
+    "extractAmount": "summa {amount}",
+    "extractLine": "Arve {number}",
+    "extractLineNoNumber": "Ostuarve"
   },
   "suppliers": {
     "listSubtitle": "Tarnijad, kellelt ostad – arvelduskonto maksekorralduste jaoks.",
@@ -2174,5 +2190,18 @@
     "page": "Lk",
     "fileReminder": "meeldetuletus",
     "fileStatement": "saldoteatis"
+  },
+  "viewer": {
+    "zoomIn": "Suurenda",
+    "zoomOut": "Vähenda",
+    "fit": "Mahuta",
+    "rotate": "Pööra",
+    "open": "Ava uues aknas",
+    "download": "Lae alla",
+    "pages": "{count, plural, one {# lk} other {# lk}}",
+    "label": "Eelvaade: {name}",
+    "noPreview": "Sellele failile eelvaadet pole – lae fail alla.",
+    "loading": "Laen eelvaadet…",
+    "hint": "Ratas suumib · lohista liigutamiseks · topeltklõps"
   }
 }

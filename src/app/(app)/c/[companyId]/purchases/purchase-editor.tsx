@@ -1,9 +1,13 @@
 "use client";
 
-import { useId, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { Columns3, Plus, Receipt, Trash2, UserPlus } from "lucide-react";
+import { Columns3, Loader2, Plus, Receipt, Trash2, UserPlus, Wand2 } from "lucide-react";
+import { toast } from "sonner";
+import { normalizeIban } from "@/lib/iban";
+import { extractInvoiceData, guessVatPct } from "@/lib/purchases/extract";
+import { pdfText } from "@/lib/purchases/pdf-text";
 import { addDays, parseISODate, toISODate } from "@/lib/accounting/dates";
 import { resolveVatRate } from "@/lib/accounting/vat";
 import { dec, formatMoney, parseMoneyInput } from "@/lib/money";
@@ -21,15 +25,18 @@ import { NativeSelect } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
 import { FormError, FormField } from "@/components/common/form-field";
 import { useActionRunner } from "@/components/common/use-action";
-import { confirmPurchaseInvoice, savePurchaseInvoice, savePurchaseOrderAction } from "@/server/actions/purchases";
+import { confirmPurchaseInvoice, savePurchaseInvoice, savePurchaseOrderAction, uploadAttachment } from "@/server/actions/purchases";
 import { saveSupplier } from "@/server/actions/suppliers";
 import { newPurchaseLine, type PurchaseLine } from "./purchase-line";
+import { PendingFiles } from "./pending-files";
 
 export type PurchaseEditorData = {
   suppliers: Array<{
     id: string;
     name: string;
     regCode: string | null;
+    vatNumber?: string | null;
+    bankAccount?: string | null;
     paymentTermDays: number | null;
     currency: string;
     defaultAccountId: string | null;
@@ -45,6 +52,7 @@ export type PurchaseEditorData = {
   paymentTermDays: number;
   defaultAccountId: string | null;
   defaultVatRateId: string | null;
+  own?: { regCode: string | null; vatNumber: string | null; ibans: string[] };
 };
 
 export type PurchaseValues = {
@@ -71,6 +79,8 @@ export function PurchaseEditor({
   canConfirm,
   isCredit,
   side,
+  extractFrom,
+  autoExtract,
 }: {
   companyId: string;
   mode: "invoice" | "order";
@@ -81,6 +91,10 @@ export function PurchaseEditor({
   isCredit?: boolean;
   /** Manuse eelvaade redaktori kõrval (ostuarve skaneering) */
   side?: React.ReactNode;
+  /** Salvestatud manus, millest andmeid tuvastada */
+  extractFrom?: { url: string; contentType: string } | null;
+  /** Tuvasta kohe avamisel (üleslaaditud ja veel täitmata mustand) */
+  autoExtract?: boolean;
 }) {
   const t = useTranslations("purchases");
   const ti = useTranslations("invoices");
@@ -98,6 +112,10 @@ export function PurchaseEditor({
   const [errorRow, setErrorRow] = useState<number | null>(null);
   const [showExtra, setShowExtra] = useState(() => initial.lines.some((l) => l.departmentId || Object.values(l.dims).some(Boolean)));
   const [newSupplierOpen, setNewSupplierOpen] = useState(false);
+  const [newSupplierInitial, setNewSupplierInitial] = useState<{ regCode: string; vatNumber: string; bankAccount: string } | null>(null);
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [extracting, setExtracting] = useState(false);
+  const [extractInfo, setExtractInfo] = useState<{ filled: string[]; warnings: string[]; supplierHint: { regCode: string; vatNumber: string; bankAccount: string } | null } | null>(null);
   const gridId = useId();
 
   const vatById = useMemo(() => new Map(data.vatRates.map((r) => [r.id, r])), [data.vatRates]);
@@ -178,6 +196,113 @@ export function PurchaseEditor({
       ),
     }));
     recomputeDue(v.date, id);
+  }
+
+  /** Rakendab dokumendi tekstist tuvastatud andmed tühjadele väljadele ja annab kokkuvõtte. */
+  function applyExtraction(text: string) {
+    if (!text.trim()) {
+      setExtractInfo({ filled: [], warnings: [t("extractNoText")], supplierHint: null });
+      return;
+    }
+    const r = extractInvoiceData(text, { regCode: data.own?.regCode, vatNumber: data.own?.vatNumber, ibans: data.own?.ibans });
+    const filled: string[] = [];
+    const warnings: string[] = [];
+    let sup = suppliers.find((s) => s.id === v.supplierId);
+    let supplierHint: { regCode: string; vatNumber: string; bankAccount: string } | null = null;
+    if (!sup) {
+      sup = suppliers.find(
+        (s) =>
+          (s.regCode && r.regCodes.includes(s.regCode)) ||
+          (s.vatNumber && r.vatNumbers.includes(s.vatNumber.toUpperCase())) ||
+          (s.bankAccount && r.ibans.includes(normalizeIban(s.bankAccount))),
+      );
+      if (sup) filled.push(t("supplier"));
+      else if (r.regCodes.length || r.vatNumbers.length) {
+        supplierHint = { regCode: r.regCodes[0] ?? "", vatNumber: r.vatNumbers[0] ?? "", bankAccount: r.ibans[0] ?? "" };
+        warnings.push(t("extractSupplierMissing", { code: r.regCodes[0] ?? r.vatNumbers[0] ?? "" }));
+      }
+    }
+    if (r.invoiceNumber && !v.invoiceNumber) filled.push(t("invoiceNumber"));
+    if (r.date) filled.push(ti("date"));
+    if (r.dueDate) filled.push(ti("dueDate"));
+    if (r.referenceNumber && !v.referenceNumber) filled.push(ti("referenceNumber"));
+    const linesEmpty = v.lines.every((l) => !l.description && !l.unitPrice && !l.itemId);
+    const amount = r.net ?? r.total;
+    const date = r.date ?? v.date;
+    const pct = guessVatPct(r.net, r.vat);
+    const rateForPct =
+      pct === null
+        ? undefined
+        : data.vatRates.find((rate) => rate.kind === "TAXABLE" && dec(rate.deductiblePct).equals(100) && pctOf(rate.id, date)?.toNumber() === pct)?.id;
+    if (linesEmpty && amount) filled.push(t("extractAmount", { amount: formatMoney(r.total ?? amount, locale) }));
+    if (r.net && r.vat && r.total && Math.abs(Number(r.net) + Number(r.vat) - Number(r.total)) > 0.02) warnings.push(t("extractTotalsMismatch"));
+    setV((p) => ({
+      ...p,
+      supplierId: sup && !p.supplierId ? sup.id : p.supplierId,
+      currency: sup && !p.supplierId ? sup.currency : r.currency && data.currencies.includes(r.currency) ? r.currency : p.currency,
+      invoiceNumber: p.invoiceNumber || r.invoiceNumber || "",
+      date: r.date ?? p.date,
+      dueDate: r.dueDate ?? p.dueDate,
+      referenceNumber: p.referenceNumber || r.referenceNumber || "",
+      pricesIncludeVat: linesEmpty && amount ? !r.net : p.pricesIncludeVat,
+      lines:
+        linesEmpty && amount
+          ? [
+              newPurchaseLine({
+                description: r.invoiceNumber ? t("extractLine", { number: r.invoiceNumber }) : t("extractLineNoNumber"),
+                unitPrice: amount,
+                vatRateId: rateForPct ?? sup?.defaultVatRateId ?? data.defaultVatRateId ?? "",
+                accountId: sup?.defaultAccountId ?? data.defaultAccountId ?? "",
+              }),
+            ]
+          : p.lines,
+    }));
+    if (r.dueDate) setDueTouched(true);
+    else if (sup && !v.supplierId) recomputeDue(date, sup.id);
+    if (filled.length === 0 && warnings.length === 0) warnings.push(t("extractNothing"));
+    setExtractInfo({ filled, warnings, supplierHint });
+  }
+
+  async function extractFromSource(source: File | { url: string; contentType: string }) {
+    const type = source instanceof File ? source.type : source.contentType;
+    if (type !== "application/pdf") {
+      setExtractInfo({ filled: [], warnings: [t("extractImage")], supplierHint: null });
+      return;
+    }
+    setExtracting(true);
+    try {
+      const text = await pdfText(source instanceof File ? await source.arrayBuffer() : source.url);
+      applyExtraction(text);
+    } catch {
+      toast.error(t("extractFailed"));
+    } finally {
+      setExtracting(false);
+    }
+  }
+  const extractSource = pendingFiles.find((f) => f.type === "application/pdf") ?? pendingFiles[0] ?? extractFrom ?? null;
+
+  // Üleslaaditud mustandi esmakordsel avamisel tuvastame andmed kohe
+  const autoDone = useRef(false);
+  useEffect(() => {
+    if (!autoExtract || autoDone.current || !extractFrom) return;
+    autoDone.current = true;
+    void extractFromSource(extractFrom);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoExtract, extractFrom]);
+
+  function onPendingChange(files: File[]) {
+    const first = pendingFiles.length === 0 && files.length > 0;
+    setPendingFiles(files);
+    // Esimesest failist tuvastame andmed kohe
+    if (first) void extractFromSource(files.find((f) => f.type === "application/pdf") ?? files[0]!);
+  }
+
+  /** Ootel failid üles pärast arve salvestamist. */
+  async function uploadPending(invoiceId: string) {
+    for (const file of pendingFiles) {
+      const res = await uploadAttachment(companyId, { documentType: "PurchaseInvoice", documentId: invoiceId, file });
+      if (!res.ok) toast.error(t("uploadFailed", { name: file.name }));
+    }
   }
 
   function chooseItem(key: string, itemId: string) {
@@ -282,7 +407,11 @@ export function PurchaseEditor({
       );
       return;
     }
-    run(() => savePurchaseInvoice(companyId, invoicePayload()), {
+    run(async () => {
+      const res = await savePurchaseInvoice(companyId, invoicePayload());
+      if (res.ok && pendingFiles.length) await uploadPending(res.data.id);
+      return res;
+    }, {
       success: ti("draftSaved"),
       refresh: false,
       onSuccess: (d) => {
@@ -296,7 +425,11 @@ export function PurchaseEditor({
   function confirmDoc() {
     setError(null);
     setErrorRow(null);
-    run(() => confirmPurchaseInvoice(companyId, invoicePayload()), {
+    run(async () => {
+      const res = await confirmPurchaseInvoice(companyId, invoicePayload());
+      if (res.ok && pendingFiles.length) await uploadPending(res.data.id);
+      return res;
+    }, {
       success: t("confirmed"),
       refresh: false,
       onSuccess: (d) => router.push(`/c/${companyId}/purchases/invoices?doc=${d.id}`),
@@ -320,6 +453,43 @@ export function PurchaseEditor({
       }}
     >
       {isCredit && <div className="rounded-lg border border-warning/40 bg-warning-soft px-4 py-2.5 text-sm">{t("creditInfo")}</div>}
+      {mode === "invoice" && extractSource && (
+        <div className="flex flex-wrap items-start gap-3 rounded-lg border bg-card px-4 py-2.5 text-sm" role="status" data-testid="extract-banner">
+          <Wand2 className="mt-0.5 size-4 shrink-0 text-primary" />
+          <div className="min-w-0 flex-1 space-y-0.5">
+            {extracting ? (
+              <p>{t("extracting")}</p>
+            ) : extractInfo ? (
+              <>
+                {extractInfo.filled.length > 0 && <p>{t("extractFilled", { fields: extractInfo.filled.join(", ") })}</p>}
+                {extractInfo.warnings.map((w) => (
+                  <p key={w} className="text-warning">
+                    {w}
+                  </p>
+                ))}
+              </>
+            ) : (
+              <p className="text-muted-foreground">{t("extractIntro")}</p>
+            )}
+          </div>
+          {extractInfo?.supplierHint && (
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                setNewSupplierInitial(extractInfo.supplierHint);
+                setNewSupplierOpen(true);
+              }}
+            >
+              <UserPlus /> {t("newSupplier")}
+            </Button>
+          )}
+          <Button type="button" size="sm" variant="outline" disabled={extracting} onClick={() => void extractFromSource(extractSource)}>
+            {extracting ? <Loader2 className="animate-spin" /> : <Wand2 />} {t("extractButton")}
+          </Button>
+        </div>
+      )}
       <Card>
         <CardContent className="grid gap-4 pt-5 md:grid-cols-[minmax(0,2fr)_repeat(2,minmax(0,1fr))]">
           <FormField label={t("supplier")} htmlFor="pdoc-supplier">
@@ -657,7 +827,11 @@ export function PurchaseEditor({
         <QuickSupplierDialog
           companyId={companyId}
           baseCurrency={data.baseCurrency}
-          onClose={() => setNewSupplierOpen(false)}
+          initial={newSupplierInitial}
+          onClose={() => {
+            setNewSupplierOpen(false);
+            setNewSupplierInitial(null);
+          }}
           onCreated={(s) => {
             setSuppliers((prev) => [...prev, s].sort((a, b) => a.name.localeCompare(b.name)));
             setV((p) => ({ ...p, supplierId: s.id }));
@@ -669,11 +843,12 @@ export function PurchaseEditor({
     </div>
   );
 
-  if (!side) return editor;
+  const sidePanel = side ?? (mode === "invoice" && !documentId ? <PendingFiles files={pendingFiles} onChange={onPendingChange} /> : null);
+  if (!sidePanel) return editor;
   return (
-    <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(320px,0.7fr)]">
+    <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(360px,0.8fr)]">
       {editor}
-      <div className="xl:sticky xl:top-20 xl:self-start">{side}</div>
+      <div className="xl:sticky xl:top-20 xl:self-start">{sidePanel}</div>
     </div>
   );
 }
@@ -681,18 +856,20 @@ export function PurchaseEditor({
 function QuickSupplierDialog({
   companyId,
   baseCurrency,
+  initial,
   onClose,
   onCreated,
 }: {
   companyId: string;
   baseCurrency: string;
+  initial?: { regCode: string; vatNumber: string; bankAccount: string } | null;
   onClose: () => void;
   onCreated: (s: PurchaseEditorData["suppliers"][number]) => void;
 }) {
   const t = useTranslations("suppliers");
   const tc = useTranslations("common");
   const { pending, run } = useActionRunner();
-  const [v, setV] = useState({ name: "", regCode: "", vatNumber: "", bankAccount: "" });
+  const [v, setV] = useState({ name: "", regCode: initial?.regCode ?? "", vatNumber: initial?.vatNumber ?? "", bankAccount: initial?.bankAccount ?? "" });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
@@ -728,7 +905,17 @@ function QuickSupplierDialog({
                 success: t("created"),
                 refresh: false,
                 onSuccess: (d) =>
-                  onCreated({ id: d.id, name: d.name, regCode: v.regCode || null, paymentTermDays: null, currency: baseCurrency, defaultAccountId: null, defaultVatRateId: null }),
+                  onCreated({
+                    id: d.id,
+                    name: d.name,
+                    regCode: v.regCode || null,
+                    vatNumber: v.vatNumber || null,
+                    bankAccount: v.bankAccount || null,
+                    paymentTermDays: null,
+                    currency: baseCurrency,
+                    defaultAccountId: null,
+                    defaultVatRateId: null,
+                  }),
                 onError: (res) => setFieldErrors(res.fieldErrors ?? {}),
               },
             );

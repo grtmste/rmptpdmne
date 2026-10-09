@@ -70,6 +70,15 @@ export default async function EditPurchaseInvoicePage({ params }: PageProps<"/c/
           notes: invoice.notes ?? "",
           lines: invoice.lines.map((l) => toPurchaseLine(l, dimensionOf)),
         }}
+        extractFrom={
+          (attachments.find((a) => a.contentType === "application/pdf") ?? attachments[0])
+            ? {
+                url: `/c/${companyId}/attachments/${(attachments.find((a) => a.contentType === "application/pdf") ?? attachments[0])!.id}`,
+                contentType: (attachments.find((a) => a.contentType === "application/pdf") ?? attachments[0])!.contentType,
+              }
+            : null
+        }
+        autoExtract={invoice.source === "UPLOAD" && !invoice.supplierId && invoice.lines.length === 0}
         side={
           <Card>
             <CardContent className="pt-5">

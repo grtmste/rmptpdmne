@@ -1529,11 +1529,27 @@
     "dropTitle": "Pudota laskut tähän",
     "dropBody": "PDF, JPG, PNG tai XML, enintään 4 Mt tiedostoa kohden, enintään 10 kerralla.",
     "chooseFiles": "Valitse tiedostot",
-    "takePhoto": "Kuvaa lasku",
+    "takePhoto": "Ota kuva",
     "fileTooLarge": "Tiedosto {name} on liian suuri (enintään 4 Mt).",
     "filesUploaded": "{count, plural, one {Tiedosto ladattiin.} other {# tiedostoa ladattiin.}}",
     "pay": "Maksa",
-    "addRefund": "Lisää palautus"
+    "addRefund": "Lisää palautus",
+    "dropInvoice": "Pudota laskun PDF tai kuitin kuva tähän – esikatselu näkyy heti ja tiedot yritetään tunnistaa.",
+    "pendingHint": "Tiedostot tallennetaan laskun mukana.",
+    "uploadFailed": "Tiedoston ”{name}” lataus epäonnistui.",
+    "extractIntro": "Tiedot voi tunnistaa tiedostosta (tekstiä sisältävä PDF).",
+    "extractButton": "Tunnista tiedostosta",
+    "extracting": "Luetaan tiedostoa…",
+    "extractFilled": "Tunnistettu: {fields}. Tarkista ennen vahvistusta.",
+    "extractNoText": "Tiedostossa ei ole tekstiä (skannattu asiakirja) – täytä kentät käsin.",
+    "extractImage": "Tietojen tunnistus kuvista (kuitit, valokuvat) tulee myöhemmin – täytä kentät käsin.",
+    "extractFailed": "Tiedoston lukeminen epäonnistui.",
+    "extractSupplierMissing": "Toimittajaa tunnuksella {code} ei löytynyt – lisää uusi toimittaja.",
+    "extractTotalsMismatch": "Veroton summa + ALV ei vastaa laskun loppusummaa – tarkista rivit.",
+    "extractNothing": "Tiedostosta ei saatu tunnistettua mitään.",
+    "extractAmount": "summa {amount}",
+    "extractLine": "Lasku {number}",
+    "extractLineNoNumber": "Ostolasku"
   },
   "suppliers": {
     "listSubtitle": "Toimittajat, joilta ostat – pankkitilit maksumääräyksiä varten.",
@@ -2174,5 +2190,18 @@
     "page": "Sivu",
     "fileReminder": "maksumuistutus",
     "fileStatement": "saldovahvistus"
+  },
+  "viewer": {
+    "zoomIn": "Suurenna",
+    "zoomOut": "Pienennä",
+    "fit": "Sovita",
+    "rotate": "Kierrä",
+    "open": "Avaa uudessa ikkunassa",
+    "download": "Lataa",
+    "pages": "{count, plural, one {# sivu} other {# sivua}}",
+    "label": "Esikatselu: {name}",
+    "noPreview": "Tälle tiedostolle ei ole esikatselua – lataa tiedosto.",
+    "loading": "Ladataan esikatselua…",
+    "hint": "Rulla zoomaa · vedä siirtääksesi · kaksoisnapsautus"
   }
 }
