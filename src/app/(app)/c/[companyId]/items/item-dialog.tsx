@@ -28,6 +28,9 @@ export type ItemValues = {
   groupId: string;
   forSales: boolean;
   forPurchases: boolean;
+  trackStock: boolean;
+  inventoryAccountId: string;
+  cogsAccountId: string;
   description: string;
   active: boolean;
 };
@@ -37,6 +40,8 @@ export type ItemOptions = {
   vatRates: Array<{ id: string; name: string }>;
   salesAccounts: Array<{ id: string; label: string }>;
   purchaseAccounts: Array<{ id: string; label: string }>;
+  inventoryAccounts: Array<{ id: string; label: string }>;
+  cogsAccounts: Array<{ id: string; label: string }>;
 };
 
 const EMPTY: ItemValues = {
@@ -53,6 +58,9 @@ const EMPTY: ItemValues = {
   groupId: "",
   forSales: true,
   forPurchases: true,
+  trackStock: false,
+  inventoryAccountId: "",
+  cogsAccountId: "",
   description: "",
   active: true,
 };
@@ -132,7 +140,7 @@ export function ItemDialog({
             e.preventDefault();
             setError(null);
             setFieldErrors({});
-            run(() => saveItem(companyId, { ...v, id: itemId }), {
+            run(() => saveItem(companyId, { ...v, trackStock: v.type === "GOODS" && v.trackStock, id: itemId }), {
               success: tc("saved"),
               onSuccess: (d) => {
                 setOpen(false);
@@ -179,6 +187,18 @@ export function ItemDialog({
                 {select("salesAccountId", t("salesAccount"), options.salesAccounts, t("defaultAccount"))}
                 {select("purchaseAccountId", t("purchaseAccount"), options.purchaseAccounts, t("defaultAccount"))}
               </div>
+              {v.type === "GOODS" && (
+                <div className="space-y-3 rounded-md border bg-muted/30 p-3">
+                  <Checkbox label={t("trackStock")} checked={v.trackStock} onChange={(e) => set("trackStock", e.target.checked)} />
+                  <p className="text-xs text-muted-foreground">{t("trackStockHint")}</p>
+                  {v.trackStock && (
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      {select("inventoryAccountId", t("inventoryAccount"), options.inventoryAccounts, t("defaultAccount"))}
+                      {select("cogsAccountId", t("cogsAccount"), options.cogsAccounts, t("defaultAccount"))}
+                    </div>
+                  )}
+                </div>
+              )}
               {input("nameEn", t("nameEn"))}
               {input("description", t("description"))}
               <div className="flex flex-wrap gap-x-6 gap-y-2">

@@ -116,7 +116,8 @@
       "nothingToCharge": "Valitud klientidel pole viivist, mida nõuda.",
       "interestAccountMissing": "Viivisearvete tulukonto puudub – vali see arve seadistuses.",
       "quotesDifferentCustomers": "Koondarvele saab valida ainult ühe kliendi pakkumisi.",
-      "quotesCurrency": "Pakkumised on eri valuutas või hinnatüübiga – koonda need eraldi."
+      "quotesCurrency": "Pakkumised on eri valuutas või hinnatüübiga – koonda need eraldi.",
+      "warehouseNotFound": "Valitud ladu ei leitud."
     },
     "emailNotConfigured": "E-posti saatmine pole seadistatud: lisa Verceli keskkonnamuutujatesse RESEND_API_KEY ja EMAIL_FROM.",
     "attachmentLocked": "Kinnitatud dokumendi manust ei saa kustutada.",
@@ -148,7 +149,23 @@
     "aiNotConfigured": "AI-tuvastus pole seadistatud (ANTHROPIC_API_KEY puudub).",
     "aiUnsupportedFile": "Seda failitüüpi ei saa AI-ga lugeda – kasuta PDF-i, JPG-d või PNG-d.",
     "aiRefused": "AI ei töödelnud seda dokumenti.",
-    "aiFailed": "AI-tuvastus ebaõnnestus – proovi uuesti või täida väljad käsitsi."
+    "aiFailed": "AI-tuvastus ebaõnnestus – proovi uuesti või täida väljad käsitsi.",
+    "inventory": {
+      "warehouseNotFound": "Ladu ei leitud.",
+      "warehouseInUse": "Ladu on kasutusel.",
+      "sameWarehouse": "Lähte- ja sihtladu peavad olema erinevad.",
+      "itemNotFound": "Real {row} olevat artiklit ei leitud.",
+      "notStockItem": "Artikkel {item} (rida {row}) ei ole laokaup. Märgi artikkel laokaubaks.",
+      "noLines": "Lisa vähemalt üks rida.",
+      "quantityPositive": "Real {row} peab kogus olema positiivne.",
+      "movementNotFound": "Laoliikumist ei leitud.",
+      "notDraft": "Kinnitatud laoliikumist ei saa muuta.",
+      "counterAccountRequired": "Vali vastaskonto – sinna kirjendatakse laoseisu väärtuse muutus.",
+      "accountNotFound": "Vastaskontot ei leitud.",
+      "missingRoleAccount": "Kontoplaanis puudub laoarvestuse vaikimisi konto ({role}). Määra see kontoplaanis.",
+      "insufficientStock": "Laos „{warehouse}“ ei jätku kaupa {item}: {date} seisuga puudu {missing}. Sisesta enne ost või sissetulek või muuda kuupäeva.",
+      "stockItemHasMovements": "Artiklil on laoliikumisi – laokauba märget ei saa eemaldada."
+    }
   },
   "validation": {
     "required": "Kohustuslik väli.",
@@ -338,7 +355,10 @@
       "inventory": {
         "movements": "Laoliikumised",
         "stock": "Laoseis",
-        "warehouses": "Laod"
+        "warehouses": "Laod",
+        "itemMovement": "Kauba liikumine",
+        "turnover": "Kaupade käibeandmik",
+        "analysis": "Laokaupade analüüs"
       },
       "assets": {
         "register": "Põhivarad",
@@ -370,7 +390,8 @@
       "photoShort": "Foto",
       "newQuote": "Uus pakkumine",
       "uploadPurchase": "Laadi üles ostuarve",
-      "newExpenseReport": "Uus kuluaruanne"
+      "newExpenseReport": "Uus kuluaruanne",
+      "newStockMovement": "Uus laoliikumine"
     }
   },
   "palette": {
@@ -837,7 +858,8 @@
       "PAYMENT": "Makse",
       "JOURNAL_ENTRY": "Pearaamatu kanne",
       "PURCHASE_INVOICE": "Ostuarve (sisemine nr)",
-      "EXPENSE_REPORT": "Kuluaruanne"
+      "EXPENSE_REPORT": "Kuluaruanne",
+      "STOCK_MOVEMENT": "Laoliikumine"
     }
   },
   "currencies": {
@@ -1222,7 +1244,12 @@
     "fixErrors": "Paranda märgitud väljad.",
     "delete": "Kustuta",
     "deleteConfirm": "Kustutada artikkel „{name}“?",
-    "deactivated": "Artiklit on dokumentides kasutatud, seega see märgiti mitteaktiivseks."
+    "deactivated": "Artiklit on dokumentides kasutatud, seega see märgiti mitteaktiivseks.",
+    "trackStock": "Laokaup (arvesta kogust ja omahinda)",
+    "trackStockHint": "Ost võetakse lattu, müük kirjendab müüdud kauba kulu omahinnaga. Laokaupa ei saa müüa rohkem, kui laos on.",
+    "inventoryAccount": "Laokonto",
+    "cogsAccount": "Müüdud kauba kulu konto",
+    "stockItem": "laokaup"
   },
   "invoices": {
     "listSubtitle": "Müügiarved, kreeditarved ja ettemaksuarved.",
@@ -1357,7 +1384,10 @@
     "paid": "Tasutud",
     "partlyPaid": "Osaliselt tasutud",
     "addReceipt": "Lisa laekumine",
-    "refund": "Tagasta kliendile"
+    "refund": "Tagasta kliendile",
+    "warehouse": "Ladu",
+    "warehouseHint": "Kust laokaubad väljastatakse.",
+    "defaultWarehouse": "Vaikimisi ladu"
   },
   "quotes": {
     "listSubtitle": "Hinnapakkumised – vastuvõetud pakkumisest saab ühe klikiga arve.",
@@ -1559,7 +1589,10 @@
     "aiReplaceLines": "Asendan praegused read failist tuvastatud ridadega?",
     "aiLines": "{count, plural, one {# rida} other {# rida}}",
     "aiItems": "{count, plural, one {# artikkel} other {# artiklit}}",
-    "aiCheckTotal": "Võrdle kogusummat dokumendiga: {total}."
+    "aiCheckTotal": "Võrdle kogusummat dokumendiga: {total}.",
+    "warehouse": "Ladu",
+    "warehouseHint": "Kuhu laokaubad võetakse.",
+    "defaultWarehouse": "Vaikimisi ladu"
   },
   "suppliers": {
     "listSubtitle": "Tarnijad, kellelt ostad – arvelduskonto maksekorralduste jaoks.",
@@ -2213,5 +2246,130 @@
     "noPreview": "Sellele failile eelvaadet pole – lae fail alla.",
     "loading": "Laen eelvaadet…",
     "hint": "Ratas suumib · lohista liigutamiseks · topeltklõps"
+  },
+  "inventory": {
+    "types": {
+      "RECEIPT": "Sissetulek",
+      "ISSUE": "Väljaminek",
+      "TRANSFER": "Ümberpaigutus",
+      "COUNT": "Inventuur",
+      "SALE": "Müük",
+      "PURCHASE": "Ost"
+    },
+    "new": {
+      "RECEIPT": "Uus sissetulek",
+      "ISSUE": "Uus väljaminek",
+      "TRANSFER": "Uus ümberpaigutus",
+      "COUNT": "Uus inventuur"
+    },
+    "newSubtitle": {
+      "RECEIPT": "Kaup lattu ilma ostuarveta – näiteks algseis või oma toodang. Ühikuhinnata rida võetakse jooksva omahinnaga.",
+      "ISSUE": "Kaup laost välja ilma müügiarveta – näiteks mahakandmine, näidis või omatarve.",
+      "TRANSFER": "Kauba viimine ühest laost teise. Väärtus ei muutu, kannet ei teki.",
+      "COUNT": "Sisesta loendatud kogused. Vahe arvestuslikuga kirjendatakse vastaskontole."
+    },
+    "counterHint": {
+      "RECEIPT": "Nt algsaldo puhul 3xxx omakapitali konto, toodangu puhul kulukonto.",
+      "ISSUE": "Kulukonto, kuhu väljamineku omahind kirjendatakse.",
+      "COUNT": "Inventuuri puudujäägi kulu või ülejäägi tulu konto."
+    },
+    "costMethods": {
+      "FIFO": "FIFO (esimesena sisse – esimesena välja)",
+      "AVERAGE": "Kaalutud keskmine"
+    },
+    "newReceipt": "Uus sissetulek",
+    "moreNew": "Muud laoliikumised",
+    "newMovementTitle": "Uus laoliikumine",
+    "editMovementTitle": "Laoliikumise muutmine",
+    "movementsSubtitle": "Sissetulekud, väljaminekud, ümberpaigutused, inventuurid ning müügi- ja ostuarvete liikumised.",
+    "searchMovements": "Otsi numbri, kirjelduse või artikli järgi",
+    "listLabel": "Laoliikumised",
+    "emptyTitle": "Laoliikumisi veel pole",
+    "emptyBody": "Märgi artiklid laokaubaks – siis tekivad liikumised ostu- ja müügiarvetest ise. Algseisu saad sisestada sissetulekuna.",
+    "noResults": "Sellise otsinguga liikumisi ei leitud.",
+    "pageOf": "Lehekülg {page}/{pages} · kokku {total}",
+    "lineCount": "{count, plural, one {# rida} other {# rida}}",
+    "allTypes": "Kõik liigid",
+    "allWarehouses": "Kõik laod",
+    "type": "Liik",
+    "warehouse": "Ladu",
+    "fromWarehouse": "Laost",
+    "toWarehouse": "Lattu",
+    "counterAccount": "Vastaskonto",
+    "description": "Kirjeldus",
+    "item": "Artikkel",
+    "itemPlaceholder": "Kood või nimetus",
+    "noStockItems": "Laokaupu ei leitud",
+    "quantity": "Kogus",
+    "counted": "Loendatud",
+    "bookQuantity": "Arvestuslik",
+    "difference": "Vahe",
+    "unitCost": "Ühiku omahind",
+    "currentCost": "jooksev",
+    "value": "Väärtus",
+    "valueChange": "Laoseisu väärtuse muutus",
+    "countHint": "Lisa read käsitsi või täida kõigi laos olevate kaupadega ja paranda loendatud kogused.",
+    "fillFromStock": "Täida laoseisuga",
+    "showBook": "Näita arvestuslikku",
+    "saveAndConfirm": "Kinnita",
+    "movementConfirmed": "Laoliikumine kinnitatud.",
+    "deleteDraftConfirm": "Kustutada laoliikumise mustand?",
+    "sourceSale": "Müügiarve {number}",
+    "sourcePurchase": "Ostuarve {number}",
+    "warehousesSubtitle": "Laod, nende laoseisu väärtus ja omahinna arvestuse seadistus.",
+    "newWarehouse": "Uus ladu",
+    "editWarehouse": "Lao muutmine",
+    "editWarehouseNamed": "Muuda ladu {name}",
+    "warehouseCode": "Kood",
+    "warehouseName": "Nimetus",
+    "warehouseAddress": "Aadress",
+    "isDefault": "Vaikimisi ladu",
+    "active": "Kasutusel",
+    "inactive": "Pole kasutusel",
+    "deleteWarehouseConfirm": "Kustutada ladu {name}?",
+    "warehouseDeactivated": "Ladu on kasutatud – see märgiti mittekasutatavaks.",
+    "noWarehousesTitle": "Ladusid veel pole",
+    "noWarehousesBody": "Esimene ladu „Põhiladu“ tekib ise esimese laoliikumisega. Mitme lao korral lisa need siin.",
+    "viewStock": "Laoseis",
+    "stockValue": "Laoseisu väärtus",
+    "costingTitle": "Omahinna arvestus",
+    "costingBody": "Omahind arvestatakse artikli kaupa üle kõigi ladude. Meetodi muutmisel ja ümberarvestusel arvutatakse avatud perioodide liikumiste omahind ja kanded uuesti; suletud perioode ei muudeta.",
+    "costMethod": "Meetod",
+    "saveCostMethod": "Muuda meetodit",
+    "costMethodConfirm": "Muuta omahinna meetodit? Avatud perioodide väljaminekute omahind ja kanded arvutatakse ümber.",
+    "recalculate": "Arvuta omahind ümber",
+    "recalculated": "{count, plural, =0 {Omahinnad olid juba õiged.} one {Uuendati # liikumine.} other {Uuendati # liikumist.}}",
+    "asOfLabel": "Seis {date}",
+    "showZero": "Näita ka nullseisuga",
+    "noStockTitle": "Laos pole kaupu",
+    "noStockBody": "Laoseis tekib ostuarvetest ja sissetulekutest.",
+    "totalValue": "Väärtus kokku",
+    "warehouseValueNote": "Lao väärtus on selle lao liikumiste väärtuste summa. Omahind arvestatakse üle ladude, seega võib ühe lao ühikuhind erineda.",
+    "checkTitle": "Lao seisu kontroll",
+    "account": "Konto",
+    "ledgerBalance": "Pearaamatus",
+    "matches": "Klapib",
+    "checkHint": "Vahe tekib, kui laokontole on tehtud käsitsi kandeid või ostuarve laokauba rida on kirjendatud mujale. Vaata kontot pearaamatus.",
+    "date": "Kuupäev",
+    "document": "Dokument",
+    "in": "Sisse",
+    "out": "Välja",
+    "opening": "Algseis",
+    "closing": "Lõppseis",
+    "balanceQty": "Seis",
+    "balanceValue": "Seisu väärtus",
+    "noStockItemsTitle": "Laokaupu pole",
+    "noStockItemsBody": "Märgi artiklite all kaubad laokaubaks.",
+    "total": "Kokku",
+    "code": "Kood",
+    "unit": "Ühik",
+    "soldQuantity": "Müüdud",
+    "revenue": "Müügitulu",
+    "cost": "Omahind",
+    "margin": "Müügikate",
+    "marginPct": "Kate %",
+    "noSalesTitle": "Laokaupade müüki perioodis pole",
+    "noSalesBody": "Analüüs näitab kinnitatud müügiarvetel olnud laokaupu.",
+    "analysisNote": "Müügitulu on kinnitatud müügi- ja kreeditarvete laokauba ridadest ilma käibemaksuta eurodes; omahind on nende arvete laoliikumistest."
   }
 }

@@ -6,7 +6,8 @@ import { toBase, type VatKindLike } from "@/lib/sales/calc";
 import { buildPurchasePosting, calculatePurchase } from "@/lib/purchases/calc";
 import { assertPeriodOpen, postJournalEntry } from "./journal";
 import { nextDocumentNumber } from "./numbering";
-import { exchangeRateFor, roleAccount, SalesError } from "./sales";
+import { checkedWarehouse, exchangeRateFor, roleAccount, SalesError } from "./sales";
+import { inventoryRoleAccount, postDocumentMovement } from "./inventory";
 
 type Tx = Prisma.TransactionClient;
 
@@ -58,6 +59,7 @@ async function preparePurchaseLines(
   const itemById = new Map(items.map((i) => [i.id, i]));
   const accountIds = new Set(accounts.map((a) => a.id));
   const std = await standardPct(tx, companyId, opts.date);
+  const inventoryAccountId = items.some((i) => i.trackStock) ? await inventoryRoleAccount(tx, companyId) : null;
 
   const prepared = lines.map((l, index) => {
     if (l.itemId && !itemById.has(l.itemId)) throw new SalesError("itemNotFound", { index });
@@ -65,7 +67,9 @@ async function preparePurchaseLines(
     const description = l.description.trim() || item?.name || "";
     if (!description) throw new SalesError("lineDescription", { index });
     if (l.accountId && !accountIds.has(l.accountId)) throw new SalesError("accountNotFound", { index });
-    const accountId = l.accountId || item?.purchaseAccountId || opts.defaultAccountId || null;
+    // Laokauba rida kirjendatakse alati laokontole
+    const stockAccount = item?.trackStock ? (item.inventoryAccountId ?? inventoryAccountId) : null;
+    const accountId = stockAccount || l.accountId || item?.purchaseAccountId || opts.defaultAccountId || null;
     if (opts.requireAccount && !accountId) throw new SalesError("accountNotFound", { index });
     const vatRateId = l.vatRateId || null;
     let vatPct = "0";
@@ -201,6 +205,8 @@ export type PurchaseInvoiceInput = {
   notes?: string | null;
   creditOfId?: string | null;
   purchaseOrderId?: string | null;
+  /** Ladu laokaupade vastuvõtmiseks (null = vaikimisi ladu) */
+  warehouseId?: string | null;
   source?: "MANUAL" | "UPLOAD" | "ORDER";
   lines: PurchaseLineInput[];
 };
@@ -261,6 +267,7 @@ export async function savePurchaseDraft(tx: Tx, companyId: string, userId: strin
     currencyRate,
     pricesIncludeVat: input.pricesIncludeVat,
     notes: input.notes ?? null,
+    warehouseId: await checkedWarehouse(tx, companyId, input.warehouseId),
     netTotal: calc.net.toFixed(2),
     vatTotal: calc.vat.toFixed(2),
     total: calc.total.toFixed(2),
@@ -357,6 +364,22 @@ export async function confirmPurchase(tx: Tx, companyId: string, userId: string 
   if (res.count !== 1) throw new SalesError("notDraft");
   await tx.purchaseInvoiceLine.deleteMany({ where: { companyId, invoiceId: id } });
   await tx.purchaseInvoiceLine.createMany({ data: lineRows(rows).map((r) => ({ ...r, accountId: r.accountId!, companyId, invoiceId: id })) });
+  // Laokaubad: sissetulek lattu arve summaga (kreeditarvel tagastus tarnijale omahinnaga)
+  const rate = invoice.currencyRate.toString();
+  await postDocumentMovement(tx, companyId, userId, {
+    type: "PURCHASE",
+    date: invoice.date,
+    warehouseId: invoice.warehouseId,
+    number,
+    description: `${supplier.name} ${invoice.invoiceNumber}`,
+    purchaseInvoiceId: id,
+    lines: rows
+      .filter((r) => r.itemId)
+      .map((r) => {
+        const booked = toBase(dec(r.netAmount).plus(dec(r.vatAmount)).plus(dec(r.reverseVatAmount)).minus(dec(r.deductibleVat)), rate);
+        return { itemId: r.itemId!, quantity: r.quantity, value: dec(r.quantity).isNegative() ? null : booked, bookedCost: booked };
+      }),
+  });
   return { id, number };
 }
 
@@ -398,6 +421,7 @@ export async function createPurchaseCredit(tx: Tx, companyId: string, userId: st
     currency: original.currency,
     currencyRate: original.currencyRate.toString(),
     pricesIncludeVat: original.pricesIncludeVat,
+    warehouseId: original.warehouseId,
     creditOfId: original.id,
     lines: original.lines.map((l) => purchaseLineInput(l, dec(l.quantity).negated().toString())),
   });

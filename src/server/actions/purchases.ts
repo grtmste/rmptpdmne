@@ -64,6 +64,7 @@ const invoiceSchema = z.object({
   currencyRate: decimalInputSchema(6, { empty: "" }).transform((v) => (v === "" || v === "0" ? null : v)),
   pricesIncludeVat: z.boolean(),
   notes: optionalText(2000),
+  warehouseId: optionalIdSchema,
   lines: z.array(lineSchema).max(500),
 });
 

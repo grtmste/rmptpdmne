@@ -19,6 +19,9 @@ import type { PrismaClient } from "./prisma";
 /** Mudelid, millel on `companyId`. Test `tenant-models.test.ts` kontrollib, et nimekiri vastab skeemile. */
 export const TENANT_MODELS = [
   "RecurringInvoice",
+  "Warehouse",
+  "StockMovement",
+  "StockMovementLine",
   "RecurringInvoiceLine",
   "LateInterestCharge",
   "Membership",

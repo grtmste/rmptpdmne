@@ -79,6 +79,8 @@ export type EditorData = {
   paymentTermDays: number;
   defaultVatRateId: string | null;
   prepayments: Array<{ id: string; number: string; customerId: string; date: string; remaining: Array<{ vatRateId: string | null; net: string }> }>;
+  /** Aktiivsed laod (valik kuvatakse, kui neid on rohkem kui üks) */
+  warehouses?: Array<{ id: string; name: string }>;
 };
 
 export type DocLine = {
@@ -109,6 +111,8 @@ export type DocValues = {
   pricesIncludeVat: boolean;
   yourReference: string;
   notes: string;
+  /** Ladu laokaupade väljastamiseks (tühi = vaikimisi ladu) */
+  warehouseId?: string;
   lines: DocLine[];
 };
 
@@ -153,7 +157,7 @@ export function SalesDocumentEditor({
   const [showExtra, setShowExtra] = useState(() =>
     initial.lines.some((l) => l.accountId || l.departmentId || Object.values(l.dims).some(Boolean)),
   );
-  const [showMore, setShowMore] = useState(Boolean(initial.deliveryDate || initial.yourReference || initial.currency !== data.baseCurrency));
+  const [showMore, setShowMore] = useState(Boolean(initial.deliveryDate || initial.yourReference || initial.warehouseId || initial.currency !== data.baseCurrency));
   const [newCustomerOpen, setNewCustomerOpen] = useState(false);
   const [rec, setRec] = useState<RecurringFields>(
     recurring ?? { name: "", intervalMonths: "1", endDate: "", mode: "DRAFT", paymentTermDays: "", active: true },
@@ -332,6 +336,7 @@ export function SalesDocumentEditor({
     pricesIncludeVat: v.pricesIncludeVat,
     yourReference: v.yourReference,
     notes: v.notes,
+    warehouseId: v.warehouseId ?? "",
     creditOfId: creditOf?.id ?? "",
     ...payload(),
   });
@@ -536,6 +541,18 @@ export function SalesDocumentEditor({
               ) : (
                 <span className="hidden md:block" />
               )}
+              {mode === "invoice" && (data.warehouses?.length ?? 0) > 1 ? (
+                <FormField label={t("warehouse")} htmlFor="doc-warehouse" hint={t("warehouseHint")}>
+                  <NativeSelect id="doc-warehouse" value={v.warehouseId ?? ""} onChange={(e) => set("warehouseId", e.target.value)}>
+                    <option value="">{t("defaultWarehouse")}</option>
+                    {data.warehouses!.map((w) => (
+                      <option key={w.id} value={w.id}>
+                        {w.name}
+                      </option>
+                    ))}
+                  </NativeSelect>
+                </FormField>
+              ) : null}
               <div className="grid grid-cols-2 gap-2">
                 <FormField label={t("currency")} htmlFor="doc-currency">
                   <NativeSelect id="doc-currency" value={v.currency} onChange={(e) => set("currency", e.target.value)} disabled={Boolean(creditOf)}>

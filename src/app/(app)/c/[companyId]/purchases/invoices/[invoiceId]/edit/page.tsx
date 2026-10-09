@@ -68,6 +68,7 @@ export default async function EditPurchaseInvoicePage({ params }: PageProps<"/c/
           currencyRate: invoice.currency !== data.baseCurrency ? plainDecimal(invoice.currencyRate) : "",
           pricesIncludeVat: invoice.pricesIncludeVat,
           notes: invoice.notes ?? "",
+          warehouseId: invoice.warehouseId ?? "",
           lines: invoice.lines.map((l) => toPurchaseLine(l, dimensionOf)),
         }}
         extractFrom={

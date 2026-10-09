@@ -241,3 +241,32 @@ Hiljem: näidupõhised perioodilised arved, makselink e-kirjas, saldoteatised ta
   väljundiga; keeldumise korral server-side fallback. Tekstiga PDF-i loeb esmalt brauseri tuvastus, AI-d kasutatakse
   skaneeritud failide ja piltide korral automaatselt ning nupuga „Tuvasta AI-ga“. Piir 200 tuvastust päevas ettevõtte
   kohta. Fail saadetakse Anthropicu API-le – ilma võtmeta funktsioon välja lülitatud.
+
+## Faas 8 (ladu) – tehtud
+
+- **Laokaup** on artikli märge (ainult kaubal): kogus ja omahind arvestatakse laos; artiklile saab määrata oma
+  laokonto ja müüdud kauba kulu konto (vaikimisi kontoplaani rollid 1340 ja 4000). Liikumistega artiklilt märget
+  maha võtta ei saa.
+- **Laod** (kood, nimi, aadress, vaikimisi ladu). Esimene ladu „Põhiladu“ tekib ise. Kasutatud ladu ei kustutata,
+  vaid märgitakse mittekasutatavaks. Müügi- ja ostuarvel saab valida lao, kui ladusid on rohkem kui üks.
+- **Liikumised**: sissetulek (kindla ühikuhinnaga või jooksva omahinnaga), väljaminek, ümberpaigutus ladude vahel,
+  inventuur (loendatud kogus; vahe arvestuslikuga, „Täida laoseisuga“) ning müügi- ja ostuarvetest automaatselt
+  tekkivad liikumised. Mustand → kinnitatud, oma numbriseeria `L-`; arvete liikumised kannavad arve numbrit.
+- **Kanded**: ostuarve laokauba rida kirjendatakse alati laokontole (ostu omahind = rea summa ilma mahaarvatava
+  KM-ita eurodes). Müük: D müüdud kauba kulu / K laokonto omahinnaga. Kreeditarvega tagastatud kaup tuleb lattu
+  algse müügi omahinnaga. Tarnijale tagastamisel (ostu kreeditarve) kirjendatakse arve summa ja omahinna vahe kulusse.
+  Käsitsi liikumised kirjendatakse valitud vastaskontole; ümberpaigutus kannet ei tee.
+- **Omahind**: FIFO või kaalutud keskmine (seadistus lao lehel), artikli kaupa üle kõigi ladude. Arvutus mängib
+  liikumised kronoloogiliselt läbi (sama päeva sees enne sissetulekud), seega tagantjärele sisestatud ost arvutab
+  hilisemate väljaminekute omahinna ja kanded kohe ümber. „Arvuta omahind ümber“ ja meetodi muutmine uuendavad
+  avatud perioodide liikumisi; suletud või lukustatud perioodi liikumisi ei muudeta. Väärtused on sentides täpsed –
+  laoseisu väärtus võrdub alati liikumiste väärtuste summaga.
+- **Negatiivset laoseisu ei lubata**: kontroll käib lao kaupa kogu ajaloo ulatuses (ka tagantjärele sisestatud
+  väljaminek ei tohi tekitada hilisemat puudujääki), päeva lõpu seisuga.
+- **Aruanded**: laoseis kuupäeva seisuga (ladude kaupa, nullseisuga või ilma) koos **lao seisu kontrolliga**
+  (laoseisu väärtus vs pearaamatu laokonto saldo), kauba liikumine (algseis, liikumised jooksva seisuga, lõppseis,
+  lingid dokumentidele), kaupade käibeandmik (algseis, sisse, välja, lõppseis koguste ja väärtustega) ja
+  laokaupade analüüs (müüdud kogus, müügitulu, omahind, müügikate ja kate %). CSV eksport.
+
+Lihtsustused võrreldes Meritiga: omahind on ühine kõigile ladudele (lao väärtus on selle lao liikumiste summa);
+seerianumbrid, partiid, komplektid ja tootmine ei ole veel toetatud.

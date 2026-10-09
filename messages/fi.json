@@ -116,7 +116,8 @@
       "nothingToCharge": "Valituilla asiakkailla ei ole laskutettavaa korkoa.",
       "interestAccountMissing": "Korkolaskujen tulotili puuttuu – valitse se laskuasetuksissa.",
       "quotesDifferentCustomers": "Koontilaskuun voi valita vain yhden asiakkaan tarjouksia.",
-      "quotesCurrency": "Tarjoukset ovat eri valuutoissa tai hintatyypeillä – koosta ne erikseen."
+      "quotesCurrency": "Tarjoukset ovat eri valuutoissa tai hintatyypeillä – koosta ne erikseen.",
+      "warehouseNotFound": "Valittua varastoa ei löytynyt."
     },
     "emailNotConfigured": "Sähköpostin lähetystä ei ole määritetty: lisää RESEND_API_KEY ja EMAIL_FROM Vercelin ympäristömuuttujiin.",
     "attachmentLocked": "Vahvistetun asiakirjan liitettä ei voi poistaa.",
@@ -148,7 +149,23 @@
     "aiNotConfigured": "Tekoälytunnistusta ei ole määritetty (ANTHROPIC_API_KEY puuttuu).",
     "aiUnsupportedFile": "Tätä tiedostotyyppiä ei voi lukea tekoälyllä – käytä PDF:ää, JPG:tä tai PNG:tä.",
     "aiRefused": "Tekoäly ei käsitellyt tätä asiakirjaa.",
-    "aiFailed": "Tekoälytunnistus epäonnistui – yritä uudelleen tai täytä kentät käsin."
+    "aiFailed": "Tekoälytunnistus epäonnistui – yritä uudelleen tai täytä kentät käsin.",
+    "inventory": {
+      "warehouseNotFound": "Varastoa ei löytynyt.",
+      "warehouseInUse": "Varasto on käytössä.",
+      "sameWarehouse": "Lähtö- ja kohdevaraston on oltava eri.",
+      "itemNotFound": "Rivin {row} nimikettä ei löytynyt.",
+      "notStockItem": "Nimike {item} (rivi {row}) ei ole varastonimike. Merkitse se ensin varastonimikkeeksi.",
+      "noLines": "Lisää vähintään yksi rivi.",
+      "quantityPositive": "Rivin {row} määrän on oltava positiivinen.",
+      "movementNotFound": "Varastotapahtumaa ei löytynyt.",
+      "notDraft": "Vahvistettua varastotapahtumaa ei voi muuttaa.",
+      "counterAccountRequired": "Valitse vastatili – varaston arvon muutos kirjataan sille.",
+      "accountNotFound": "Vastatiliä ei löytynyt.",
+      "missingRoleAccount": "Tilikartasta puuttuu varastokirjanpidon oletustili ({role}). Määritä se tilikartassa.",
+      "insufficientStock": "Varastossa ”{warehouse}” ei ole riittävästi nimikettä {item}: {date} puuttuu {missing}. Kirjaa ensin osto tai vastaanotto tai muuta päivämäärää.",
+      "stockItemHasMovements": "Nimikkeellä on varastotapahtumia, joten varastonimikemerkintää ei voi poistaa."
+    }
   },
   "validation": {
     "required": "Pakollinen kenttä.",
@@ -338,7 +355,10 @@
       "inventory": {
         "movements": "Varastotapahtumat",
         "stock": "Varastosaldo",
-        "warehouses": "Varastot"
+        "warehouses": "Varastot",
+        "itemMovement": "Nimikkeen tapahtumat",
+        "turnover": "Varaston liikevaihtoraportti",
+        "analysis": "Varastonimikkeiden analyysi"
       },
       "assets": {
         "register": "Käyttöomaisuus",
@@ -370,7 +390,8 @@
       "photoShort": "Kuva",
       "newQuote": "Uusi tarjous",
       "uploadPurchase": "Lataa ostolasku",
-      "newExpenseReport": "Uusi kululaskelma"
+      "newExpenseReport": "Uusi kululaskelma",
+      "newStockMovement": "Uusi varastotapahtuma"
     }
   },
   "palette": {
@@ -837,7 +858,8 @@
       "PAYMENT": "Maksu",
       "JOURNAL_ENTRY": "Muistiotosite",
       "PURCHASE_INVOICE": "Ostolasku (sisäinen nro)",
-      "EXPENSE_REPORT": "Kululaskelma"
+      "EXPENSE_REPORT": "Kululaskelma",
+      "STOCK_MOVEMENT": "Varastotapahtuma"
     }
   },
   "currencies": {
@@ -1222,7 +1244,12 @@
     "fixErrors": "Korjaa merkityt kentät.",
     "delete": "Poista",
     "deleteConfirm": "Poistetaanko tuote ”{name}”?",
-    "deactivated": "Tuotetta on käytetty asiakirjoissa, joten se merkittiin passiiviseksi."
+    "deactivated": "Tuotetta on käytetty asiakirjoissa, joten se merkittiin passiiviseksi.",
+    "trackStock": "Varastonimike (seuraa määrää ja hankintahintaa)",
+    "trackStockHint": "Ostot kirjataan varastoon ja myynti kirjaa myytyjen tavaroiden kulun. Varastossa olevaa enempää ei voi myydä.",
+    "inventoryAccount": "Varastotili",
+    "cogsAccount": "Myytyjen tavaroiden kulutili",
+    "stockItem": "varastonimike"
   },
   "invoices": {
     "listSubtitle": "Myyntilaskut, hyvityslaskut ja ennakkolaskut.",
@@ -1357,7 +1384,10 @@
     "paid": "Maksettu",
     "partlyPaid": "Osittain maksettu",
     "addReceipt": "Lisää suoritus",
-    "refund": "Palauta asiakkaalle"
+    "refund": "Palauta asiakkaalle",
+    "warehouse": "Varasto",
+    "warehouseHint": "Mistä varastonimikkeet toimitetaan.",
+    "defaultWarehouse": "Oletusvarasto"
   },
   "quotes": {
     "listSubtitle": "Tarjoukset – hyväksytystä tarjouksesta tulee lasku yhdellä napsautuksella.",
@@ -1559,7 +1589,10 @@
     "aiReplaceLines": "Korvataanko nykyiset rivit tiedostosta tunnistetuilla?",
     "aiLines": "{count, plural, one {# rivi} other {# riviä}}",
     "aiItems": "{count, plural, one {# nimike} other {# nimikettä}}",
-    "aiCheckTotal": "Vertaa loppusummaa asiakirjaan: {total}."
+    "aiCheckTotal": "Vertaa loppusummaa asiakirjaan: {total}.",
+    "warehouse": "Varasto",
+    "warehouseHint": "Mihin varastonimikkeet vastaanotetaan.",
+    "defaultWarehouse": "Oletusvarasto"
   },
   "suppliers": {
     "listSubtitle": "Toimittajat, joilta ostat – pankkitilit maksumääräyksiä varten.",
@@ -2213,5 +2246,130 @@
     "noPreview": "Tälle tiedostolle ei ole esikatselua – lataa tiedosto.",
     "loading": "Ladataan esikatselua…",
     "hint": "Rulla zoomaa · vedä siirtääksesi · kaksoisnapsautus"
+  },
+  "inventory": {
+    "types": {
+      "RECEIPT": "Vastaanotto",
+      "ISSUE": "Otto",
+      "TRANSFER": "Siirto",
+      "COUNT": "Inventaario",
+      "SALE": "Myynti",
+      "PURCHASE": "Osto"
+    },
+    "new": {
+      "RECEIPT": "Uusi vastaanotto",
+      "ISSUE": "Uusi otto",
+      "TRANSFER": "Uusi siirto",
+      "COUNT": "Uusi inventaario"
+    },
+    "newSubtitle": {
+      "RECEIPT": "Tavaraa varastoon ilman ostolaskua – esim. alkusaldo tai oma tuotanto. Rivit ilman yksikköhintaa käyttävät nykyistä hankintahintaa.",
+      "ISSUE": "Tavaraa varastosta ilman myyntilaskua – esim. alaskirjaus, näyte tai oma käyttö.",
+      "TRANSFER": "Tavaran siirto varastosta toiseen. Arvo ei muutu eikä kirjausta synny.",
+      "COUNT": "Syötä lasketut määrät. Ero kirjanpidon määrään kirjataan vastatilille."
+    },
+    "counterHint": {
+      "RECEIPT": "Esim. alkusaldolle oman pääoman tili, omalle tuotannolle kulutili.",
+      "ISSUE": "Kulutili, jolle oton hankintameno kirjataan.",
+      "COUNT": "Inventaarion vajauksen kulutili tai ylijäämän tuottotili."
+    },
+    "costMethods": {
+      "FIFO": "FIFO (ensin sisään – ensin ulos)",
+      "AVERAGE": "Painotettu keskihinta"
+    },
+    "newReceipt": "Uusi vastaanotto",
+    "moreNew": "Muut varastotapahtumat",
+    "newMovementTitle": "Uusi varastotapahtuma",
+    "editMovementTitle": "Varastotapahtuman muokkaus",
+    "movementsSubtitle": "Vastaanotot, otot, siirrot, inventaariot sekä myynti- ja ostolaskujen tapahtumat.",
+    "searchMovements": "Hae numerolla, kuvauksella tai nimikkeellä",
+    "listLabel": "Varastotapahtumat",
+    "emptyTitle": "Varastotapahtumia ei vielä ole",
+    "emptyBody": "Merkitse nimikkeet varastonimikkeiksi, niin tapahtumat syntyvät osto- ja myyntilaskuista. Alkusaldon voit kirjata vastaanottona.",
+    "noResults": "Haulla ei löytynyt tapahtumia.",
+    "pageOf": "Sivu {page}/{pages} · yhteensä {total}",
+    "lineCount": "{count, plural, one {# rivi} other {# riviä}}",
+    "allTypes": "Kaikki lajit",
+    "allWarehouses": "Kaikki varastot",
+    "type": "Laji",
+    "warehouse": "Varasto",
+    "fromWarehouse": "Varastosta",
+    "toWarehouse": "Varastoon",
+    "counterAccount": "Vastatili",
+    "description": "Kuvaus",
+    "item": "Nimike",
+    "itemPlaceholder": "Koodi tai nimi",
+    "noStockItems": "Varastonimikkeitä ei löytynyt",
+    "quantity": "Määrä",
+    "counted": "Laskettu",
+    "bookQuantity": "Kirjanpito",
+    "difference": "Ero",
+    "unitCost": "Yksikköhinta",
+    "currentCost": "nykyinen",
+    "value": "Arvo",
+    "valueChange": "Varaston arvon muutos",
+    "countHint": "Lisää rivit itse tai täytä kaikilla varastossa olevilla nimikkeillä ja korjaa lasketut määrät.",
+    "fillFromStock": "Täytä varastosaldolla",
+    "showBook": "Näytä kirjanpidon määrät",
+    "saveAndConfirm": "Vahvista",
+    "movementConfirmed": "Varastotapahtuma vahvistettu.",
+    "deleteDraftConfirm": "Poistetaanko varastotapahtuman luonnos?",
+    "sourceSale": "Myyntilasku {number}",
+    "sourcePurchase": "Ostolasku {number}",
+    "warehousesSubtitle": "Varastot, niiden arvo ja hankintamenon laskentatapa.",
+    "newWarehouse": "Uusi varasto",
+    "editWarehouse": "Varaston muokkaus",
+    "editWarehouseNamed": "Muokkaa varastoa {name}",
+    "warehouseCode": "Koodi",
+    "warehouseName": "Nimi",
+    "warehouseAddress": "Osoite",
+    "isDefault": "Oletusvarasto",
+    "active": "Käytössä",
+    "inactive": "Ei käytössä",
+    "deleteWarehouseConfirm": "Poistetaanko varasto {name}?",
+    "warehouseDeactivated": "Varastoa on käytetty, joten se merkittiin pois käytöstä.",
+    "noWarehousesTitle": "Varastoja ei vielä ole",
+    "noWarehousesBody": "Ensimmäinen varasto ”Põhiladu” syntyy ensimmäisen varastotapahtuman yhteydessä. Lisää tarvittaessa muita täällä.",
+    "viewStock": "Saldo",
+    "stockValue": "Varaston arvo",
+    "costingTitle": "Hankintamenon laskenta",
+    "costingBody": "Hankintameno lasketaan nimikkeittäin kaikkien varastojen yli. Menetelmän vaihto ja uudelleenlaskenta päivittävät avointen kausien tapahtumat ja kirjaukset; suljettuja kausia ei muuteta.",
+    "costMethod": "Menetelmä",
+    "saveCostMethod": "Vaihda menetelmä",
+    "costMethodConfirm": "Vaihdetaanko hankintamenon menetelmä? Avointen kausien ottojen hankintameno ja kirjaukset lasketaan uudelleen.",
+    "recalculate": "Laske hankintameno uudelleen",
+    "recalculated": "{count, plural, =0 {Hankintamenot olivat jo ajan tasalla.} one {Päivitettiin # tapahtuma.} other {Päivitettiin # tapahtumaa.}}",
+    "asOfLabel": "Tilanne {date}",
+    "showZero": "Näytä myös nollasaldot",
+    "noStockTitle": "Varastossa ei ole tavaraa",
+    "noStockBody": "Varastosaldo syntyy ostolaskuista ja vastaanotoista.",
+    "totalValue": "Arvo yhteensä",
+    "warehouseValueNote": "Varaston arvo on sen tapahtumien arvojen summa. Hankintameno lasketaan varastojen yli, joten yksittäisen varaston yksikköhinta voi poiketa.",
+    "checkTitle": "Varaston täsmäytys",
+    "account": "Tili",
+    "ledgerBalance": "Pääkirjassa",
+    "matches": "Täsmää",
+    "checkHint": "Ero syntyy, jos varastotilille on tehty manuaalisia kirjauksia tai ostolaskun varastonimike on kirjattu muualle. Tarkista tili pääkirjasta.",
+    "date": "Päivämäärä",
+    "document": "Tosite",
+    "in": "Sisään",
+    "out": "Ulos",
+    "opening": "Alkusaldo",
+    "closing": "Loppusaldo",
+    "balanceQty": "Saldo",
+    "balanceValue": "Saldon arvo",
+    "noStockItemsTitle": "Ei varastonimikkeitä",
+    "noStockItemsBody": "Merkitse tavarat varastonimikkeiksi Nimikkeet-kohdassa.",
+    "total": "Yhteensä",
+    "code": "Koodi",
+    "unit": "Yksikkö",
+    "soldQuantity": "Myyty",
+    "revenue": "Myyntituotto",
+    "cost": "Hankintameno",
+    "margin": "Myyntikate",
+    "marginPct": "Kate %",
+    "noSalesTitle": "Kaudella ei myyty varastonimikkeitä",
+    "noSalesBody": "Analyysi näyttää vahvistettujen myyntilaskujen varastonimikkeet.",
+    "analysisNote": "Myyntituotto on vahvistettujen myynti- ja hyvityslaskujen varastonimikeriveistä euroina ilman arvonlisäveroa; hankintameno on näiden laskujen varastotapahtumista."
   }
 }

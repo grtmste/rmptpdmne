@@ -57,6 +57,8 @@ export default async function ItemsPage({ params, searchParams }: PageProps<"/c/
     vatRates,
     salesAccounts: accounts.filter((a) => a.type === "INCOME" || a.type === "LIABILITY").map((a) => ({ id: a.id, label: `${a.code} ${a.name}` })),
     purchaseAccounts: accounts.filter((a) => a.type === "EXPENSE" || a.type === "ASSET").map((a) => ({ id: a.id, label: `${a.code} ${a.name}` })),
+    inventoryAccounts: accounts.filter((a) => a.type === "ASSET").map((a) => ({ id: a.id, label: `${a.code} ${a.name}` })),
+    cogsAccounts: accounts.filter((a) => a.type === "EXPENSE").map((a) => ({ id: a.id, label: `${a.code} ${a.name}` })),
   };
   const s = (x: { toString(): string } | null) => x?.toString() ?? "";
 
@@ -125,6 +127,9 @@ export default async function ItemsPage({ params, searchParams }: PageProps<"/c/
                     groupId: s(i.groupId),
                     forSales: i.forSales,
                     forPurchases: i.forPurchases,
+                    trackStock: i.trackStock,
+                    inventoryAccountId: s(i.inventoryAccountId),
+                    cogsAccountId: s(i.cogsAccountId),
                     description: s(i.description),
                     active: i.active,
                   };
@@ -135,6 +140,7 @@ export default async function ItemsPage({ params, searchParams }: PageProps<"/c/
                         <span className="font-medium">{i.name}</span>
                         <div className="flex gap-1.5 text-xs text-muted-foreground">
                           <span>{t(`types.${i.type}`)}</span>
+                          {i.trackStock && <span>· {t("stockItem")}</span>}
                           {i.group && <span>· {i.group.name}</span>}
                           {!i.active && <Badge variant="outline">{t("inactive")}</Badge>}
                         </div>

@@ -37,6 +37,7 @@ export function toDocValues(
     pricesIncludeVat: boolean;
     yourReference: string | null;
     notes: string | null;
+    warehouseId?: string | null;
     lines: DbLine[];
   },
   dimensionOf: Map<string, string>,
@@ -53,6 +54,7 @@ export function toDocValues(
     pricesIncludeVat: doc.pricesIncludeVat,
     yourReference: doc.yourReference ?? "",
     notes: doc.notes ?? "",
+    warehouseId: doc.warehouseId ?? "",
     lines: doc.lines.map(
       (l): DocLine => ({
         key: l.id,

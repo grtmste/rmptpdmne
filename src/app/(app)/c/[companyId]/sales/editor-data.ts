@@ -48,6 +48,7 @@ export async function loadSalesEditorData(ctx: CompanyContext, opts: { prepaymen
     ctx.cdb.glAccount.findFirst({ where: { role: "DEFAULT_SALES" }, select: { id: true, defaultVatRateId: true } }),
     opts.prepayments ? openPrepayments(db, ctx.company.id) : Promise.resolve([]),
   ]);
+  const warehouses = await ctx.cdb.warehouse.findMany({ where: { active: true }, orderBy: [{ isDefault: "desc" }, { code: "asc" }], select: { id: true, name: true } });
   return {
     customers: customers.map((c) => ({ ...c })),
     items: items.map((i) => ({
@@ -69,6 +70,7 @@ export async function loadSalesEditorData(ctx: CompanyContext, opts: { prepaymen
     baseCurrency: company.baseCurrency,
     paymentTermDays: company.paymentTermDays,
     defaultVatRateId: defaultSales?.defaultVatRateId ?? null,
+    warehouses,
     prepayments: prepayments.map((p) => ({
       id: p.id,
       number: p.number,

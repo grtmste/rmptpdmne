@@ -56,6 +56,8 @@ export type PurchaseEditorData = {
   own?: { regCode: string | null; vatNumber: string | null; ibans: string[] };
   /** AI-tuvastus on seadistatud (ANTHROPIC_API_KEY) */
   aiEnabled?: boolean;
+  /** Aktiivsed laod (valik kuvatakse, kui neid on rohkem kui üks) */
+  warehouses?: Array<{ id: string; name: string }>;
 };
 
 type SupplierHint = { name: string; regCode: string; vatNumber: string; bankAccount: string };
@@ -70,6 +72,8 @@ export type PurchaseValues = {
   currencyRate: string;
   pricesIncludeVat: boolean;
   notes: string;
+  /** Ladu laokaupade vastuvõtmiseks (tühi = vaikimisi ladu) */
+  warehouseId?: string;
   lines: PurchaseLine[];
 };
 
@@ -472,6 +476,7 @@ export function PurchaseEditor({
     currencyRate: v.currency === data.baseCurrency ? "" : v.currencyRate,
     pricesIncludeVat: v.pricesIncludeVat,
     notes: v.notes,
+    warehouseId: v.warehouseId ?? "",
     lines: lines(),
   });
 
@@ -862,6 +867,18 @@ export function PurchaseEditor({
             <FormField label={t("notes")} htmlFor="pdoc-notes">
               <Textarea id="pdoc-notes" rows={3} value={v.notes} onChange={(e) => set("notes", e.target.value)} />
             </FormField>
+            {mode === "invoice" && (data.warehouses?.length ?? 0) > 1 && (
+              <FormField label={t("warehouse")} htmlFor="pdoc-warehouse" hint={t("warehouseHint")} className="mt-4 max-w-xs">
+                <NativeSelect id="pdoc-warehouse" value={v.warehouseId ?? ""} onChange={(e) => set("warehouseId", e.target.value)}>
+                  <option value="">{t("defaultWarehouse")}</option>
+                  {data.warehouses!.map((w) => (
+                    <option key={w.id} value={w.id}>
+                      {w.name}
+                    </option>
+                  ))}
+                </NativeSelect>
+              </FormField>
+            )}
           </CardContent>
         </Card>
         <Card>

@@ -53,7 +53,9 @@ export async function loadPurchaseEditorData(ctx: CompanyContext): Promise<Purch
     ctx.cdb.glAccount.findFirst({ where: { role: "DEFAULT_PURCHASE" }, select: { id: true, defaultVatRateId: true } }),
     ctx.cdb.bankAccount.findMany({ where: { iban: { not: null } }, select: { iban: true } }),
   ]);
+  const warehouses = await ctx.cdb.warehouse.findMany({ where: { active: true }, orderBy: [{ isDefault: "desc" }, { code: "asc" }], select: { id: true, name: true } });
   return {
+    warehouses,
     suppliers,
     items: items.map((i) => ({ ...i, purchasePrice: i.purchasePrice?.toString() ?? "" })),
     vatRates: vatRates.map((v) => ({

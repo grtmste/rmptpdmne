@@ -8,6 +8,9 @@ import { AGING_BUCKETS } from "@/lib/reports/aging";
 import { loadCompanyContext } from "@/server/session";
 import { purchaseReport, salesReport } from "@/server/reports/documents";
 import { debtsAsOf, partyTurnover } from "@/server/reports/debts";
+import { stockAnalysis, stockBalance, stockTurnover } from "@/server/reports/inventory";
+import { parseISODate } from "@/lib/accounting/dates";
+import { todayLocal } from "@/lib/dates";
 import { parseDocReportQuery } from "@/components/reports/params";
 
 const SALES_GROUPS = ["invoice", "customer", "item", "month"] as const;
@@ -22,6 +25,7 @@ export async function GET(request: NextRequest, ctx: RouteContext<"/c/[companyId
   const locale = await getLocale();
   const t = await getTranslations("docReports");
   const td = await getTranslations("debts");
+  const tv = await getTranslations("inventory");
   const a = (v: Parameters<typeof csvAmount>[0]) => csvAmount(v, locale);
   const rows: Array<Array<string | number | null>> = [];
   let suffix = "";
@@ -58,6 +62,32 @@ export async function GET(request: NextRequest, ctx: RouteContext<"/c/[companyId
       rows.push([td("totalRow"), "", "", "", ...AGING_BUCKETS.map((b) => a(r.totals.buckets[b])), a(r.totals.prepayment), a(r.totals.total)]);
       suffix = q.toIso;
     }
+  } else if (report === "stock") {
+    const date = parseISODate(sp.to ?? "") ?? todayLocal();
+    const warehouse = sp.warehouse ? ((await db.warehouse.findFirst({ where: { companyId, id: sp.warehouse }, select: { id: true } }))?.id ?? null) : null;
+    const r = await stockBalance(db, companyId, { date, warehouseId: warehouse, includeZero: sp.zero === "1" });
+    rows.push([tv("code"), tv("item"), tv("unit"), tv("quantity"), tv("unitCost"), tv("value")]);
+    for (const x of r.rows) rows.push([x.code, x.name, x.unit ?? "", x.quantity.toString(), csvAmount(x.unitCost.toDecimalPlaces(4), locale), a(x.value)]);
+    rows.push([tv("totalValue"), "", "", "", "", a(r.total)]);
+    suffix = toISODate(date);
+  } else if (report === "stock-turnover" || report === "stock-analysis") {
+    const q = await parseDocReportQuery(companyId, sp, ["none"] as const, "none");
+    if (report === "stock-turnover") {
+      const warehouse = sp.warehouse ? ((await db.warehouse.findFirst({ where: { companyId, id: sp.warehouse }, select: { id: true } }))?.id ?? null) : null;
+      const r = await stockTurnover(db, companyId, { from: q.from, to: q.to, warehouseId: warehouse });
+      const h = (k: string) => [`${tv(k)} ${tv("quantity")}`, `${tv(k)} ${tv("value")}`];
+      rows.push([tv("code"), tv("item"), ...h("opening"), ...h("in"), ...h("out"), ...h("closing")]);
+      for (const x of r.rows) {
+        rows.push([x.code, x.name, x.openingQty.toString(), a(x.openingValue), x.inQty.toString(), a(x.inValue), x.outQty.toString(), a(x.outValue), x.closingQty.toString(), a(x.closingValue)]);
+      }
+      rows.push([tv("total"), "", "", a(r.totals.openingValue), "", a(r.totals.inValue), "", a(r.totals.outValue), "", a(r.totals.closingValue)]);
+    } else {
+      const r = await stockAnalysis(db, companyId, { from: q.from, to: q.to });
+      rows.push([tv("code"), tv("item"), tv("soldQuantity"), tv("revenue"), tv("cost"), tv("margin"), tv("marginPct")]);
+      for (const x of r.rows) rows.push([x.code, x.name, x.quantity.toString(), a(x.revenue), a(x.cost), a(x.margin), x.marginPct ? csvAmount(x.marginPct.toDecimalPlaces(1), locale) : ""]);
+      rows.push([tv("total"), "", "", a(r.totals.revenue), a(r.totals.cost), a(r.totals.margin), r.totals.marginPct ? csvAmount(r.totals.marginPct.toDecimalPlaces(1), locale) : ""]);
+    }
+    suffix = `${q.fromIso}_${q.toIso}`;
   } else {
     return new Response("Not found", { status: 404 });
   }

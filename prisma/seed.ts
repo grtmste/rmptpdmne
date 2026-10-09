@@ -16,6 +16,7 @@ import { dec } from "../src/lib/money";
 import { confirmInvoice, saveInvoiceDraft, saveQuote } from "../src/server/services/sales";
 import { confirmPayment, savePayment, type PaymentInput } from "../src/server/services/payments";
 import { saveRecurring } from "../src/server/services/recurring";
+import { confirmMovement, saveMovementDraft } from "../src/server/services/inventory";
 import { confirmExpenseReport, confirmPurchase, saveExpenseReport, savePurchaseDraft, savePurchaseOrder } from "../src/server/services/purchases";
 
 const db = createPrismaClient();
@@ -187,6 +188,8 @@ async function main() {
           vatRateId: vat.KM,
           salesAccountId: i.type === "GOODS" ? acc["3000"] : acc["3010"],
           groupId: itemGroup.id,
+          // Faas 8: kaubad on laokaubad
+          trackStock: i.type === "GOODS",
         },
       }),
     ),
@@ -199,6 +202,30 @@ async function main() {
     const d = addDays(today, -days);
     return d < startDate ? startDate : d;
   };
+  // Ladu (faas 8): kaks ladu ja algseis enne esimest müüki
+  const [mainWarehouse, shopWarehouse] = await Promise.all([
+    db.warehouse.create({ data: { companyId: first.id, code: "PL", name: "Põhiladu", address: "Aia 5, Tartu", isDefault: true } }),
+    db.warehouse.create({ data: { companyId: first.id, code: "AIAND", name: "Aianduspood", address: "Turu 12, Tartu" } }),
+  ]);
+  const manualMovement = (input: Parameters<typeof saveMovementDraft>[3]) =>
+    db.$transaction(
+      async (tx) => {
+        const id = await saveMovementDraft(tx, first.id, owner, input);
+        await confirmMovement(tx, first.id, owner, id);
+      },
+      { timeout: 30_000 },
+    );
+  await manualMovement({
+    type: "RECEIPT",
+    date: ago(45),
+    warehouseId: mainWarehouse.id,
+    counterAccountId: acc["2950"],
+    description: "Laoseis arvestuse alguses",
+    lines: [
+      { itemId: roos!.id, quantity: "20", unitCost: "9.00" },
+      { itemId: muld!.id, quantity: "60", unitCost: "3.10" },
+    ],
+  });
   const invoices = [
     {
       customerId: kool.id,
@@ -278,7 +305,7 @@ async function main() {
       supplierId: taimla.id,
       invoiceNumber: "TP-2291",
       date: ago(30),
-      lines: [{ description: "Roosipõõsad 40 tk", quantity: "40", unitPrice: "9.20", vatRateId: vat.KM }],
+      lines: [{ itemId: roos!.id, description: "Roosipõõsad", quantity: "40", unitPrice: "9.20", vatRateId: vat.KM }],
     },
     {
       supplierId: telia.id,
@@ -377,6 +404,27 @@ async function main() {
       { timeout: 30_000 },
     );
   }
+
+  // Ladu (faas 8): kaupluse varu ja inventuur põhilaos
+  await manualMovement({
+    type: "TRANSFER",
+    date: ago(5),
+    warehouseId: mainWarehouse.id,
+    toWarehouseId: shopWarehouse.id,
+    description: "Kaupluse varu",
+    lines: [
+      { itemId: roos!.id, quantity: "8" },
+      { itemId: muld!.id, quantity: "15" },
+    ],
+  });
+  await manualMovement({
+    type: "COUNT",
+    date: ago(1),
+    warehouseId: mainWarehouse.id,
+    counterAccountId: acc["4190"],
+    description: "Kuu lõpu inventuur",
+    lines: [{ itemId: muld!.id, quantity: "38" }],
+  });
 
   // Perioodiline arve (faas 7): iga kuu esimesel päeval aiahoolduse kuutasu mustandina
   await db.$transaction((tx) =>

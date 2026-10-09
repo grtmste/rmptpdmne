@@ -45,6 +45,7 @@ const invoiceSchema = z.object({
   pricesIncludeVat: z.boolean(),
   yourReference: optionalText(100),
   notes: optionalText(2000),
+  warehouseId: optionalIdSchema,
   creditOfId: optionalIdSchema,
   lines: z.array(lineSchema).max(500),
 });
@@ -68,6 +69,7 @@ function draftInput(input: z.output<typeof invoiceSchema>) {
     pricesIncludeVat: input.pricesIncludeVat,
     yourReference: input.yourReference,
     notes: input.notes,
+    warehouseId: input.warehouseId,
     creditOfId: input.creditOfId,
     lines: toLines(input.lines),
   };

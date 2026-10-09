@@ -25,7 +25,7 @@ import { can, type Level, type MembershipLike, type Module } from "./permissions
  */
 
 /** Faas, mis on hetkel valmis. Kõrgema faasi vaated näitavad „tulekul“ lehte. */
-export const CURRENT_PHASE = 7;
+export const CURRENT_PHASE = 8;
 
 export type NavItem = {
   id: string;
@@ -185,9 +185,17 @@ export const NAVIGATION: NavGroup[] = [
     sections: [
       {
         items: [
-          item("inventory.movements", "/inventory/movements", "inventory", 8),
-          item("inventory.stock", "/inventory/stock", "inventory", 8),
-          item("inventory.warehouses", "/inventory/warehouses", "inventory", 8),
+          item("inventory.movements", "/inventory/movements", "inventory", 8, ["sissetulek", "väljaminek", "inventuur", "ümberpaigutus"]),
+          item("inventory.stock", "/inventory/stock", "inventory", 8, ["laoseis", "kogus"]),
+          item("inventory.warehouses", "/inventory/warehouses", "inventory", 8, ["ladu", "omahind", "FIFO"]),
+        ],
+      },
+      {
+        label: "reports",
+        items: [
+          item("inventory.itemMovement", "/inventory/item-movement", "inventory", 8, ["kaardi", "kauba liikumine"]),
+          item("inventory.turnover", "/inventory/turnover", "inventory", 8, ["käibeandmik"]),
+          item("inventory.analysis", "/inventory/analysis", "reports", 8, ["marginaal", "juurdehindlus", "kate"]),
         ],
       },
     ],
@@ -255,6 +263,7 @@ export const QUICK_ACTIONS: QuickAction[] = [
   { id: "uploadPurchase", label: "uploadPurchase", href: "/purchases/inbox", module: "purchases", level: "edit", phase: 4, icon: Upload },
   { id: "newExpenseReport", label: "newExpenseReport", href: "/purchases/expenses/new", module: "purchases", level: "edit", phase: 4, icon: Wallet },
   { id: "newPayment", label: "newPayment", href: "/payments/new", module: "payments", level: "edit", phase: 5, icon: Banknote },
+  { id: "newStockMovement", label: "newStockMovement", href: "/inventory/movements/new", module: "inventory", level: "edit", phase: 8, icon: Boxes },
   { id: "newJournalEntry", label: "newJournalEntry", href: "/finance/journal/new", module: "finance", level: "edit", phase: 2, icon: Landmark },
   { id: "newCustomer", label: "newCustomer", href: "/sales/customers/new", module: "sales", level: "edit", phase: 3, icon: Users },
   { id: "newQuote", label: "newQuote", href: "/sales/quotes/new", module: "sales", level: "edit", phase: 3, icon: FileText },

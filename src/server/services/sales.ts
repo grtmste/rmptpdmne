@@ -6,6 +6,7 @@ import { dec, roundMoney, sum, type DecimalInput } from "@/lib/money";
 import { buildSalesPosting, calculateDocument, dueDateFrom, toBase, type VatKindLike } from "@/lib/sales/calc";
 import { assertPeriodOpen, postJournalEntry } from "./journal";
 import { nextDocumentNumber } from "./numbering";
+import { postDocumentMovement } from "./inventory";
 
 type Tx = Prisma.TransactionClient;
 
@@ -49,7 +50,9 @@ export type SalesErrorCode =
   | "nothingToCharge"
   | "interestAccountMissing"
   | "quotesDifferentCustomers"
-  | "quotesCurrency";
+  | "quotesCurrency"
+  // Faas 8
+  | "warehouseNotFound";
 
 /** Müügi ja ostu dokumendireegli rikkumine; `code` on i18n võti nimeruumis `errors.sales`. */
 export class SalesError extends Error {
@@ -92,6 +95,8 @@ export type InvoiceInput = {
   pricesIncludeVat: boolean;
   yourReference?: string | null;
   notes?: string | null;
+  /** Ladu laokaupade väljastamiseks (null = vaikimisi ladu) */
+  warehouseId?: string | null;
   creditOfId?: string | null;
   taxFree?: boolean;
   quoteId?: string | null;
@@ -124,6 +129,13 @@ export async function roleAccount(
   const a = await tx.glAccount.findFirst({ where: { companyId, role }, select: { id: true } });
   if (!a) throw new SalesError("missingRoleAccount", { role });
   return a.id;
+}
+
+/** Ladu peab kuuluma ettevõttele (tühi = vaikimisi ladu kinnitamisel). */
+export async function checkedWarehouse(tx: Tx, companyId: string, id: string | null | undefined) {
+  if (!id) return null;
+  if (!(await tx.warehouse.findFirst({ where: { companyId, id }, select: { id: true } }))) throw new SalesError("warehouseNotFound");
+  return id;
 }
 
 /** Valuutakurss dokumendi kuupäeval (1 EUR = kurss valuutat); viimane teadaolev kuni kuupäevani. */
@@ -348,6 +360,7 @@ export async function saveInvoiceDraft(tx: Tx, companyId: string, userId: string
     locale: customer.locale,
     yourReference: input.yourReference ?? null,
     notes: input.notes ?? null,
+    warehouseId: await checkedWarehouse(tx, companyId, input.warehouseId),
     lateInterestPct: isInterest ? null : (customer.lateInterestPct ?? company.lateInterestPct),
     netTotal: calc.net.toFixed(2),
     vatTotal: calc.vat.toFixed(2),
@@ -496,6 +509,19 @@ export async function confirmInvoice(tx: Tx, companyId: string, userId: string |
   if (res.count !== 1) throw new SalesError("notDraft");
   await tx.salesInvoiceLine.deleteMany({ where: { companyId, invoiceId: id } });
   await tx.salesInvoiceLine.createMany({ data: invoiceLineData(rows, companyId, id) });
+  // Laokaubad: väljaminek laost ja müüdud kauba kulu (kreeditarvel tagastus)
+  if (invoice.type !== "PREPAYMENT" && !invoice.taxFree) {
+    await postDocumentMovement(tx, companyId, userId, {
+      type: "SALE",
+      date: invoice.date,
+      warehouseId: invoice.warehouseId,
+      number,
+      description: invoice.customerName,
+      salesInvoiceId: id,
+      creditOfSalesInvoiceId: invoice.creditOfId,
+      lines: rows.filter((r) => r.itemId).map((r) => ({ itemId: r.itemId!, quantity: dec(r.quantity).negated() })),
+    });
+  }
   return { id, number };
 }
 
@@ -554,6 +580,7 @@ export async function createCreditDraft(tx: Tx, companyId: string, userId: strin
     pricesIncludeVat: original.pricesIncludeVat,
     creditOfId: original.id,
     yourReference: original.yourReference,
+    warehouseId: original.warehouseId,
     notes: null,
     lines: original.lines.map((l) => lineInput(l, { quantity: dec(l.quantity).negated().toString() })),
   });

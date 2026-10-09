@@ -116,7 +116,8 @@
       "nothingToCharge": "The selected customers have no interest to charge.",
       "interestAccountMissing": "No income account for interest invoices – choose one in invoice settings.",
       "quotesDifferentCustomers": "A consolidated invoice can only include quotes of one customer.",
-      "quotesCurrency": "The quotes differ in currency or price type – consolidate them separately."
+      "quotesCurrency": "The quotes differ in currency or price type – consolidate them separately.",
+      "warehouseNotFound": "The selected warehouse was not found."
     },
     "emailNotConfigured": "Email sending isn't set up: add RESEND_API_KEY and EMAIL_FROM to the Vercel environment variables.",
     "attachmentLocked": "An attachment of a confirmed document can't be deleted.",
@@ -148,7 +149,23 @@
     "aiNotConfigured": "AI reading isn't configured (ANTHROPIC_API_KEY missing).",
     "aiUnsupportedFile": "This file type can't be read with AI – use PDF, JPG or PNG.",
     "aiRefused": "The AI didn't process this document.",
-    "aiFailed": "AI reading failed – try again or fill in the fields manually."
+    "aiFailed": "AI reading failed – try again or fill in the fields manually.",
+    "inventory": {
+      "warehouseNotFound": "Warehouse not found.",
+      "warehouseInUse": "The warehouse is in use.",
+      "sameWarehouse": "Source and destination warehouses must be different.",
+      "itemNotFound": "The item on row {row} was not found.",
+      "notStockItem": "Item {item} (row {row}) is not a stock item. Mark it as a stock item first.",
+      "noLines": "Add at least one row.",
+      "quantityPositive": "The quantity on row {row} must be positive.",
+      "movementNotFound": "Stock movement not found.",
+      "notDraft": "A confirmed stock movement can't be changed.",
+      "counterAccountRequired": "Choose a counter account – the change in stock value is posted there.",
+      "accountNotFound": "Counter account not found.",
+      "missingRoleAccount": "The chart of accounts has no default inventory account ({role}). Set it in the chart of accounts.",
+      "insufficientStock": "Not enough {item} in “{warehouse}”: {missing} short on {date}. Enter the purchase or receipt first, or change the date.",
+      "stockItemHasMovements": "The item has stock movements, so it can't stop being a stock item."
+    }
   },
   "validation": {
     "required": "Required.",
@@ -338,7 +355,10 @@
       "inventory": {
         "movements": "Stock movements",
         "stock": "Stock on hand",
-        "warehouses": "Warehouses"
+        "warehouses": "Warehouses",
+        "itemMovement": "Item movement",
+        "turnover": "Stock turnover",
+        "analysis": "Stock item analysis"
       },
       "assets": {
         "register": "Fixed assets",
@@ -370,7 +390,8 @@
       "photoShort": "Photo",
       "newQuote": "New quote",
       "uploadPurchase": "Upload a purchase invoice",
-      "newExpenseReport": "New expense report"
+      "newExpenseReport": "New expense report",
+      "newStockMovement": "New stock movement"
     }
   },
   "palette": {
@@ -837,7 +858,8 @@
       "PAYMENT": "Payment",
       "JOURNAL_ENTRY": "Journal entry",
       "PURCHASE_INVOICE": "Purchase invoice (internal no.)",
-      "EXPENSE_REPORT": "Expense report"
+      "EXPENSE_REPORT": "Expense report",
+      "STOCK_MOVEMENT": "Stock movement"
     }
   },
   "currencies": {
@@ -1222,7 +1244,12 @@
     "fixErrors": "Please fix the highlighted fields.",
     "delete": "Delete",
     "deleteConfirm": "Delete the item “{name}”?",
-    "deactivated": "The item has been used on documents, so it was marked inactive instead."
+    "deactivated": "The item has been used on documents, so it was marked inactive instead.",
+    "trackStock": "Stock item (track quantity and cost)",
+    "trackStockHint": "Purchases go into stock and sales post the cost of goods sold. You can't sell more than you have in stock.",
+    "inventoryAccount": "Inventory account",
+    "cogsAccount": "Cost of goods sold account",
+    "stockItem": "stock item"
   },
   "invoices": {
     "listSubtitle": "Sales invoices, credit notes and prepayment invoices.",
@@ -1357,7 +1384,10 @@
     "paid": "Paid",
     "partlyPaid": "Partly paid",
     "addReceipt": "Add receipt",
-    "refund": "Refund customer"
+    "refund": "Refund customer",
+    "warehouse": "Warehouse",
+    "warehouseHint": "Where stock items are issued from.",
+    "defaultWarehouse": "Default warehouse"
   },
   "quotes": {
     "listSubtitle": "Quotes – an accepted quote becomes an invoice with one click.",
@@ -1559,7 +1589,10 @@
     "aiReplaceLines": "Replace the current lines with the lines read from the file?",
     "aiLines": "{count, plural, one {# line} other {# lines}}",
     "aiItems": "{count, plural, one {# item} other {# items}}",
-    "aiCheckTotal": "Compare the total with the document: {total}."
+    "aiCheckTotal": "Compare the total with the document: {total}.",
+    "warehouse": "Warehouse",
+    "warehouseHint": "Where stock items are received.",
+    "defaultWarehouse": "Default warehouse"
   },
   "suppliers": {
     "listSubtitle": "Suppliers you buy from – bank accounts for payment orders.",
@@ -2213,5 +2246,130 @@
     "noPreview": "No preview for this file – download it.",
     "loading": "Loading preview…",
     "hint": "Wheel zooms · drag to move · double-click"
+  },
+  "inventory": {
+    "types": {
+      "RECEIPT": "Receipt",
+      "ISSUE": "Issue",
+      "TRANSFER": "Transfer",
+      "COUNT": "Stock count",
+      "SALE": "Sale",
+      "PURCHASE": "Purchase"
+    },
+    "new": {
+      "RECEIPT": "New receipt",
+      "ISSUE": "New issue",
+      "TRANSFER": "New transfer",
+      "COUNT": "New stock count"
+    },
+    "newSubtitle": {
+      "RECEIPT": "Goods into stock without a purchase invoice – e.g. opening stock or own production. Rows without a unit cost use the current cost.",
+      "ISSUE": "Goods out of stock without a sales invoice – e.g. write-off, samples or own use.",
+      "TRANSFER": "Moving goods from one warehouse to another. The value doesn't change and no entry is made.",
+      "COUNT": "Enter the counted quantities. The difference from the book quantity is posted to the counter account."
+    },
+    "counterHint": {
+      "RECEIPT": "E.g. an equity account for opening stock, or an expense account for own production.",
+      "ISSUE": "The expense account for the cost of the issued goods.",
+      "COUNT": "Expense account for shortages or income account for surpluses."
+    },
+    "costMethods": {
+      "FIFO": "FIFO (first in, first out)",
+      "AVERAGE": "Weighted average"
+    },
+    "newReceipt": "New receipt",
+    "moreNew": "Other stock movements",
+    "newMovementTitle": "New stock movement",
+    "editMovementTitle": "Edit stock movement",
+    "movementsSubtitle": "Receipts, issues, transfers, stock counts and movements from sales and purchase invoices.",
+    "searchMovements": "Search by number, description or item",
+    "listLabel": "Stock movements",
+    "emptyTitle": "No stock movements yet",
+    "emptyBody": "Mark items as stock items and movements are created from purchase and sales invoices. Enter opening stock as a receipt.",
+    "noResults": "No movements match your search.",
+    "pageOf": "Page {page}/{pages} · {total} in total",
+    "lineCount": "{count, plural, one {# row} other {# rows}}",
+    "allTypes": "All types",
+    "allWarehouses": "All warehouses",
+    "type": "Type",
+    "warehouse": "Warehouse",
+    "fromWarehouse": "From warehouse",
+    "toWarehouse": "To warehouse",
+    "counterAccount": "Counter account",
+    "description": "Description",
+    "item": "Item",
+    "itemPlaceholder": "Code or name",
+    "noStockItems": "No stock items found",
+    "quantity": "Quantity",
+    "counted": "Counted",
+    "bookQuantity": "Book",
+    "difference": "Difference",
+    "unitCost": "Unit cost",
+    "currentCost": "current",
+    "value": "Value",
+    "valueChange": "Change in stock value",
+    "countHint": "Add rows yourself or fill in every item in stock and correct the counted quantities.",
+    "fillFromStock": "Fill from stock",
+    "showBook": "Show book quantities",
+    "saveAndConfirm": "Confirm",
+    "movementConfirmed": "Stock movement confirmed.",
+    "deleteDraftConfirm": "Delete this stock movement draft?",
+    "sourceSale": "Sales invoice {number}",
+    "sourcePurchase": "Purchase invoice {number}",
+    "warehousesSubtitle": "Warehouses, the value of their stock and how cost is calculated.",
+    "newWarehouse": "New warehouse",
+    "editWarehouse": "Edit warehouse",
+    "editWarehouseNamed": "Edit warehouse {name}",
+    "warehouseCode": "Code",
+    "warehouseName": "Name",
+    "warehouseAddress": "Address",
+    "isDefault": "Default warehouse",
+    "active": "In use",
+    "inactive": "Not in use",
+    "deleteWarehouseConfirm": "Delete warehouse {name}?",
+    "warehouseDeactivated": "The warehouse has been used, so it was marked as not in use.",
+    "noWarehousesTitle": "No warehouses yet",
+    "noWarehousesBody": "The first warehouse, “Põhiladu”, is created with the first stock movement. Add more here if you need them.",
+    "viewStock": "Stock",
+    "stockValue": "Stock value",
+    "costingTitle": "Cost calculation",
+    "costingBody": "Cost is calculated per item across all warehouses. Changing the method or recalculating updates the cost and entries of movements in open periods; closed periods aren't changed.",
+    "costMethod": "Method",
+    "saveCostMethod": "Change method",
+    "costMethodConfirm": "Change the costing method? The cost and entries of issues in open periods will be recalculated.",
+    "recalculate": "Recalculate cost",
+    "recalculated": "{count, plural, =0 {Costs were already up to date.} one {Updated # movement.} other {Updated # movements.}}",
+    "asOfLabel": "As of {date}",
+    "showZero": "Include zero balances",
+    "noStockTitle": "Nothing in stock",
+    "noStockBody": "Stock comes from purchase invoices and receipts.",
+    "totalValue": "Total value",
+    "warehouseValueNote": "A warehouse's value is the sum of its movements. Cost is calculated across warehouses, so the unit cost in one warehouse may differ.",
+    "checkTitle": "Stock check",
+    "account": "Account",
+    "ledgerBalance": "General ledger",
+    "matches": "Matches",
+    "checkHint": "A difference appears when manual entries were posted to the inventory account or a stock item on a purchase invoice went to another account. Check the account in the general ledger.",
+    "date": "Date",
+    "document": "Document",
+    "in": "In",
+    "out": "Out",
+    "opening": "Opening",
+    "closing": "Closing",
+    "balanceQty": "Balance",
+    "balanceValue": "Balance value",
+    "noStockItemsTitle": "No stock items",
+    "noStockItemsBody": "Mark goods as stock items under Items.",
+    "total": "Total",
+    "code": "Code",
+    "unit": "Unit",
+    "soldQuantity": "Sold",
+    "revenue": "Revenue",
+    "cost": "Cost",
+    "margin": "Gross margin",
+    "marginPct": "Margin %",
+    "noSalesTitle": "No stock items sold in this period",
+    "noSalesBody": "The analysis shows stock items on confirmed sales invoices.",
+    "analysisNote": "Revenue comes from stock item rows on confirmed sales invoices and credit notes, in euros without VAT; cost comes from those invoices' stock movements."
   }
 }

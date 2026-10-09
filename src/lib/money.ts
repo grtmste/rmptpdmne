@@ -145,3 +145,10 @@ export function parseMoneyInput(input: string): Decimal | null {
   if (!/^-?\d+(\.\d+)?$/.test(normalized)) return null;
   return new Dec(normalized);
 }
+
+/** Kogus kasutajale: kuni 4 komakohta, lõpunullideta (nt "12", "0,5", "1 250,125"). */
+export function formatQuantity(value: DecimalInput, locale = "et"): string {
+  const s = formatMoney(value, locale, { scale: QUANTITY_SCALE });
+  const { decimal } = separators(locale);
+  return s.includes(decimal) ? s.replace(/0+$/, "").replace(new RegExp(`\\${decimal}$`), "") : s;
+}

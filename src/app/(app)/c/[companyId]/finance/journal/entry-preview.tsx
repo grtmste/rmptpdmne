@@ -48,6 +48,7 @@ const SOURCE_PATHS: Record<string, string> = {
   PURCHASE_INVOICE: "/purchases/invoices",
   EXPENSE_REPORT: "/purchases/expenses",
   PAYMENT: "/payments",
+  INVENTORY: "/inventory/movements",
   VAT_CLOSING: "/finance/vat",
 };
 /** Allika parameeter: dokumendi eelvaade (?doc=) või KMD periood (?period=). */

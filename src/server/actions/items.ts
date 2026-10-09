@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { ActionError, companyAction } from "@/lib/action";
+import { InventoryError } from "@/server/services/inventory";
 import { audit, diffRecords } from "@/lib/audit";
 import { codeSchema, decimalInputSchema, idSchema, optionalIdSchema, optionalText, requiredText } from "@/lib/validation";
 
@@ -25,6 +26,9 @@ const itemSchema = z.object({
   groupId: optionalIdSchema,
   forSales: z.boolean(),
   forPurchases: z.boolean(),
+  trackStock: z.boolean(),
+  inventoryAccountId: optionalIdSchema,
+  cogsAccountId: optionalIdSchema,
   description: optionalText(1000),
   active: z.boolean(),
 });
@@ -33,13 +37,19 @@ export const saveItem = companyAction({ module: "sales", level: "edit", schema: 
   const { id, ...data } = input;
   // Valikulised viited peavad kuuluma samale ettevõttele
   if (data.vatRateId && !(await ctx.cdb.vatRate.findFirst({ where: { id: data.vatRateId } }))) throw new ActionError("notFound");
-  for (const accountId of [data.salesAccountId, data.purchaseAccountId]) {
+  if (data.type !== "GOODS") data.trackStock = false;
+  if (!data.trackStock) Object.assign(data, { inventoryAccountId: null, cogsAccountId: null });
+  for (const accountId of [data.salesAccountId, data.purchaseAccountId, data.inventoryAccountId, data.cogsAccountId]) {
     if (accountId && !(await ctx.cdb.glAccount.findFirst({ where: { id: accountId, kind: "DETAIL" } }))) throw new ActionError("notFound");
   }
   if (data.groupId && !(await ctx.cdb.itemGroup.findFirst({ where: { id: data.groupId } }))) throw new ActionError("notFound");
   if (id) {
     const before = await ctx.cdb.item.findFirst({ where: { id } });
     if (!before) throw new ActionError("notFound");
+    // Laoliikumistega artiklit ei saa laokaubast tavaartikliks muuta (laoseis ja omahind kaoks)
+    if (before.trackStock && !data.trackStock && (await ctx.cdb.stockMovementLine.count({ where: { itemId: id } })) > 0) {
+      throw new InventoryError("stockItemHasMovements");
+    }
     const after = await ctx.cdb.item.update({ where: { id }, data });
     const diff = diffRecords(before, after);
     if (diff) await audit({ companyId: ctx.company.id, userId: ctx.user.id, action: "item.update", entityType: "Item", entityId: id, ...diff });
@@ -57,7 +67,10 @@ export const deleteItem = companyAction(
   async ({ id }, ctx) => {
     const item = await ctx.cdb.item.findFirst({ where: { id } });
     if (!item) throw new ActionError("notFound");
-    const used = (await ctx.cdb.salesInvoiceLine.count({ where: { itemId: id } })) + (await ctx.cdb.quoteLine.count({ where: { itemId: id } }));
+    const used =
+      (await ctx.cdb.salesInvoiceLine.count({ where: { itemId: id } })) +
+      (await ctx.cdb.quoteLine.count({ where: { itemId: id } })) +
+      (await ctx.cdb.stockMovementLine.count({ where: { itemId: id } }));
     // Kasutatud artiklit ei kustutata (ajalugu jääb loetavaks) – see muudetakse passiivseks
     if (used > 0) {
       await ctx.cdb.item.update({ where: { id }, data: { active: false } });
