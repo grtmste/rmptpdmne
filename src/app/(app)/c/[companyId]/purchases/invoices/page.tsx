@@ -16,6 +16,7 @@ import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/common/empty-state";
 import { PageHeader } from "@/components/common/page-header";
 import { ListSearch, Pager } from "@/components/common/list-controls";
+import { paymentsFor } from "@/server/sales/payments-for";
 import { PurchasePreview, type PurchasePreviewData } from "./purchase-preview";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -63,7 +64,7 @@ export default async function PurchaseInvoicesPage({ params, searchParams }: Pag
       orderBy: [{ date: "desc" }, { createdAt: "desc" }],
       skip: (page - 1) * PAGE_SIZE,
       take: PAGE_SIZE,
-      select: { id: true, number: true, invoiceNumber: true, status: true, isCredit: true, supplierName: true, date: true, dueDate: true, total: true, currency: true, source: true },
+      select: { id: true, number: true, invoiceNumber: true, status: true, isCredit: true, supplierName: true, date: true, dueDate: true, total: true, paidTotal: true, currency: true, source: true },
     }),
     ctx.cdb.purchaseInvoice.aggregate({ where: { ...where, status: "CONFIRMED" }, _sum: { totalBase: true } }),
     ctx.cdb.purchaseInvoice.count({ where: { status: "DRAFT", source: "UPLOAD" } }),
@@ -115,6 +116,8 @@ export default async function PurchaseInvoicesPage({ params, searchParams }: Pag
           vatAmount: l.vatAmount.plus(l.reverseVatAmount).toFixed(2),
         })),
         attachments,
+        paidTotal: inv.paidTotal.toFixed(2),
+        payments: await paymentsFor(ctx, "purchaseInvoiceId", inv.id),
       };
     }
   }
@@ -193,7 +196,9 @@ export default async function PurchaseInvoicesPage({ params, searchParams }: Pag
             <ul className="divide-y" aria-label={t("listLabel")}>
               {invoices.map((i) => {
                 const active = i.id === selectedId;
-                const overdue = i.status === "CONFIRMED" && !i.isCredit && i.dueDate < today;
+                const paid = i.status === "CONFIRMED" && !i.total.isZero() && i.paidTotal.equals(i.total);
+                const partly = i.status === "CONFIRMED" && !i.paidTotal.isZero() && !paid;
+                const overdue = i.status === "CONFIRMED" && !i.isCredit && !paid && i.dueDate < today;
                 return (
                   <li key={i.id}>
                     <Link
@@ -210,6 +215,8 @@ export default async function PurchaseInvoicesPage({ params, searchParams }: Pag
                           {i.status === "DRAFT" && <Badge variant="warning">{ti("statusDraft")}</Badge>}
                           {i.isCredit && <Badge variant="outline">{ti("types.CREDIT")}</Badge>}
                           {i.source === "UPLOAD" && i.status === "DRAFT" && <Badge variant="secondary">{t("uploaded")}</Badge>}
+                          {paid && <Badge variant="success">{ti("paid")}</Badge>}
+                          {partly && <Badge variant="outline">{ti("partlyPaid")}</Badge>}
                         </div>
                         <div className="truncate text-sm text-muted-foreground">{i.supplierName || t("noSupplierYet")}</div>
                       </div>
@@ -218,7 +225,7 @@ export default async function PurchaseInvoicesPage({ params, searchParams }: Pag
                           {formatMoney(i.total, locale)}
                           {i.currency !== ctx.company.baseCurrency && <span className="ml-1 text-xs text-muted-foreground">{i.currency}</span>}
                         </div>
-                        {i.status === "CONFIRMED" && !i.isCredit && (
+                        {i.status === "CONFIRMED" && !i.isCredit && !paid && (
                           <div className={cn("text-xs tabular-nums", overdue ? "text-warning" : "text-muted-foreground")}>
                             {ti("dueShort", { date: formatDate(i.dueDate, locale) })}
                           </div>

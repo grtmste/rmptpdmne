@@ -16,6 +16,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Input } from "@/components/ui/input";
 import { FormField } from "@/components/common/form-field";
 import { AttachmentsPanel, type AttachmentInfo } from "@/components/common/attachments-panel";
+import { PaymentStatus, type DocumentPayment } from "@/components/common/payment-status";
 import { useActionRunner } from "@/components/common/use-action";
 import {
   confirmSalesInvoiceById,
@@ -68,6 +69,8 @@ export type InvoicePreviewData = {
   emails: Array<{ id: string; to: string; status: "SENT" | "FAILED"; createdAt: string; error: string | null }>;
   email: EmailDraft | null;
   attachments: AttachmentInfo[];
+  paidTotal: string;
+  payments: DocumentPayment[];
 };
 
 export function InvoicePreview({
@@ -307,6 +310,17 @@ export function InvoicePreview({
           </div>
         )}
       </dl>
+      {!isDraft && (
+        <PaymentStatus
+          companyId={companyId}
+          total={invoice.total}
+          paid={invoice.paidTotal}
+          currency={invoice.currency}
+          payments={invoice.payments}
+          payHref={`/c/${companyId}/payments/new?salesInvoice=${invoice.id}`}
+          payLabel={dec(invoice.total).isNegative() ? t("refund") : t("addReceipt")}
+        />
+      )}
       {invoice.notes && <p className="border-t px-5 py-3 text-sm whitespace-pre-line text-muted-foreground">{invoice.notes}</p>}
 
       {(invoice.emails.length > 0 || invoice.confirmedBy) && (

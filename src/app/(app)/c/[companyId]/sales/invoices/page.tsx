@@ -19,6 +19,7 @@ import { PageHeader } from "@/components/common/page-header";
 import { ListSearch, Pager } from "@/components/common/list-controls";
 import { InvoicePreview, type InvoicePreviewData } from "./invoice-preview";
 import { emailDefaults } from "@/server/sales/email-defaults";
+import { paymentsFor } from "@/server/sales/payments-for";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("nav");
@@ -76,6 +77,7 @@ export default async function InvoicesPage({ params, searchParams }: PageProps<"
         dueDate: true,
         total: true,
         totalBase: true,
+        paidTotal: true,
         currency: true,
         sentAt: true,
         taxFree: true,
@@ -150,6 +152,8 @@ export default async function InvoicesPage({ params, searchParams }: PageProps<"
         emails: emails.map((e) => ({ id: e.id, to: e.to, status: e.status, createdAt: e.createdAt.toISOString(), error: e.error })),
         email: inv.status === "CONFIRMED" ? await emailDefaults(ctx.company.id, inv, customer) : null,
         attachments,
+        paidTotal: inv.paidTotal.toFixed(2),
+        payments: await paymentsFor(ctx, "salesInvoiceId", inv.id),
       };
     }
   }
@@ -247,7 +251,9 @@ export default async function InvoicesPage({ params, searchParams }: PageProps<"
             <ul className="divide-y" aria-label={t("listLabel")}>
               {invoices.map((i) => {
                 const active = i.id === selectedId;
-                const overdue = i.status === "CONFIRMED" && i.type === "INVOICE" && i.dueDate < today;
+                const paid = i.status === "CONFIRMED" && !i.total.isZero() && i.paidTotal.equals(i.total);
+                const partly = i.status === "CONFIRMED" && !i.paidTotal.isZero() && !paid;
+                const overdue = i.status === "CONFIRMED" && i.type === "INVOICE" && !paid && i.dueDate < today;
                 return (
                   <li key={i.id}>
                     <Link
@@ -263,6 +269,8 @@ export default async function InvoicesPage({ params, searchParams }: PageProps<"
                           {i.status === "DRAFT" && <Badge variant="warning">{t("statusDraft")}</Badge>}
                           {i.type !== "INVOICE" && <Badge variant="outline">{i.taxFree ? t("taxFree") : t(`types.${i.type}`)}</Badge>}
                           {i.sentAt && <Badge variant="secondary">{t("sent")}</Badge>}
+                          {paid && <Badge variant="success">{t("paid")}</Badge>}
+                          {partly && <Badge variant="outline">{t("partlyPaid")}</Badge>}
                         </div>
                         <div className="truncate text-sm text-muted-foreground">{i.customerName}</div>
                       </div>
@@ -271,7 +279,7 @@ export default async function InvoicesPage({ params, searchParams }: PageProps<"
                           {formatMoney(i.total, locale)}
                           {i.currency !== ctx.company.baseCurrency && <span className="ml-1 text-xs text-muted-foreground">{i.currency}</span>}
                         </div>
-                        {i.status === "CONFIRMED" && i.type === "INVOICE" && (
+                        {i.status === "CONFIRMED" && i.type === "INVOICE" && !paid && (
                           <div className={cn("text-xs tabular-nums", overdue ? "text-warning" : "text-muted-foreground")}>
                             {t("dueShort", { date: formatDate(i.dueDate, locale) })}
                           </div>

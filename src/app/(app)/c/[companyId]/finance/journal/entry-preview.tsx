@@ -47,6 +47,7 @@ const SOURCE_PATHS: Record<string, string> = {
   SALES_INVOICE: "/sales/invoices",
   PURCHASE_INVOICE: "/purchases/invoices",
   EXPENSE_REPORT: "/purchases/expenses",
+  PAYMENT: "/payments",
 };
 
 export function EntryPreview({

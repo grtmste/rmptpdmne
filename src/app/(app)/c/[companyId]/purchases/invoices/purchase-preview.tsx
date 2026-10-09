@@ -15,6 +15,7 @@ import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTi
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { AttachmentsPanel, type AttachmentInfo } from "@/components/common/attachments-panel";
+import { PaymentStatus, type DocumentPayment } from "@/components/common/payment-status";
 import { FormField } from "@/components/common/form-field";
 import { useActionRunner } from "@/components/common/use-action";
 import { confirmPurchaseInvoiceById, creditPurchaseInvoice, deletePurchaseInvoice } from "@/server/actions/purchases";
@@ -42,6 +43,8 @@ export type PurchasePreviewData = {
   order: { id: string; number: string } | null;
   lines: Array<{ id: string; description: string; account: string; vat: string; netAmount: string; vatAmount: string }>;
   attachments: AttachmentInfo[];
+  paidTotal: string;
+  payments: DocumentPayment[];
 };
 
 export function PurchasePreview({
@@ -236,6 +239,17 @@ export function PurchasePreview({
           </dd>
         </div>
       </dl>
+      {!isDraft && (
+        <PaymentStatus
+          companyId={companyId}
+          total={invoice.total}
+          paid={invoice.paidTotal}
+          currency={invoice.currency}
+          payments={invoice.payments}
+          payHref={`/c/${companyId}/payments/new?purchaseInvoice=${invoice.id}`}
+          payLabel={invoice.isCredit ? t("addRefund") : t("pay")}
+        />
+      )}
       {invoice.notes && <p className="border-t px-5 py-3 text-sm whitespace-pre-line text-muted-foreground">{invoice.notes}</p>}
       <div className="border-t px-5 py-4">
         <AttachmentsPanel

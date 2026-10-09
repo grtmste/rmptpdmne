@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { AttachmentsPanel, type AttachmentInfo } from "@/components/common/attachments-panel";
+import { PaymentStatus, type DocumentPayment } from "@/components/common/payment-status";
 import { useActionRunner } from "@/components/common/use-action";
 import { confirmExpenseReportById, deleteExpenseReport } from "@/server/actions/purchases";
 
@@ -25,6 +26,8 @@ export type ExpensePreviewData = {
   total: string;
   journal: { id: string; number: string | null } | null;
   attachments: AttachmentInfo[];
+  paidTotal: string;
+  payments: DocumentPayment[];
   lines: Array<{ id: string; date: string; vendor: string | null; description: string; account: string; grossAmount: string; vatAmount: string }>;
 };
 
@@ -144,6 +147,17 @@ export function ExpensePreview({
           <dd className="tabular-nums">{formatMoney(report.total, locale)}</dd>
         </div>
       </dl>
+      {!isDraft && (
+        <PaymentStatus
+          companyId={companyId}
+          total={report.total}
+          paid={report.paidTotal}
+          currency="EUR"
+          payments={report.payments}
+          payHref={`/c/${companyId}/payments/new?expenseReport=${report.id}`}
+          payLabel={t("reimburse")}
+        />
+      )}
       <div className="border-t px-5 py-4">
         <AttachmentsPanel companyId={companyId} documentType="ExpenseReport" documentId={report.id} attachments={report.attachments} canEdit={canEdit} locked={!isDraft} />
       </div>

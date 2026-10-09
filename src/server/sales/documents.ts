@@ -1,6 +1,7 @@
 import "server-only";
 import { getTranslations } from "next-intl/server";
 import { db } from "@/lib/db";
+import { formatIban } from "@/lib/iban";
 import { formatDate } from "@/lib/dates";
 import { dec, formatMoney } from "@/lib/money";
 import { isLocale } from "@/i18n/config";
@@ -43,6 +44,17 @@ type T = (key: string, values?: Record<string, string | number>) => string;
 
 async function loadCompany(companyId: string) {
   return db.company.findUniqueOrThrow({ where: { id: companyId } });
+}
+
+/** Arve pangarekvisiidid: arvel näidatavad pangakontod, muidu arve seadistuse vaba tekst. */
+async function bankDetails(companyId: string, fallback: string | null) {
+  const banks = await db.bankAccount.findMany({
+    where: { companyId, kind: "BANK", active: true, showOnInvoice: true, iban: { not: null } },
+    orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+    select: { name: true, iban: true },
+  });
+  if (banks.length === 0) return fallback;
+  return banks.map((b) => `${b.name} ${formatIban(b.iban!)}`).join("\n");
 }
 
 async function buildData(
@@ -118,7 +130,7 @@ async function buildData(
       email: company.email,
       phone: company.phone,
       website: company.website,
-      bankDetails: company.invoiceBankDetails,
+      bankDetails: await bankDetails(companyId, company.invoiceBankDetails),
       footer: company.invoiceFooter,
     },
     customer: {

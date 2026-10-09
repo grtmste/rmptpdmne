@@ -211,4 +211,31 @@ registerSearchProvider({
   },
 });
 
+/** Maksed numbri, osapoole või viitenumbri järgi. */
+registerSearchProvider({
+  id: "payments",
+  module: "payments",
+  async search(ctx, query, limit) {
+    const rows = await ctx.cdb.payment.findMany({
+      where: {
+        OR: [
+          { number: { contains: query, mode: "insensitive" } },
+          { partyName: { contains: query, mode: "insensitive" } },
+          { referenceNumber: { startsWith: query } },
+        ],
+      },
+      orderBy: [{ date: "desc" }, { createdAt: "desc" }],
+      take: limit,
+      select: { id: true, number: true, partyName: true, amount: true, currency: true, date: true, direction: true },
+    });
+    return rows.map((r) => ({
+      id: r.id,
+      kind: "payment",
+      title: `${r.number ?? "—"} · ${r.partyName || "—"}`,
+      subtitle: `${r.date.toISOString().slice(0, 10)} · ${r.direction === "OUT" ? "−" : ""}${r.amount.toFixed(2)} ${r.currency}`,
+      href: `/payments?doc=${r.id}`,
+    }));
+  },
+});
+
 export {};

@@ -14,6 +14,7 @@ import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/common/empty-state";
 import { PageHeader } from "@/components/common/page-header";
 import { Pager } from "@/components/common/list-controls";
+import { paymentsFor } from "@/server/sales/payments-for";
 import { ExpensePreview, type ExpensePreviewData } from "./expense-preview";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -59,6 +60,8 @@ export default async function ExpenseReportsPage({ params, searchParams }: PageP
         total: r.total.toFixed(2),
         journal,
         attachments,
+        paidTotal: r.paidTotal.toFixed(2),
+        payments: await paymentsFor(ctx, "expenseReportId", r.id),
         lines: r.lines.map((l) => ({
           id: l.id,
           date: toISODate(l.date),

@@ -25,7 +25,7 @@ import { can, type Level, type MembershipLike, type Module } from "./permissions
  */
 
 /** Faas, mis on hetkel valmis. Kõrgema faasi vaated näitavad „tulekul“ lehte. */
-export const CURRENT_PHASE = 4;
+export const CURRENT_PHASE = 5;
 
 export type NavItem = {
   id: string;
@@ -143,8 +143,8 @@ export const NAVIGATION: NavGroup[] = [
       {
         items: [
           item("payments.list", "/payments", "payments", 5),
-          item("payments.statements", "/payments/statements", "payments", 5),
-          item("payments.orders", "/payments/orders", "payments", 5),
+          item("payments.statements", "/payments/statements", "payments", 5, ["camt", "väljavõte", "pank"]),
+          item("payments.orders", "/payments/orders", "payments", 5, ["pain", "maksekorraldus"]),
           item("payments.cashbook", "/payments/cashbook", "payments", 5),
           item("payments.accounts", "/payments/accounts", "payments", 5),
         ],
