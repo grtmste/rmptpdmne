@@ -12,6 +12,7 @@ import { todayLocal } from "@/lib/dates";
 import { dateSchema, decimalInputSchema, idSchema, optionalDateSchema, optionalIdSchema, optionalText } from "@/lib/validation";
 import {
   documentExists,
+  readAttachment,
   removeStoredFile,
   storeAttachment,
   type AttachmentDocumentType,
@@ -29,6 +30,8 @@ import {
   savePurchaseOrder,
 } from "@/server/services/purchases";
 import type { CompanyContext } from "@/server/session";
+import { rateLimit } from "@/lib/rate-limit";
+import { AiExtractError, aiExtractInvoice, aiExtractionEnabled } from "@/server/purchases/ai-extract";
 
 const tx = <T>(fn: (t: Prisma.TransactionClient) => Promise<T>) => db.$transaction(fn, { timeout: 20_000 });
 const invoicesPath = (companyId: string) => `/c/${companyId}/purchases/invoices`;
@@ -298,3 +301,46 @@ export const deleteExpenseReport = companyAction({ module: "purchases", level: "
   await auditDoc(ctx, "expenseReport.deleteDraft", "ExpenseReport", id);
   revalidatePath(expensesPath(ctx.company.id));
 });
+
+// --- AI-tuvastus (valikuline) ---------------------------------------------------
+
+/**
+ * Ostuarve andmete tuvastus failist Claude'iga: salvestatud manus (attachmentId) või uue arve
+ * veel salvestamata fail. Piirang 200 tuvastust päevas ettevõtte kohta.
+ */
+export const aiExtractPurchaseAction = companyAction(
+  {
+    module: "purchases",
+    level: "edit",
+    schema: z.object({ attachmentId: idSchema.optional(), file: fileSchema.optional() }),
+  },
+  async (input, ctx) => {
+    if (!aiExtractionEnabled()) throw new ActionError("aiNotConfigured");
+    const limited = await rateLimit(`ai:${ctx.company.id}`, 200, 86_400);
+    if (!limited.ok) throw new ActionError("rateLimited");
+    let bytes: Buffer | null = null;
+    let mediaType = "";
+    if (input.attachmentId) {
+      const a = await ctx.cdb.attachment.findFirst({
+        where: { id: input.attachmentId, documentType: "PurchaseInvoice" },
+        select: { storage: true, url: true, data: true, contentType: true },
+      });
+      if (!a) throw new ActionError("notFound");
+      bytes = await readAttachment(a);
+      mediaType = a.contentType;
+    } else if (input.file) {
+      if (input.file.size > 4 * 1024 * 1024) throw new ActionError("sales.attachmentTooLarge");
+      bytes = Buffer.from(await input.file.arrayBuffer());
+      mediaType = input.file.type;
+    }
+    if (!bytes) throw new ActionError("notFound");
+    const company = await ctx.cdb.company.findFirstOrThrow({ select: { name: true, regCode: true } });
+    const items = await ctx.cdb.item.findMany({ where: { active: true, forPurchases: true }, orderBy: { code: "asc" }, take: 300, select: { code: true, name: true } });
+    try {
+      return await aiExtractInvoice({ bytes, mediaType, buyer: company, items });
+    } catch (e) {
+      if (e instanceof AiExtractError) throw new ActionError(e.code);
+      throw e;
+    }
+  },
+);

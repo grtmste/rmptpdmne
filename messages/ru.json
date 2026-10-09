@@ -144,7 +144,11 @@
       "notClosed": "Период {period} не закрыт.",
       "noVatPayableAccount": "В плане счетов нет счёта расчётов по НДС.",
       "nothingToClose": "На счетах НДС нет остатка для закрытия за {period}."
-    }
+    },
+    "aiNotConfigured": "Распознавание ИИ не настроено (нет ANTHROPIC_API_KEY).",
+    "aiUnsupportedFile": "Этот тип файла нельзя прочитать с ИИ — используйте PDF, JPG или PNG.",
+    "aiRefused": "ИИ не обработал этот документ.",
+    "aiFailed": "Распознавание ИИ не удалось — повторите или заполните поля вручную."
   },
   "validation": {
     "required": "Обязательное поле.",
@@ -1549,7 +1553,13 @@
     "extractNothing": "Из файла ничего не удалось распознать.",
     "extractAmount": "сумма {amount}",
     "extractLine": "Счёт {number}",
-    "extractLineNoNumber": "Счёт покупки"
+    "extractLineNoNumber": "Счёт покупки",
+    "aiButton": "Распознать с ИИ",
+    "aiHint": "Читает также сканы, фото и строки счёта (файл отправляется в API Anthropic).",
+    "aiReplaceLines": "Заменить текущие строки строками из файла?",
+    "aiLines": "{count, plural, one {# строка} few {# строки} many {# строк} other {# строки}}",
+    "aiItems": "{count, plural, one {# артикул} few {# артикула} many {# артикулов} other {# артикула}}",
+    "aiCheckTotal": "Сверьте итог с документом: {total}."
   },
   "suppliers": {
     "listSubtitle": "Поставщики, у которых вы покупаете, – расчётные счета для платёжных поручений.",

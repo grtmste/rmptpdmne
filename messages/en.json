@@ -144,7 +144,11 @@
       "notClosed": "Period {period} isn't closed.",
       "noVatPayableAccount": "The chart of accounts has no VAT settlement account.",
       "nothingToClose": "VAT accounts have no balance to close for {period}."
-    }
+    },
+    "aiNotConfigured": "AI reading isn't configured (ANTHROPIC_API_KEY missing).",
+    "aiUnsupportedFile": "This file type can't be read with AI – use PDF, JPG or PNG.",
+    "aiRefused": "The AI didn't process this document.",
+    "aiFailed": "AI reading failed – try again or fill in the fields manually."
   },
   "validation": {
     "required": "Required.",
@@ -1549,7 +1553,13 @@
     "extractNothing": "Nothing could be read from the file.",
     "extractAmount": "amount {amount}",
     "extractLine": "Invoice {number}",
-    "extractLineNoNumber": "Purchase invoice"
+    "extractLineNoNumber": "Purchase invoice",
+    "aiButton": "Read with AI",
+    "aiHint": "Also reads scanned documents, photos and invoice lines (the file is sent to the Anthropic API).",
+    "aiReplaceLines": "Replace the current lines with the lines read from the file?",
+    "aiLines": "{count, plural, one {# line} other {# lines}}",
+    "aiItems": "{count, plural, one {# item} other {# items}}",
+    "aiCheckTotal": "Compare the total with the document: {total}."
   },
   "suppliers": {
     "listSubtitle": "Suppliers you buy from – bank accounts for payment orders.",

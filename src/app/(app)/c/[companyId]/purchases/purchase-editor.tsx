@@ -3,7 +3,8 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { Columns3, Loader2, Plus, Receipt, Trash2, UserPlus, Wand2 } from "lucide-react";
+import { Columns3, Loader2, Plus, Receipt, Sparkles, Trash2, UserPlus, Wand2 } from "lucide-react";
+import type { AiInvoice } from "@/server/purchases/ai-extract";
 import { toast } from "sonner";
 import { normalizeIban } from "@/lib/iban";
 import { extractInvoiceData, guessVatPct } from "@/lib/purchases/extract";
@@ -25,7 +26,7 @@ import { NativeSelect } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
 import { FormError, FormField } from "@/components/common/form-field";
 import { useActionRunner } from "@/components/common/use-action";
-import { confirmPurchaseInvoice, savePurchaseInvoice, savePurchaseOrderAction, uploadAttachment } from "@/server/actions/purchases";
+import { aiExtractPurchaseAction, confirmPurchaseInvoice, savePurchaseInvoice, savePurchaseOrderAction, uploadAttachment } from "@/server/actions/purchases";
 import { saveSupplier } from "@/server/actions/suppliers";
 import { newPurchaseLine, type PurchaseLine } from "./purchase-line";
 import { PendingFiles } from "./pending-files";
@@ -53,7 +54,11 @@ export type PurchaseEditorData = {
   defaultAccountId: string | null;
   defaultVatRateId: string | null;
   own?: { regCode: string | null; vatNumber: string | null; ibans: string[] };
+  /** AI-tuvastus on seadistatud (ANTHROPIC_API_KEY) */
+  aiEnabled?: boolean;
 };
+
+type SupplierHint = { name: string; regCode: string; vatNumber: string; bankAccount: string };
 
 export type PurchaseValues = {
   supplierId: string;
@@ -92,7 +97,7 @@ export function PurchaseEditor({
   /** Manuse eelvaade redaktori kõrval (ostuarve skaneering) */
   side?: React.ReactNode;
   /** Salvestatud manus, millest andmeid tuvastada */
-  extractFrom?: { url: string; contentType: string } | null;
+  extractFrom?: { url: string; contentType: string; attachmentId: string } | null;
   /** Tuvasta kohe avamisel (üleslaaditud ja veel täitmata mustand) */
   autoExtract?: boolean;
 }) {
@@ -112,10 +117,11 @@ export function PurchaseEditor({
   const [errorRow, setErrorRow] = useState<number | null>(null);
   const [showExtra, setShowExtra] = useState(() => initial.lines.some((l) => l.departmentId || Object.values(l.dims).some(Boolean)));
   const [newSupplierOpen, setNewSupplierOpen] = useState(false);
-  const [newSupplierInitial, setNewSupplierInitial] = useState<{ regCode: string; vatNumber: string; bankAccount: string } | null>(null);
+  const [newSupplierInitial, setNewSupplierInitial] = useState<SupplierHint | null>(null);
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const [extracting, setExtracting] = useState(false);
-  const [extractInfo, setExtractInfo] = useState<{ filled: string[]; warnings: string[]; supplierHint: { regCode: string; vatNumber: string; bankAccount: string } | null } | null>(null);
+  const [extractInfo, setExtractInfo] = useState<{ filled: string[]; warnings: string[]; supplierHint: SupplierHint | null } | null>(null);
+  const te = useTranslations("errors");
   const gridId = useId();
 
   const vatById = useMemo(() => new Map(data.vatRates.map((r) => [r.id, r])), [data.vatRates]);
@@ -208,7 +214,7 @@ export function PurchaseEditor({
     const filled: string[] = [];
     const warnings: string[] = [];
     let sup = suppliers.find((s) => s.id === v.supplierId);
-    let supplierHint: { regCode: string; vatNumber: string; bankAccount: string } | null = null;
+    let supplierHint: SupplierHint | null = null;
     if (!sup) {
       sup = suppliers.find(
         (s) =>
@@ -218,7 +224,7 @@ export function PurchaseEditor({
       );
       if (sup) filled.push(t("supplier"));
       else if (r.regCodes.length || r.vatNumbers.length) {
-        supplierHint = { regCode: r.regCodes[0] ?? "", vatNumber: r.vatNumbers[0] ?? "", bankAccount: r.ibans[0] ?? "" };
+        supplierHint = { name: "", regCode: r.regCodes[0] ?? "", vatNumber: r.vatNumbers[0] ?? "", bankAccount: r.ibans[0] ?? "" };
         warnings.push(t("extractSupplierMissing", { code: r.regCodes[0] ?? r.vatNumbers[0] ?? "" }));
       }
     }
@@ -263,21 +269,103 @@ export function PurchaseEditor({
     setExtractInfo({ filled, warnings, supplierHint });
   }
 
-  async function extractFromSource(source: File | { url: string; contentType: string }) {
+  /** AI tulemuse rakendamine: päis tühjadele väljadele, read (artiklid koodi järgi), KM määr protsendi järgi. */
+  function applyAi(r: AiInvoice) {
+    const filled: string[] = [];
+    const warnings: string[] = [];
+    const up = (x: string | null) => x?.replace(/\s+/g, "").toUpperCase() ?? null;
+    let sup = suppliers.find((s) => s.id === v.supplierId);
+    let supplierHint: SupplierHint | null = null;
+    if (!sup) {
+      sup = suppliers.find(
+        (s) =>
+          (s.regCode && s.regCode === r.supplierRegCode) ||
+          (s.vatNumber && up(s.vatNumber) === up(r.supplierVatNumber)) ||
+          (s.bankAccount && r.supplierIban && normalizeIban(s.bankAccount) === normalizeIban(r.supplierIban)) ||
+          (r.supplierName && s.name.toLowerCase() === r.supplierName.toLowerCase()),
+      );
+      if (sup) filled.push(t("supplier"));
+      else if (r.supplierName || r.supplierRegCode) {
+        supplierHint = { name: r.supplierName ?? "", regCode: r.supplierRegCode ?? "", vatNumber: up(r.supplierVatNumber) ?? "", bankAccount: up(r.supplierIban) ?? "" };
+        warnings.push(t("extractSupplierMissing", { code: r.supplierName ?? r.supplierRegCode ?? "" }));
+      }
+    }
+    const date = r.invoiceDate && parseISODate(r.invoiceDate) ? r.invoiceDate : v.date;
+    const rateFor = (pct: string | null) => {
+      if (pct === null || pct === "") return undefined;
+      const n = Number(pct);
+      return data.vatRates.find((rate) => rate.kind === "TAXABLE" && dec(rate.deductiblePct).equals(100) && pctOf(rate.id, date)?.toNumber() === n)?.id;
+    };
+    const lines = r.lines
+      .filter((l) => l.description.trim())
+      .map((l) => {
+        const item = l.itemCode ? data.items.find((i) => i.code === l.itemCode) : undefined;
+        return newPurchaseLine({
+          itemId: item?.id ?? "",
+          code: item?.code ?? "",
+          description: l.description,
+          quantity: parseMoneyInput(l.quantity) ? l.quantity : "1",
+          unit: l.unit ?? item?.unit ?? "",
+          unitPrice: l.unitPrice,
+          vatRateId: rateFor(l.vatPct) ?? sup?.defaultVatRateId ?? item?.vatRateId ?? data.defaultVatRateId ?? "",
+          accountId: item?.purchaseAccountId ?? sup?.defaultAccountId ?? data.defaultAccountId ?? "",
+        });
+      });
+    const linesEmpty = v.lines.every((l) => !l.description && !l.unitPrice && !l.itemId);
+    const replaceLines = lines.length > 0 && (linesEmpty || confirm(t("aiReplaceLines")));
+    if (r.invoiceNumber && !v.invoiceNumber) filled.push(t("invoiceNumber"));
+    if (r.invoiceDate) filled.push(ti("date"));
+    if (r.dueDate) filled.push(ti("dueDate"));
+    if (replaceLines) filled.push(t("aiLines", { count: lines.length }));
+    if (lines.some((l) => l.itemId)) filled.push(t("aiItems", { count: lines.filter((l) => l.itemId).length }));
+    setV((p) => ({
+      ...p,
+      supplierId: sup && !p.supplierId ? sup.id : p.supplierId,
+      currency: sup && !p.supplierId ? sup.currency : r.currency && data.currencies.includes(r.currency) ? r.currency : p.currency,
+      invoiceNumber: p.invoiceNumber || r.invoiceNumber || "",
+      date,
+      dueDate: r.dueDate && parseISODate(r.dueDate) ? r.dueDate : p.dueDate,
+      referenceNumber: p.referenceNumber || r.referenceNumber?.replace(/\s+/g, "") || "",
+      pricesIncludeVat: replaceLines ? r.pricesIncludeVat : p.pricesIncludeVat,
+      lines: replaceLines ? lines : p.lines,
+    }));
+    if (r.dueDate) setDueTouched(true);
+    else if (sup && !v.supplierId) recomputeDue(date, sup.id);
+    if (r.total) warnings.push(t("aiCheckTotal", { total: formatMoney(r.total, locale) }));
+    setExtractInfo({ filled, warnings, supplierHint });
+  }
+
+  async function extractWithAi(source: File | { attachmentId: string }) {
+    setExtracting(true);
+    try {
+      const res = await aiExtractPurchaseAction(companyId, source instanceof File ? { file: source } : { attachmentId: source.attachmentId });
+      if (res.ok) applyAi(res.data);
+      else toast.error(te.has(res.error) ? te(res.error) : te("unexpected"));
+    } finally {
+      setExtracting(false);
+    }
+  }
+
+  async function extractFromSource(source: File | { url: string; contentType: string; attachmentId: string }) {
     const type = source instanceof File ? source.type : source.contentType;
     if (type !== "application/pdf") {
+      if (data.aiEnabled) return extractWithAi(source);
       setExtractInfo({ filled: [], warnings: [t("extractImage")], supplierHint: null });
       return;
     }
     setExtracting(true);
+    let text = "";
     try {
-      const text = await pdfText(source instanceof File ? await source.arrayBuffer() : source.url);
-      applyExtraction(text);
+      text = await pdfText(source instanceof File ? await source.arrayBuffer() : source.url);
     } catch {
       toast.error(t("extractFailed"));
-    } finally {
       setExtracting(false);
+      return;
     }
+    setExtracting(false);
+    // Skaneeritud PDF (tekstikiht puudub) → AI, kui see on seadistatud
+    if (!text.trim() && data.aiEnabled) return extractWithAi(source);
+    applyExtraction(text);
   }
   const extractSource = pendingFiles.find((f) => f.type === "application/pdf") ?? pendingFiles[0] ?? extractFrom ?? null;
 
@@ -488,6 +576,11 @@ export function PurchaseEditor({
           <Button type="button" size="sm" variant="outline" disabled={extracting} onClick={() => void extractFromSource(extractSource)}>
             {extracting ? <Loader2 className="animate-spin" /> : <Wand2 />} {t("extractButton")}
           </Button>
+          {data.aiEnabled && (
+            <Button type="button" size="sm" variant="outline" disabled={extracting} onClick={() => void extractWithAi(extractSource)} title={t("aiHint")}>
+              <Sparkles /> {t("aiButton")}
+            </Button>
+          )}
         </div>
       )}
       <Card>
@@ -862,14 +955,14 @@ function QuickSupplierDialog({
 }: {
   companyId: string;
   baseCurrency: string;
-  initial?: { regCode: string; vatNumber: string; bankAccount: string } | null;
+  initial?: SupplierHint | null;
   onClose: () => void;
   onCreated: (s: PurchaseEditorData["suppliers"][number]) => void;
 }) {
   const t = useTranslations("suppliers");
   const tc = useTranslations("common");
   const { pending, run } = useActionRunner();
-  const [v, setV] = useState({ name: "", regCode: initial?.regCode ?? "", vatNumber: initial?.vatNumber ?? "", bankAccount: initial?.bankAccount ?? "" });
+  const [v, setV] = useState({ name: initial?.name ?? "", regCode: initial?.regCode ?? "", vatNumber: initial?.vatNumber ?? "", bankAccount: initial?.bankAccount ?? "" });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>

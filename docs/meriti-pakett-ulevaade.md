@@ -236,3 +236,8 @@ Hiljem: näidupõhised perioodilised arved, makselink e-kirjas, saldoteatised ta
   (ootel) arve avamisel tuvastatakse kohe.
 - Skaneeritud PDF-id ja fotod (tšekid) tekstikihti ei sisalda – nende ja arve ridade/artiklite tuvastus vajab
   OCR-i või tehisintellekti teenust (järgmine samm, kasutaja otsusel).
+- **AI-tuvastus (valikuline, `ANTHROPIC_API_KEY`)**: skaneeritud PDF-id ja fotod (tšekid) ning arve read – kirjeldus,
+  kogus, ühik, hind, KM määr ja vastavus ettevõtte artiklitele (koodi järgi). Mudel Claude Opus 5.5 struktureeritud
+  väljundiga; keeldumise korral server-side fallback. Tekstiga PDF-i loeb esmalt brauseri tuvastus, AI-d kasutatakse
+  skaneeritud failide ja piltide korral automaatselt ning nupuga „Tuvasta AI-ga“. Piir 200 tuvastust päevas ettevõtte
+  kohta. Fail saadetakse Anthropicu API-le – ilma võtmeta funktsioon välja lülitatud.

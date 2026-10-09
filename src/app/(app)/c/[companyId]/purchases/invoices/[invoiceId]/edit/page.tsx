@@ -75,6 +75,7 @@ export default async function EditPurchaseInvoicePage({ params }: PageProps<"/c/
             ? {
                 url: `/c/${companyId}/attachments/${(attachments.find((a) => a.contentType === "application/pdf") ?? attachments[0])!.id}`,
                 contentType: (attachments.find((a) => a.contentType === "application/pdf") ?? attachments[0])!.contentType,
+                attachmentId: (attachments.find((a) => a.contentType === "application/pdf") ?? attachments[0])!.id,
               }
             : null
         }

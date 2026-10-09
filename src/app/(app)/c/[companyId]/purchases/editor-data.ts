@@ -2,6 +2,7 @@ import "server-only";
 import { toISODate } from "@/lib/accounting/dates";
 import type { CompanyContext } from "@/server/session";
 import type { PurchaseEditorData } from "./purchase-editor";
+import { aiExtractionEnabled } from "@/server/purchases/ai-extract";
 
 /** Ostudokumendi vormi valikud. */
 export async function loadPurchaseEditorData(ctx: CompanyContext): Promise<PurchaseEditorData> {
@@ -73,5 +74,6 @@ export async function loadPurchaseEditorData(ctx: CompanyContext): Promise<Purch
     defaultVatRateId: defaultPurchase?.defaultVatRateId ?? null,
     // Ostja (meie) andmed – tuvastamisel neid tarnijaks ei peeta
     own: { regCode: company.regCode, vatNumber: company.vatNumber, ibans: ownBanks.map((b) => b.iban!) },
+    aiEnabled: aiExtractionEnabled(),
   };
 }

@@ -144,7 +144,11 @@
       "notClosed": "Jaksoa {period} ei ole suljettu.",
       "noVatPayableAccount": "Tilikartasta puuttuu ALV-tilitystili.",
       "nothingToClose": "ALV-tileillä ei ole suljettavaa saldoa jaksolla {period}."
-    }
+    },
+    "aiNotConfigured": "Tekoälytunnistusta ei ole määritetty (ANTHROPIC_API_KEY puuttuu).",
+    "aiUnsupportedFile": "Tätä tiedostotyyppiä ei voi lukea tekoälyllä – käytä PDF:ää, JPG:tä tai PNG:tä.",
+    "aiRefused": "Tekoäly ei käsitellyt tätä asiakirjaa.",
+    "aiFailed": "Tekoälytunnistus epäonnistui – yritä uudelleen tai täytä kentät käsin."
   },
   "validation": {
     "required": "Pakollinen kenttä.",
@@ -1549,7 +1553,13 @@
     "extractNothing": "Tiedostosta ei saatu tunnistettua mitään.",
     "extractAmount": "summa {amount}",
     "extractLine": "Lasku {number}",
-    "extractLineNoNumber": "Ostolasku"
+    "extractLineNoNumber": "Ostolasku",
+    "aiButton": "Tunnista tekoälyllä",
+    "aiHint": "Lukee myös skannatut asiakirjat, valokuvat ja laskurivit (tiedosto lähetetään Anthropicin API:lle).",
+    "aiReplaceLines": "Korvataanko nykyiset rivit tiedostosta tunnistetuilla?",
+    "aiLines": "{count, plural, one {# rivi} other {# riviä}}",
+    "aiItems": "{count, plural, one {# nimike} other {# nimikettä}}",
+    "aiCheckTotal": "Vertaa loppusummaa asiakirjaan: {total}."
   },
   "suppliers": {
     "listSubtitle": "Toimittajat, joilta ostat – pankkitilit maksumääräyksiä varten.",

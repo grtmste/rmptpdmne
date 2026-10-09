@@ -20,6 +20,7 @@
     "vercel-build": "tsx scripts/check-database-url.ts && prisma generate && prisma migrate deploy && next build"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.133.0",
     "@auth/prisma-adapter": "^2.11.3",
     "@node-rs/argon2": "^2.2.2",
     "@prisma/adapter-pg": "7.10.0",

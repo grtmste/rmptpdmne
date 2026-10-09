@@ -144,7 +144,11 @@
       "notClosed": "Periood {period} ei ole suletud.",
       "noVatPayableAccount": "Kontoplaanis puudub käibemaksu arvelduse konto.",
       "nothingToClose": "Perioodis {period} pole käibemaksu kontodel saldot, mida sulgeda."
-    }
+    },
+    "aiNotConfigured": "AI-tuvastus pole seadistatud (ANTHROPIC_API_KEY puudub).",
+    "aiUnsupportedFile": "Seda failitüüpi ei saa AI-ga lugeda – kasuta PDF-i, JPG-d või PNG-d.",
+    "aiRefused": "AI ei töödelnud seda dokumenti.",
+    "aiFailed": "AI-tuvastus ebaõnnestus – proovi uuesti või täida väljad käsitsi."
   },
   "validation": {
     "required": "Kohustuslik väli.",
@@ -1549,7 +1553,13 @@
     "extractNothing": "Failist ei õnnestunud midagi tuvastada.",
     "extractAmount": "summa {amount}",
     "extractLine": "Arve {number}",
-    "extractLineNoNumber": "Ostuarve"
+    "extractLineNoNumber": "Ostuarve",
+    "aiButton": "Tuvasta AI-ga",
+    "aiHint": "Loeb ka skaneeritud dokumendid ja fotod ning arve read (fail saadetakse Anthropicu API-le).",
+    "aiReplaceLines": "Asendan praegused read failist tuvastatud ridadega?",
+    "aiLines": "{count, plural, one {# rida} other {# rida}}",
+    "aiItems": "{count, plural, one {# artikkel} other {# artiklit}}",
+    "aiCheckTotal": "Võrdle kogusummat dokumendiga: {total}."
   },
   "suppliers": {
     "listSubtitle": "Tarnijad, kellelt ostad – arvelduskonto maksekorralduste jaoks.",
