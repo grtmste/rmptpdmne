@@ -131,6 +131,12 @@
       "ibanMismatch": "The statement belongs to another account ({iban}).",
       "statementInvalid": "The file couldn't be read. Use camt.053 XML or a bank CSV.",
       "statementEmpty": "The file contains no transactions."
+    },
+    "vat": {
+      "alreadyClosed": "Period {period} is already closed.",
+      "notClosed": "Period {period} isn't closed.",
+      "noVatPayableAccount": "The chart of accounts has no VAT settlement account.",
+      "nothingToClose": "VAT accounts have no balance to close for {period}."
     }
   },
   "validation": {
@@ -419,15 +425,22 @@
     "widgets": {
       "receivables": {
         "title": "Unpaid sales invoices",
-        "empty": "Customer balances by week will appear here."
+        "empty": "Customer balances by week will appear here.",
+        "none": "No unpaid invoices."
       },
       "payables": {
         "title": "Bills to pay",
-        "empty": "What to pay and when will appear here."
+        "empty": "What to pay and when will appear here.",
+        "none": "Nothing to pay."
       },
       "bank": {
         "title": "Bank and cash",
-        "empty": "Account balances and shortcuts will appear here."
+        "empty": "Add a bank account to see balances and shortcuts."
+      },
+      "accounts": {
+        "title": "Account turnover",
+        "empty": "Choose the accounts you want to see here:",
+        "choose": "“Show on dashboard” in the chart of accounts"
       }
     },
     "notificationsTitle": "Notifications",
@@ -435,7 +448,33 @@
     "shortcutsTitle": "Keyboard shortcuts",
     "shortcutsBody": "Move around without the mouse.",
     "shortcutPalette": "Search and actions",
-    "companySettingsLink": "Company details →"
+    "companySettingsLink": "Company details →",
+    "weeks": {
+      "older": "Earlier",
+      "current": "Now",
+      "later": "Later"
+    },
+    "openCount": "{count, plural, one {# open invoice} other {# open invoices}}",
+    "overdueCount": "{count, plural, one {# overdue} other {# overdue}}",
+    "chartLabel": "Open amounts by due week",
+    "openReport": "Open report",
+    "unconfirmed": "{count, plural, one {# unconfirmed purchase invoice} other {# unconfirmed purchase invoices}}",
+    "importStatement": "Import statement",
+    "paymentOrders": "Payment orders",
+    "thisMonth": "This month",
+    "yearToDate": "Year to date",
+    "openVat": "Open VAT return",
+    "annualReport": "Annual report",
+    "annualReportYear": "Financial year ended {date}",
+    "overdue": "Overdue",
+    "customize": "Customise",
+    "saveLayout": "Save layout",
+    "resetLayout": "Reset to default",
+    "layoutSaved": "Dashboard layout saved.",
+    "moveUp": "Move up: {name}",
+    "moveDown": "Move down: {name}",
+    "showWidget": "Show: {name}",
+    "hideWidget": "Hide: {name}"
   },
   "comingSoon": {
     "title": "This part is in progress",
@@ -579,7 +618,15 @@
     "active": "Active",
     "activeHint": "Inactive accounts aren't offered when entering transactions.",
     "deleteConfirm": "Delete account {code}?",
-    "deleted": "Account deleted."
+    "deleted": "Account deleted.",
+    "costFunction": "Expense function (income statement format 2)",
+    "costFunctionHint": "Decides which line the expense goes to in format 2.",
+    "costFunctions": {
+      "default": "Default by report line",
+      "COST_OF_SALES": "Cost of sales",
+      "DISTRIBUTION": "Distribution costs",
+      "ADMIN": "Administrative expenses"
+    }
   },
   "reportLines": {
     "BS_CASH": "Cash and cash equivalents",
@@ -629,7 +676,54 @@
     "IS_INTEREST_INCOME": "Interest income",
     "IS_INTEREST_EXPENSE": "Interest expenses",
     "IS_OTHER_FINANCE": "Other financial income and expenses",
-    "IS_INCOME_TAX": "Income tax"
+    "IS_INCOME_TAX": "Income tax",
+    "BS_ASSETS": "Assets",
+    "BS_CURRENT_ASSETS_H": "Current assets",
+    "BS_CURRENT_ASSETS": "Total current assets",
+    "BS_NONCURRENT_ASSETS_H": "Non-current assets",
+    "BS_NONCURRENT_ASSETS": "Total non-current assets",
+    "BS_TOTAL_ASSETS": "Total assets",
+    "BS_LIABILITIES_EQUITY": "Liabilities and equity",
+    "BS_CURRENT_LIABILITIES_H": "Current liabilities",
+    "BS_CURRENT_LIABILITIES": "Total current liabilities",
+    "BS_NONCURRENT_LIABILITIES_H": "Non-current liabilities",
+    "BS_NONCURRENT_LIABILITIES": "Total non-current liabilities",
+    "BS_TOTAL_LIABILITIES": "Total liabilities",
+    "BS_EQUITY_H": "Equity",
+    "BS_TOTAL_EQUITY": "Total equity",
+    "BS_TOTAL_LIABILITIES_EQUITY": "Total liabilities and equity",
+    "IS_OPERATING_PROFIT": "Operating profit (loss)",
+    "IS_PROFIT_BEFORE_TAX": "Profit (loss) before tax",
+    "IS_NET_PROFIT": "Profit (loss) for the year",
+    "S2_REVENUE": "Revenue",
+    "S2_COST_OF_SALES": "Cost of sales",
+    "S2_GROSS_PROFIT": "Gross profit (loss)",
+    "S2_DISTRIBUTION": "Distribution costs",
+    "S2_ADMIN": "Administrative expenses",
+    "S2_OTHER_INCOME": "Other operating income",
+    "S2_OTHER_EXPENSES": "Other operating expenses",
+    "CF_OPERATING_H": "Cash flows from operating activities",
+    "CF_OPERATING_PROFIT": "Operating profit (loss)",
+    "CF_DEPRECIATION": "Depreciation and impairment",
+    "CF_RECEIVABLES": "Change in operating receivables",
+    "CF_INVENTORIES": "Change in inventories",
+    "CF_PAYABLES": "Change in operating liabilities",
+    "CF_FINANCE_ITEMS": "Financial income and expenses",
+    "CF_INCOME_TAX": "Income tax",
+    "CF_OPERATING": "Total cash flows from operating activities",
+    "CF_INVESTING_H": "Cash flows from investing activities",
+    "CF_FIXED_ASSETS": "Purchase and sale of tangible and intangible assets",
+    "CF_INVESTMENTS": "Change in financial investments",
+    "CF_INVESTING": "Total cash flows from investing activities",
+    "CF_FINANCING_H": "Cash flows from financing activities",
+    "CF_LOANS": "Loans received and repaid",
+    "CF_EQUITY": "Contributions to equity",
+    "CF_DIVIDENDS": "Dividends paid and other equity changes",
+    "CF_FINANCING": "Total cash flows from financing activities",
+    "CF_NET": "Total cash flows",
+    "CF_CASH_OPENING": "Cash at beginning of period",
+    "CF_CASH_CLOSING": "Cash at end of period",
+    "priorYearsResult": "Result of prior periods"
   },
   "vat": {
     "subtitle": "VAT rates, their validity periods and linked accounts.",
@@ -996,7 +1090,8 @@
     "balance": "Balance",
     "periodTotal": "Period turnover and closing balance",
     "code": "Code",
-    "name": "Name"
+    "name": "Name",
+    "asOf": "As of"
   },
   "list": {
     "search": "Search",
@@ -1719,7 +1814,19 @@
     "accountHint": "E.g. bank fee, tax payment, loan, owner's contribution.",
     "fullyAllocated": "The whole amount is allocated.",
     "remainderPrepayment": "Unallocated {amount} stays as a prepayment.",
-    "remainder": "Unallocated {amount}."
+    "remainder": "Unallocated {amount}.",
+    "asOfLabel": "As of {date}",
+    "comparePrevYearEnd": "Compare with previous year end",
+    "showAccounts": "Show accounts",
+    "balanceDifference": "The balance sheet doesn't balance: difference {amount}. Check that accounts are linked to report lines.",
+    "scheme": "Format",
+    "scheme1": "Format 1 (by nature of expense)",
+    "scheme2": "Format 2 (by function of expense)",
+    "comparePrevYear": "Compare with the same period last year",
+    "scheme2Note": "An expense account's function can be set in the chart of accounts. By default, materials go to cost of sales and other operating expenses to administrative expenses.",
+    "indirectMethod": "indirect method",
+    "cashFlowNote": "Cash flows are derived from changes in balance sheet lines; the total equals the change in cash.",
+    "cashFlowDifference": "The cash flow total differs from the change in cash by {amount} – check how accounts are linked to balance sheet lines."
   },
   "paymentOrders": {
     "subtitle": "Choose open purchase invoices and expense reports, create a pain.001 file and upload it to your online bank.",
@@ -1765,5 +1872,126 @@
     "closing": "Totals and closing balance",
     "noCash": "No cash desk",
     "noCashBody": "Add a cash desk (Payments → Banks and cash)."
+  },
+  "vatReturn": {
+    "subtitle": "Period {from} – {to}",
+    "period": "Period",
+    "adjustmentsPlus": "Line 10 (+)",
+    "adjustmentsMinus": "Line 11 (−)",
+    "downloadXml": "Download XML (e-MTA)",
+    "close": "Close period",
+    "closeConfirm": "I'll post a closing entry moving output and input VAT balances to the VAT settlement account. Continue?",
+    "closed": "Closing entry posted.",
+    "reopen": "Undo closing",
+    "reopenConfirm": "Delete this month's closing entry?",
+    "reopened": "Closing undone.",
+    "closedInfo": "The period is closed with entry",
+    "unknownRates": "Some lines use a rate the return has no line for: {rates}%. Check the VAT codes.",
+    "line": "Line",
+    "description": "Description",
+    "amount": "Amount",
+    "note": "Calculated from confirmed documents and entries. Review before filing; the XML file can be uploaded to e-MTA.",
+    "partA": "KMD INF part A – sales invoices",
+    "partB": "KMD INF part B – purchase invoices",
+    "noInf": "No partners with invoices of at least €1,000 excluding VAT in this period.",
+    "partner": "Partner",
+    "invoice": "Invoice",
+    "invoiceNet": "Invoice total excl. VAT",
+    "invoiceGross": "Invoice total incl. VAT",
+    "rate": "Rate",
+    "sumForRate": "Taxable value",
+    "vatInPeriod": "VAT deducted in period",
+    "code": "Special code",
+    "lines": {
+      "l1": "Supplies at the standard rate (24%, before 1 Jul 2025 22%)",
+      "l1a": "Supplies at 20%",
+      "l1b": "Supplies at 22%",
+      "l2": "Supplies at 9%",
+      "l2a": "Supplies at 5%",
+      "l2b": "Supplies at 13%",
+      "l3": "Total 0% supplies",
+      "l3_1": "Intra-community supply of goods and services to taxable persons in other member states",
+      "l3_1_1": "incl. intra-community supply of goods",
+      "l3_2": "Export of goods",
+      "l3_2_1": "incl. sales to travellers with VAT refund",
+      "l4": "Total VAT",
+      "l4a": "VAT payable on imports",
+      "l5": "Total deductible input VAT",
+      "l5_1": "incl. VAT paid on imports",
+      "l5_2": "incl. acquisition of fixed assets",
+      "l5_3": "incl. passenger cars used 100% for business",
+      "l5_4": "incl. passenger cars partly used for business",
+      "l6": "Intra-community acquisition of goods and services received from EU taxable persons",
+      "l6_1": "incl. intra-community acquisition of goods",
+      "l7": "Other acquisitions subject to reverse charge",
+      "l7_1": "incl. immovables, scrap metal and precious metals (VAT Act § 41¹)",
+      "l8": "Exempt supplies",
+      "l9": "Supplies under domestic reverse charge (VAT Act § 41¹)",
+      "l10": "Adjustments (+)",
+      "l11": "Adjustments (−)",
+      "l12": "VAT payable",
+      "l13": "VAT overpaid"
+    }
+  },
+  "docReports": {
+    "count": "Invoices",
+    "quantity": "Quantity",
+    "net": "Excl. VAT",
+    "vat": "VAT",
+    "total": "Total",
+    "totalRow": "Total",
+    "emptyTitle": "No confirmed invoices in this period",
+    "emptyBody": "Change the period or search.",
+    "groupBy": "Group by",
+    "salesGroups": {
+      "invoice": "Invoice",
+      "customer": "Customer",
+      "item": "Item",
+      "month": "Month"
+    },
+    "purchaseGroups": {
+      "invoice": "Invoice",
+      "supplier": "Supplier",
+      "account": "Expense account",
+      "month": "Month"
+    },
+    "searchSales": "Customer or invoice no.",
+    "searchPurchases": "Supplier or invoice no.",
+    "documentCount": "{count, plural, one {# invoice} other {# invoices}}",
+    "note": "Amounts in EUR at the invoice rate; credit notes are negative.",
+    "notePurchases": "Amounts in EUR at the invoice rate; non-deductible VAT is part of the cost. Expense reports aren't included."
+  },
+  "debts": {
+    "party": "Partner",
+    "buckets": {
+      "notDue": "Not due",
+      "d1_30": "1–30 d",
+      "d31_60": "31–60 d",
+      "d61_90": "61–90 d",
+      "d90plus": "Over 90 d"
+    },
+    "prepayment": "Prepayment",
+    "total": "Balance",
+    "totalRow": "Total",
+    "emptyTitle": "No outstanding balances",
+    "emptyBody": "All invoices are paid as of this date.",
+    "due": "due {date}",
+    "overdueDays": "{days} d overdue",
+    "opening": "Opening",
+    "invoicedSales": "Sales invoices",
+    "invoicedPurchases": "Purchase invoices",
+    "paid": "Paid",
+    "closing": "Closing",
+    "asOfLabel": "As of {date}",
+    "mode": "View",
+    "modeAsOf": "Balances as of date",
+    "modeTurnover": "Turnover",
+    "dateOrEnd": "Date",
+    "searchParty": "Partner",
+    "showDocuments": "Show invoices",
+    "note": "Amounts in EUR at the invoice rate. Prepayments reduce the partner balance; paid includes nettings.",
+    "document": "Document",
+    "date": "Date",
+    "dueDate": "Due date"
   }
 }

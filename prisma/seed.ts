@@ -377,6 +377,9 @@ async function main() {
     );
   }
 
+  // Töölaud (faas 6): kontode käibe vidin
+  await db.glAccount.updateMany({ where: { companyId: first.id, code: { in: ["3000", "3010", "4010", "4180"] } }, data: { showOnDashboard: true } });
+
   console.info(`Demoandmed loodud. Logi sisse nt ${users[0]!.email} / ${PASSWORD}`);
 }
 

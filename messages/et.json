@@ -131,6 +131,12 @@
       "ibanMismatch": "Väljavõte on teise konto oma ({iban}).",
       "statementInvalid": "Faili ei õnnestunud lugeda. Sobivad camt.053 XML ja panga CSV.",
       "statementEmpty": "Failis pole tehinguid."
+    },
+    "vat": {
+      "alreadyClosed": "Periood {period} on juba suletud.",
+      "notClosed": "Periood {period} ei ole suletud.",
+      "noVatPayableAccount": "Kontoplaanis puudub käibemaksu arvelduse konto.",
+      "nothingToClose": "Perioodis {period} pole käibemaksu kontodel saldot, mida sulgeda."
     }
   },
   "validation": {
@@ -419,15 +425,22 @@
     "widgets": {
       "receivables": {
         "title": "Laekumata müügiarved",
-        "empty": "Siin näed klientide võlgu nädalate kaupa."
+        "empty": "Siin näed klientide võlgu nädalate kaupa.",
+        "none": "Laekumata arveid pole."
       },
       "payables": {
         "title": "Tasumata ostuarved",
-        "empty": "Siin näed, mida ja millal tasuda tuleb."
+        "empty": "Siin näed, mida ja millal tasuda tuleb.",
+        "none": "Tasumata arveid pole."
       },
       "bank": {
         "title": "Pangad ja kassad",
-        "empty": "Siin näed kontode saldosid ja kiirlinke."
+        "empty": "Lisa pangakonto, et näha saldosid ja kiirlinke."
+      },
+      "accounts": {
+        "title": "Kontode käive",
+        "empty": "Vali kontod, mille käivet siin näha tahad:",
+        "choose": "kontoplaanis „Näita töölaual“"
       }
     },
     "notificationsTitle": "Teated",
@@ -435,7 +448,33 @@
     "shortcutsTitle": "Kiirklahvid",
     "shortcutsBody": "Liigu rakenduses hiireta.",
     "shortcutPalette": "Otsing ja toimingud",
-    "companySettingsLink": "Ettevõtte andmed →"
+    "companySettingsLink": "Ettevõtte andmed →",
+    "weeks": {
+      "older": "Varem",
+      "current": "Praegu",
+      "later": "Hiljem"
+    },
+    "openCount": "{count, plural, one {# avatud arve} other {# avatud arvet}}",
+    "overdueCount": "{count, plural, one {# üle tähtaja} other {# üle tähtaja}}",
+    "chartLabel": "Tasumata summad tähtaja nädalate kaupa",
+    "openReport": "Ava aruanne",
+    "unconfirmed": "{count, plural, one {# kinnitamata ostuarve} other {# kinnitamata ostuarvet}}",
+    "importStatement": "Impordi väljavõte",
+    "paymentOrders": "Maksekorraldused",
+    "thisMonth": "See kuu",
+    "yearToDate": "Aasta algusest",
+    "openVat": "Ava KMD",
+    "annualReport": "Majandusaasta aruanne",
+    "annualReportYear": "Majandusaasta lõpp {date}",
+    "overdue": "Tähtaeg möödas",
+    "customize": "Kohanda",
+    "saveLayout": "Salvesta paigutus",
+    "resetLayout": "Taasta vaikimisi",
+    "layoutSaved": "Töölaua paigutus salvestatud.",
+    "moveUp": "Liiguta üles: {name}",
+    "moveDown": "Liiguta alla: {name}",
+    "showWidget": "Näita: {name}",
+    "hideWidget": "Peida: {name}"
   },
   "comingSoon": {
     "title": "See osa on töös",
@@ -579,7 +618,15 @@
     "active": "Aktiivne",
     "activeHint": "Mitteaktiivset kontot ei pakuta tehingute sisestamisel.",
     "deleteConfirm": "Kas kustutada konto {code}?",
-    "deleted": "Konto kustutati."
+    "deleted": "Konto kustutati.",
+    "costFunction": "Kulu funktsioon (kasumiaruande skeem 2)",
+    "costFunctionHint": "Määrab, millisele reale kulu skeemis 2 läheb.",
+    "costFunctions": {
+      "default": "Vaikimisi rea järgi",
+      "COST_OF_SALES": "Müüdud toodangu kulu",
+      "DISTRIBUTION": "Turustuskulud",
+      "ADMIN": "Üldhalduskulud"
+    }
   },
   "reportLines": {
     "BS_CASH": "Raha",
@@ -629,7 +676,54 @@
     "IS_INTEREST_INCOME": "Intressitulud",
     "IS_INTEREST_EXPENSE": "Intressikulud",
     "IS_OTHER_FINANCE": "Muud finantstulud ja -kulud",
-    "IS_INCOME_TAX": "Tulumaks"
+    "IS_INCOME_TAX": "Tulumaks",
+    "BS_ASSETS": "Varad",
+    "BS_CURRENT_ASSETS_H": "Käibevarad",
+    "BS_CURRENT_ASSETS": "Käibevarad kokku",
+    "BS_NONCURRENT_ASSETS_H": "Põhivarad",
+    "BS_NONCURRENT_ASSETS": "Põhivarad kokku",
+    "BS_TOTAL_ASSETS": "Varad kokku",
+    "BS_LIABILITIES_EQUITY": "Kohustised ja omakapital",
+    "BS_CURRENT_LIABILITIES_H": "Lühiajalised kohustised",
+    "BS_CURRENT_LIABILITIES": "Lühiajalised kohustised kokku",
+    "BS_NONCURRENT_LIABILITIES_H": "Pikaajalised kohustised",
+    "BS_NONCURRENT_LIABILITIES": "Pikaajalised kohustised kokku",
+    "BS_TOTAL_LIABILITIES": "Kohustised kokku",
+    "BS_EQUITY_H": "Omakapital",
+    "BS_TOTAL_EQUITY": "Omakapital kokku",
+    "BS_TOTAL_LIABILITIES_EQUITY": "Kohustised ja omakapital kokku",
+    "IS_OPERATING_PROFIT": "Ärikasum (-kahjum)",
+    "IS_PROFIT_BEFORE_TAX": "Kasum (kahjum) enne tulumaksustamist",
+    "IS_NET_PROFIT": "Aruandeaasta kasum (kahjum)",
+    "S2_REVENUE": "Müügitulu",
+    "S2_COST_OF_SALES": "Müüdud toodangu (kaupade, teenuste) kulu",
+    "S2_GROSS_PROFIT": "Brutokasum (-kahjum)",
+    "S2_DISTRIBUTION": "Turustuskulud",
+    "S2_ADMIN": "Üldhalduskulud",
+    "S2_OTHER_INCOME": "Muud äritulud",
+    "S2_OTHER_EXPENSES": "Muud ärikulud",
+    "CF_OPERATING_H": "Rahavood äritegevusest",
+    "CF_OPERATING_PROFIT": "Ärikasum (-kahjum)",
+    "CF_DEPRECIATION": "Põhivara kulum ja väärtuse langus",
+    "CF_RECEIVABLES": "Äritegevusega seotud nõuete muutus",
+    "CF_INVENTORIES": "Varude muutus",
+    "CF_PAYABLES": "Äritegevusega seotud kohustiste muutus",
+    "CF_FINANCE_ITEMS": "Finantstulud ja -kulud",
+    "CF_INCOME_TAX": "Tulumaks",
+    "CF_OPERATING": "Rahavood äritegevusest kokku",
+    "CF_INVESTING_H": "Rahavood investeerimistegevusest",
+    "CF_FIXED_ASSETS": "Materiaalse ja immateriaalse põhivara soetamine ja müük",
+    "CF_INVESTMENTS": "Finantsinvesteeringute muutus",
+    "CF_INVESTING": "Rahavood investeerimistegevusest kokku",
+    "CF_FINANCING_H": "Rahavood finantseerimistegevusest",
+    "CF_LOANS": "Laenude saamine ja tagasimaksed",
+    "CF_EQUITY": "Sissemaksed omakapitali",
+    "CF_DIVIDENDS": "Makstud dividendid ja muud omakapitali muutused",
+    "CF_FINANCING": "Rahavood finantseerimistegevusest kokku",
+    "CF_NET": "Rahavood kokku",
+    "CF_CASH_OPENING": "Raha perioodi alguses",
+    "CF_CASH_CLOSING": "Raha perioodi lõpus",
+    "priorYearsResult": "Eelmiste perioodide tulem"
   },
   "vat": {
     "subtitle": "Käibemaksumäärad, nende kehtivusperioodid ja seos kontodega.",
@@ -996,7 +1090,8 @@
     "balance": "Saldo",
     "periodTotal": "Perioodi käive ja lõppsaldo",
     "code": "Kood",
-    "name": "Nimetus"
+    "name": "Nimetus",
+    "asOf": "Seisuga"
   },
   "list": {
     "search": "Otsi",
@@ -1719,7 +1814,19 @@
     "accountHint": "Nt pangatasu, maksude tasumine, laen, omaniku sissemakse.",
     "fullyAllocated": "Kogu summa on seotud.",
     "remainderPrepayment": "Sidumata {amount} jääb ettemaksuks.",
-    "remainder": "Sidumata {amount}."
+    "remainder": "Sidumata {amount}.",
+    "asOfLabel": "Seisuga {date}",
+    "comparePrevYearEnd": "Võrdle eelmise majandusaasta lõpuga",
+    "showAccounts": "Näita kontosid",
+    "balanceDifference": "Bilanss ei ole tasakaalus: vahe {amount}. Kontrolli, et kontod oleksid seotud aruande ridadega.",
+    "scheme": "Skeem",
+    "scheme1": "Skeem 1 (kulude liigi järgi)",
+    "scheme2": "Skeem 2 (kulude funktsiooni järgi)",
+    "comparePrevYear": "Võrdle eelmise aasta sama perioodiga",
+    "scheme2Note": "Kulukonto funktsiooni saab määrata kontoplaanis. Vaikimisi lähevad materjalikulud müüdud toodangu kulusse ja ülejäänud tegevuskulud üldhalduskuludesse.",
+    "indirectMethod": "kaudne meetod",
+    "cashFlowNote": "Rahavood on tuletatud bilansiridade muutustest; kokkuvõte võrdub raha saldo muutusega.",
+    "cashFlowDifference": "Rahavoogude kokkuvõte erineb raha saldo muutusest {amount} võrra – kontrolli kontode seost bilansiridadega."
   },
   "paymentOrders": {
     "subtitle": "Vali tasumata ostuarved ja kuluaruanded, tee neist pain.001 fail ja laadi see internetipanka.",
@@ -1765,5 +1872,126 @@
     "closing": "Kokku ja lõppsaldo",
     "noCash": "Kassat pole",
     "noCashBody": "Lisa kassa (Maksed → Pangad ja kassad)."
+  },
+  "vatReturn": {
+    "subtitle": "Periood {from} – {to}",
+    "period": "Periood",
+    "adjustmentsPlus": "Rida 10 (+)",
+    "adjustmentsMinus": "Rida 11 (−)",
+    "downloadXml": "Lae alla XML (e-MTA)",
+    "close": "Sulge periood",
+    "closeConfirm": "Teen sulgemiskande: arvestatud ja sisendkäibemaksu saldod kantakse käibemaksu arveldusse. Jätkan?",
+    "closed": "Sulgemiskanne tehtud.",
+    "reopen": "Tühista sulgemine",
+    "reopenConfirm": "Kas kustutan selle kuu sulgemiskande?",
+    "reopened": "Sulgemine tühistatud.",
+    "closedInfo": "Periood on suletud kandega",
+    "unknownRates": "Mõnel real on määr, millele deklaratsioonis rida puudub: {rates}%. Kontrolli KM koode.",
+    "line": "Rida",
+    "description": "Selgitus",
+    "amount": "Summa",
+    "note": "Arvestatud kinnitatud dokumentide ja kannete põhjal. Vaata andmed enne esitamist üle; XML-faili saab laadida e-MTA-sse.",
+    "partA": "KMD INF A-osa – müügiarved",
+    "partB": "KMD INF B-osa – ostuarved",
+    "noInf": "Perioodis pole partnereid, kelle arvete summa ilma KM-ita on vähemalt 1000 €.",
+    "partner": "Partner",
+    "invoice": "Arve",
+    "invoiceNet": "Arve summa ilma KM-ita",
+    "invoiceGross": "Arve summa koos KM-iga",
+    "rate": "Määr",
+    "sumForRate": "Maksustatav väärtus",
+    "vatInPeriod": "Perioodis maha arvatud KM",
+    "code": "Erisus",
+    "lines": {
+      "l1": "Maksustatav käive standardmääraga (24%, enne 1.07.2025 22%)",
+      "l1a": "Maksustatav käive 20% määraga",
+      "l1b": "Maksustatav käive 22% määraga",
+      "l2": "Maksustatav käive 9% määraga",
+      "l2a": "Maksustatav käive 5% määraga",
+      "l2b": "Maksustatav käive 13% määraga",
+      "l3": "0% käive kokku",
+      "l3_1": "Ühendusesisene kauba käive ja teenuste osutamine teise liikmesriigi maksukohustuslasele",
+      "l3_1_1": "sh kauba ühendusesisene käive",
+      "l3_2": "Kauba eksport",
+      "l3_2_1": "sh käibemaksutagastusega müük reisijale",
+      "l4": "Käibemaks kokku",
+      "l4a": "Impordilt tasumisele kuuluv käibemaks",
+      "l5": "Mahaarvatav sisendkäibemaks kokku",
+      "l5_1": "sh impordilt tasutud käibemaks",
+      "l5_2": "sh põhivara soetamiselt",
+      "l5_3": "sh ettevõtluses (100%) kasutatava sõiduauto soetamiselt ja kuludelt",
+      "l5_4": "sh osaliselt ettevõtluses kasutatava sõiduauto soetamiselt ja kuludelt",
+      "l6": "Kauba ühendusesisene soetamine ja teise liikmesriigi maksukohustuslaselt saadud teenused",
+      "l6_1": "sh kauba ühendusesisene soetamine",
+      "l7": "Muu kauba soetamine ja teenuse saamine pöördmaksustamisega",
+      "l7_1": "sh KMS § 41¹ alusel maksustatava kinnisasja, metallijäätmete ja väärismetalli soetamine",
+      "l8": "Maksuvaba käive",
+      "l9": "KMS § 41¹ alusel pöördmaksustatav käive",
+      "l10": "Täpsustused (+)",
+      "l11": "Täpsustused (−)",
+      "l12": "Tasumisele kuuluv käibemaks",
+      "l13": "Enammakstud käibemaks"
+    }
+  },
+  "docReports": {
+    "count": "Arveid",
+    "quantity": "Kogus",
+    "net": "Ilma KM-ita",
+    "vat": "KM",
+    "total": "Kokku",
+    "totalRow": "Kokku",
+    "emptyTitle": "Perioodis pole kinnitatud arveid",
+    "emptyBody": "Muuda perioodi või otsingut.",
+    "groupBy": "Rühmita",
+    "salesGroups": {
+      "invoice": "Arve",
+      "customer": "Klient",
+      "item": "Artikkel",
+      "month": "Kuu"
+    },
+    "purchaseGroups": {
+      "invoice": "Arve",
+      "supplier": "Tarnija",
+      "account": "Kulukonto",
+      "month": "Kuu"
+    },
+    "searchSales": "Klient või arve nr",
+    "searchPurchases": "Tarnija või arve nr",
+    "documentCount": "{count, plural, one {# arve} other {# arvet}}",
+    "note": "Summad eurodes arve kursiga; kreeditarved on miinusega.",
+    "notePurchases": "Summad eurodes arve kursiga; mittemahaarvatav käibemaks on osa kulust. Kuluaruanded siin ei kajastu."
+  },
+  "debts": {
+    "party": "Partner",
+    "buckets": {
+      "notDue": "Tähtaeg ees",
+      "d1_30": "1–30 p",
+      "d31_60": "31–60 p",
+      "d61_90": "61–90 p",
+      "d90plus": "Üle 90 p"
+    },
+    "prepayment": "Ettemaks",
+    "total": "Saldo",
+    "totalRow": "Kokku",
+    "emptyTitle": "Võlgnevusi pole",
+    "emptyBody": "Valitud seisuga on kõik arved tasutud.",
+    "due": "tähtaeg {date}",
+    "overdueDays": "{days} p üle",
+    "opening": "Algsaldo",
+    "invoicedSales": "Müügiarved",
+    "invoicedPurchases": "Ostuarved",
+    "paid": "Tasutud",
+    "closing": "Lõppsaldo",
+    "asOfLabel": "Seisuga {date}",
+    "mode": "Vaade",
+    "modeAsOf": "Võlgnevused seisuga",
+    "modeTurnover": "Käibeandmik",
+    "dateOrEnd": "Kuupäev",
+    "searchParty": "Partner",
+    "showDocuments": "Näita arveid",
+    "note": "Summad eurodes arve kursiga. Ettemaks vähendab partneri saldot; tasutud sisaldab ka tasaarveldusi.",
+    "document": "Dokument",
+    "date": "Kuupäev",
+    "dueDate": "Tähtaeg"
   }
 }

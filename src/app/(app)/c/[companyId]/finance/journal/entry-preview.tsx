@@ -48,7 +48,10 @@ const SOURCE_PATHS: Record<string, string> = {
   PURCHASE_INVOICE: "/purchases/invoices",
   EXPENSE_REPORT: "/purchases/expenses",
   PAYMENT: "/payments",
+  VAT_CLOSING: "/finance/vat",
 };
+/** Allika parameeter: dokumendi eelvaade (?doc=) või KMD periood (?period=). */
+const sourceQuery = (source: string, id: string) => (source === "VAT_CLOSING" ? `period=${id}` : `doc=${id}`);
 
 export function EntryPreview({
   companyId,
@@ -100,7 +103,7 @@ export function EntryPreview({
 
       {entry.sourceId && SOURCE_PATHS[entry.source] && (
         <div className="border-b bg-muted/40 px-5 py-2 text-sm">
-          <Link className="text-primary hover:underline" href={`/c/${companyId}${SOURCE_PATHS[entry.source]}?doc=${entry.sourceId}`}>
+          <Link className="text-primary hover:underline" href={`/c/${companyId}${SOURCE_PATHS[entry.source]}?${sourceQuery(entry.source, entry.sourceId)}`}>
             {t("openDocument")}
           </Link>
         </div>

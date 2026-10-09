@@ -34,6 +34,7 @@ export default async function AccountsPage({ params }: PageProps<"/c/[companyId]
     type: a.type,
     kind: a.kind,
     reportLine: a.reportLine ?? "",
+    costFunction: a.costFunction ?? "",
     defaultVatRateId: a.defaultVatRateId ?? "",
     vatTurnover: a.vatTurnover,
     isPaymentMethod: a.isPaymentMethod,

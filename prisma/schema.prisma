@@ -265,6 +265,8 @@ model GlAccount {
   /// Dimensioonid, mille väärtus on kohustuslik (Dimension.id)
   requiredDimensionIds String[]     @default([])
   showOnDashboard      Boolean      @default(false)
+  /// Kasumiaruande skeem 2 (kulude funktsiooni järgi); null = vaikimisi rea järgi
+  costFunction         CostFunction?
   role                 AccountRole?
   active               Boolean      @default(true)
   createdAt            DateTime     @default(now())
@@ -282,6 +284,13 @@ model GlAccount {
   @@unique([companyId, code])
   @@unique([companyId, role])
   @@index([companyId, type])
+}
+
+/// Kulu funktsioon kasumiaruande skeemi 2 jaoks
+enum CostFunction {
+  COST_OF_SALES
+  DISTRIBUTION
+  ADMIN
 }
 
 /// Käibemaksu liik – määrab, kuidas tehing KMD-l kajastub
@@ -618,6 +627,8 @@ model Membership {
   permissions    Json?
   /// Ettevõtte vahetaja „viimati kasutatud“ järjestus
   lastAccessedAt DateTime?
+  /// Töölaua vidinate järjestus ja peidetud vidinad: { order: string[], hidden: string[] }
+  dashboard      Json?
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
 

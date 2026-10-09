@@ -167,3 +167,35 @@ kulude periodiseerimine (faas 7 korduvate kannetena), andmete automaatne tuvasta
 
 Hiljem: avatud valuutasaldode ümberhindamine perioodi lõpus (faas 6/7), e-arvete koondfail panka (faas 10),
 pangaliidesed otse (API) – praegu failiga.
+
+## Faas 6 (aruanded) – tehtud
+
+- **Bilanss** seisuga (võrdlus eelmise majandusaasta lõpuga), **kasumiaruanne skeem 1 ja 2** (võrdlus eelmise
+  aasta sama perioodiga, osakonna/dimensiooni filter), **rahavoogude aruanne kaudsel meetodil**. Read tulevad
+  kontode aruanderidadest; detailvaates kontod, mis viivad pearaamatusse. Kulukontole saab kontoplaanis määrata
+  funktsiooni skeemi 2 jaoks (müüdud toodangu kulu / turustus / üldhaldus). Varasemate aastate tulem liidetakse
+  jaotamata kasumile, jooksva aasta tulem eraldi reale. Rahavood on tuletatud nii, et kokkuvõte võrdub alati raha
+  saldo muutusega (vahe kuvatakse, kui konto on valele reale seotud). CSV eksport ja printimine.
+- **KMD + KMD INF** kuu kaupa ainult kannetest (`src/lib/vat/kmd.ts`): määraread (alates 01.07.2025 vormi järgi
+  1 = 24%, 1¹ = 20%, 1² = 22%, 2 = 9%, 2¹ = 5%, 2² = 13%; varasemad perioodid vana vormi järgi), 0% käive (EL kaup,
+  EL teenused, eksport), maksuvaba käive, § 41¹ pöördmaksustatav käive (rida 9) ja soetus (7/7.1), EL soetused
+  (6/6.1) koos arvestatud KM-iga real 1/4, kasuminormi erikord (maksustatav väärtus KM summast), sisendkäibemaks
+  (rida 5) sisend-KM kontode käibest, põhivara (5.2) ja osaliselt mahaarvatav sõiduauto (5.4), korrigeerimised
+  10/11. **KMD INF** A- ja B-osa: partnerid, kelle arvete summa ilma KM-ita on perioodis ≥ 1000 €, erisuse koodid
+  01 (§ 41¹ käive), 11 (osaline mahaarvamine), 12 (§ 41¹ soetus). **XML eksport** e-MTA vatDeclaration kujul.
+  **Sulgemiskanne** kannab arvestatud ja sisend-KM saldod käibemaksu arveldusse (2320); avatud perioodis saab
+  tühistada.
+  - NB! e-MTA lehed polnud arenduskeskkonnast ligipääsetavad – XML-i elementide nimed ja KMD INF erisuse koodid
+    tuleb enne esimest päris esitamist kontrollida e-MTA XSD ja täitmisjuhendi vastu (kõik on ühes failis).
+- **Müügi- ja ostuaruanne / analüüs**: rühmitus arve, partneri, artikli/kulukonto või kuu kaupa, otsing, CSV.
+- **Klientide ja tarnijate võlad**: seisuga (vanuseline jaotus: tähtaeg ees, 1–30, 31–60, 61–90, üle 90 päeva;
+  arved partneri all, ettemaksud) ja **käibeandmik** (algsaldo, arved, tasutud, lõppsaldo). Tarnijate poolel ka
+  kuluaruanded (aruandvad isikud).
+- **Töölaud**: laekumata müügiarved ja tasumata ostuarved (kokku, üle tähtaja, nädalagraafik vanemad / 4 möödunud
+  nädalat / jooksev / 3 tulevast / hiljem), kinnitamata ostuarvete arv, pangad ja kassad saldoga ning kiirlingid,
+  valitud kontode käive (jooksev kuu / aasta algusest; konto juures „Näita töölaual“), KMD ja majandusaasta
+  aruande tähtajad (riigipühad arvestatud). Vidinaid saab ümber järjestada ja peita (kasutaja ja ettevõtte kaupa).
+
+Hiljem: valuutasaldode ümberhindamine perioodi lõpus ja majandusaasta sulgemiskanne (faas 7/10), majandusaasta
+aruande eksport e-äriregistrisse, dimensioonide ja kassapõhised aruanded (faas 10), OSS ja ühendusesisese käibe
+aruanne (VD).

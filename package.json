@@ -40,6 +40,7 @@
     "radix-ui": "^1.7.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
+    "recharts": "3.2.1",
     "resend": "^6.32.1",
     "server-only": "^0.0.1",
     "sonner": "^2.0.8",

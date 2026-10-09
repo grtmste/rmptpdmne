@@ -29,6 +29,7 @@ export type AccountRow = {
   type: AccountType;
   kind: "DETAIL" | "SUMMARY";
   reportLine: string;
+  costFunction: "" | "COST_OF_SALES" | "DISTRIBUTION" | "ADMIN";
   defaultVatRateId: string;
   vatTurnover: "NONE" | "SALES" | "PURCHASE";
   isPaymentMethod: boolean;
@@ -197,6 +198,7 @@ function AccountDialog({
       type: "EXPENSE",
       kind: "DETAIL",
       reportLine: "",
+      costFunction: "",
       defaultVatRateId: "",
       vatTurnover: "NONE",
       isPaymentMethod: false,
@@ -305,6 +307,18 @@ function AccountDialog({
                   ))}
                 </NativeSelect>
               </FormField>
+              {v.type === "EXPENSE" && (
+                <FormField label={t("costFunction")} htmlFor="costFunction" hint={t("costFunctionHint")}>
+                  <NativeSelect id="costFunction" value={v.costFunction} onChange={(e) => set("costFunction", e.target.value as typeof v.costFunction)}>
+                    <option value="">{t("costFunctions.default")}</option>
+                    {(["COST_OF_SALES", "DISTRIBUTION", "ADMIN"] as const).map((f) => (
+                      <option key={f} value={f}>
+                        {t(`costFunctions.${f}`)}
+                      </option>
+                    ))}
+                  </NativeSelect>
+                </FormField>
+              )}
               {v.kind === "DETAIL" && (
                 <>
                   <div className="grid gap-4 sm:grid-cols-2">

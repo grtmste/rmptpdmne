@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { daysUntil, nextVatDeadline } from "@/lib/deadlines";
+import { annualReportDeadline, daysUntil, easterSunday, isPublicHoliday, nextVatDeadline, nextWorkingDay } from "@/lib/deadlines";
 import { todayLocal } from "@/lib/dates";
 import { findNavItem } from "@/lib/navigation";
 import { safeRedirect, vatNumberSchema } from "@/lib/validation";
@@ -23,6 +23,21 @@ describe("KMD tähtaeg", () => {
     expect(nextVatDeadline(d("2026-09-10")).dueDate).toEqual(d("2026-09-21"));
     // 21.09 kehtib veel augusti periood
     expect(nextVatDeadline(d("2026-09-21")).period).toBe("2026-08");
+  });
+  it("riigipühad ja suur reede", () => {
+    expect(easterSunday(2026)).toEqual(d("2026-04-05"));
+    expect(easterSunday(2027)).toEqual(d("2027-03-28"));
+    expect(isPublicHoliday(d("2026-04-03"))).toBe(true);
+    expect(isPublicHoliday(d("2026-04-02"))).toBe(false);
+    expect(isPublicHoliday(d("2026-02-24"))).toBe(true);
+    // jaanipäev: 23. ja 24. juuni
+    expect(nextWorkingDay(d("2026-06-23"))).toEqual(d("2026-06-25"));
+  });
+  it("majandusaasta aruande tähtaeg 6 kuud pärast aasta lõppu", () => {
+    expect(annualReportDeadline(d("2025-12-31"))).toEqual(d("2026-06-30"));
+    // 30.06.2029 on laupäev
+    expect(annualReportDeadline(d("2028-12-31"))).toEqual(d("2029-07-02"));
+    expect(annualReportDeadline(d("2026-06-30"))).toEqual(d("2026-12-31"));
   });
   it("aastavahetus", () => {
     expect(nextVatDeadline(d("2026-12-25"))).toEqual({ period: "2026-12", dueDate: d("2027-01-20") });

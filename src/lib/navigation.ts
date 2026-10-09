@@ -25,7 +25,7 @@ import { can, type Level, type MembershipLike, type Module } from "./permissions
  */
 
 /** Faas, mis on hetkel valmis. Kõrgema faasi vaated näitavad „tulekul“ lehte. */
-export const CURRENT_PHASE = 5;
+export const CURRENT_PHASE = 6;
 
 export type NavItem = {
   id: string;
@@ -95,8 +95,8 @@ export const NAVIGATION: NavGroup[] = [
       {
         label: "reports",
         items: [
-          item("sales.reportSales", "/sales/reports/sales", "reports", 6),
-          item("sales.reportReceivables", "/sales/reports/receivables", "reports", 6),
+          item("sales.reportSales", "/sales/reports/sales", "reports", 6, ["müügianalüüs", "käive"]),
+          item("sales.reportReceivables", "/sales/reports/receivables", "reports", 6, ["võlgnevus", "laekumata", "käibeandmik"]),
           item("sales.reportReminders", "/sales/reminders", "sales", 7),
           item("sales.reportInterest", "/sales/interest", "sales", 7),
         ],
@@ -129,7 +129,7 @@ export const NAVIGATION: NavGroup[] = [
         label: "reports",
         items: [
           item("purchases.reportPurchases", "/purchases/reports/purchases", "reports", 6),
-          item("purchases.reportPayables", "/purchases/reports/payables", "reports", 6),
+          item("purchases.reportPayables", "/purchases/reports/payables", "reports", 6, ["võlgnevus", "tasumata", "käibeandmik"]),
         ],
       },
     ],
@@ -170,9 +170,9 @@ export const NAVIGATION: NavGroup[] = [
           item("finance.ledger", "/finance/ledger", "finance", 2),
           item("finance.trialBalance", "/finance/trial-balance", "finance", 2),
           item("finance.daybook", "/finance/daybook", "finance", 2),
-          item("finance.balanceSheet", "/finance/balance-sheet", "reports", 6),
-          item("finance.incomeStatement", "/finance/income-statement", "reports", 6),
-          item("finance.cashFlow", "/finance/cash-flow", "reports", 6),
+          item("finance.balanceSheet", "/finance/balance-sheet", "reports", 6, ["bilanss"]),
+          item("finance.incomeStatement", "/finance/income-statement", "reports", 6, ["kasumiaruanne", "tulem"]),
+          item("finance.cashFlow", "/finance/cash-flow", "reports", 6, ["rahavood"]),
         ],
       },
     ],

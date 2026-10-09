@@ -131,6 +131,12 @@
       "ibanMismatch": "Tiliote kuuluu toiselle tilille ({iban}).",
       "statementInvalid": "Tiedostoa ei voitu lukea. Käytä camt.053 XML- tai pankin CSV-tiedostoa.",
       "statementEmpty": "Tiedostossa ei ole tapahtumia."
+    },
+    "vat": {
+      "alreadyClosed": "Jakso {period} on jo suljettu.",
+      "notClosed": "Jaksoa {period} ei ole suljettu.",
+      "noVatPayableAccount": "Tilikartasta puuttuu ALV-tilitystili.",
+      "nothingToClose": "ALV-tileillä ei ole suljettavaa saldoa jaksolla {period}."
     }
   },
   "validation": {
@@ -419,15 +425,22 @@
     "widgets": {
       "receivables": {
         "title": "Avoimet myyntilaskut",
-        "empty": "Tässä näet asiakassaatavat viikoittain."
+        "empty": "Tässä näet asiakassaatavat viikoittain.",
+        "none": "Ei maksamattomia laskuja."
       },
       "payables": {
         "title": "Maksamattomat ostolaskut",
-        "empty": "Tässä näet, mitä ja milloin pitää maksaa."
+        "empty": "Tässä näet, mitä ja milloin pitää maksaa.",
+        "none": "Ei maksettavaa."
       },
       "bank": {
         "title": "Pankit ja kassat",
-        "empty": "Tässä näet tilien saldot ja pikalinkit."
+        "empty": "Lisää pankkitili nähdäksesi saldot ja pikalinkit."
+      },
+      "accounts": {
+        "title": "Tilien saldot",
+        "empty": "Valitse tilit, jotka haluat nähdä tässä:",
+        "choose": "tilikartan ”Näytä työpöydällä”"
       }
     },
     "notificationsTitle": "Ilmoitukset",
@@ -435,7 +448,33 @@
     "shortcutsTitle": "Pikanäppäimet",
     "shortcutsBody": "Liiku sovelluksessa ilman hiirtä.",
     "shortcutPalette": "Haku ja toiminnot",
-    "companySettingsLink": "Yrityksen tiedot →"
+    "companySettingsLink": "Yrityksen tiedot →",
+    "weeks": {
+      "older": "Aiemmin",
+      "current": "Nyt",
+      "later": "Myöh."
+    },
+    "openCount": "{count, plural, one {# avoin lasku} other {# avointa laskua}}",
+    "overdueCount": "{count, plural, one {# erääntynyt} other {# erääntynyttä}}",
+    "chartLabel": "Avoimet summat eräviikoittain",
+    "openReport": "Avaa raportti",
+    "unconfirmed": "{count, plural, one {# vahvistamaton ostolasku} other {# vahvistamatonta ostolaskua}}",
+    "importStatement": "Tuo tiliote",
+    "paymentOrders": "Maksumääräykset",
+    "thisMonth": "Tämä kuu",
+    "yearToDate": "Vuoden alusta",
+    "openVat": "Avaa ALV-ilmoitus",
+    "annualReport": "Tilinpäätös",
+    "annualReportYear": "Tilikausi päättyi {date}",
+    "overdue": "Myöhässä",
+    "customize": "Muokkaa",
+    "saveLayout": "Tallenna asettelu",
+    "resetLayout": "Palauta oletus",
+    "layoutSaved": "Työpöydän asettelu tallennettu.",
+    "moveUp": "Siirrä ylös: {name}",
+    "moveDown": "Siirrä alas: {name}",
+    "showWidget": "Näytä: {name}",
+    "hideWidget": "Piilota: {name}"
   },
   "comingSoon": {
     "title": "Tämä osa on työn alla",
@@ -579,7 +618,15 @@
     "active": "Aktiivinen",
     "activeHint": "Passiivista tiliä ei tarjota kirjauksia syötettäessä.",
     "deleteConfirm": "Poistetaanko tili {code}?",
-    "deleted": "Tili poistettiin."
+    "deleted": "Tili poistettiin.",
+    "costFunction": "Kulun toiminto (tuloslaskelman kaava 2)",
+    "costFunctionHint": "Määrää, mille riville kulu kaavassa 2 menee.",
+    "costFunctions": {
+      "default": "Oletus raporttirivin mukaan",
+      "COST_OF_SALES": "Myytyjen suoritteiden hankintameno",
+      "DISTRIBUTION": "Myynnin ja markkinoinnin kulut",
+      "ADMIN": "Hallinnon kulut"
+    }
   },
   "reportLines": {
     "BS_CASH": "Rahat ja pankkisaamiset",
@@ -629,7 +676,54 @@
     "IS_INTEREST_INCOME": "Korkotuotot",
     "IS_INTEREST_EXPENSE": "Korkokulut",
     "IS_OTHER_FINANCE": "Muut rahoitustuotot ja -kulut",
-    "IS_INCOME_TAX": "Tuloverot"
+    "IS_INCOME_TAX": "Tuloverot",
+    "BS_ASSETS": "Vastaavaa",
+    "BS_CURRENT_ASSETS_H": "Vaihtuvat vastaavat",
+    "BS_CURRENT_ASSETS": "Vaihtuvat vastaavat yhteensä",
+    "BS_NONCURRENT_ASSETS_H": "Pysyvät vastaavat",
+    "BS_NONCURRENT_ASSETS": "Pysyvät vastaavat yhteensä",
+    "BS_TOTAL_ASSETS": "Vastaavaa yhteensä",
+    "BS_LIABILITIES_EQUITY": "Vastattavaa",
+    "BS_CURRENT_LIABILITIES_H": "Lyhytaikainen vieras pääoma",
+    "BS_CURRENT_LIABILITIES": "Lyhytaikainen vieras pääoma yhteensä",
+    "BS_NONCURRENT_LIABILITIES_H": "Pitkäaikainen vieras pääoma",
+    "BS_NONCURRENT_LIABILITIES": "Pitkäaikainen vieras pääoma yhteensä",
+    "BS_TOTAL_LIABILITIES": "Vieras pääoma yhteensä",
+    "BS_EQUITY_H": "Oma pääoma",
+    "BS_TOTAL_EQUITY": "Oma pääoma yhteensä",
+    "BS_TOTAL_LIABILITIES_EQUITY": "Vastattavaa yhteensä",
+    "IS_OPERATING_PROFIT": "Liikevoitto (-tappio)",
+    "IS_PROFIT_BEFORE_TAX": "Voitto (tappio) ennen veroja",
+    "IS_NET_PROFIT": "Tilikauden voitto (tappio)",
+    "S2_REVENUE": "Liikevaihto",
+    "S2_COST_OF_SALES": "Myytyjen suoritteiden hankintameno",
+    "S2_GROSS_PROFIT": "Bruttokate",
+    "S2_DISTRIBUTION": "Myynnin ja markkinoinnin kulut",
+    "S2_ADMIN": "Hallinnon kulut",
+    "S2_OTHER_INCOME": "Liiketoiminnan muut tuotot",
+    "S2_OTHER_EXPENSES": "Liiketoiminnan muut kulut",
+    "CF_OPERATING_H": "Liiketoiminnan rahavirta",
+    "CF_OPERATING_PROFIT": "Liikevoitto (-tappio)",
+    "CF_DEPRECIATION": "Poistot ja arvonalentumiset",
+    "CF_RECEIVABLES": "Liiketoiminnan saamisten muutos",
+    "CF_INVENTORIES": "Vaihto-omaisuuden muutos",
+    "CF_PAYABLES": "Liiketoiminnan velkojen muutos",
+    "CF_FINANCE_ITEMS": "Rahoitustuotot ja -kulut",
+    "CF_INCOME_TAX": "Tuloverot",
+    "CF_OPERATING": "Liiketoiminnan rahavirta yhteensä",
+    "CF_INVESTING_H": "Investointien rahavirta",
+    "CF_FIXED_ASSETS": "Aineellisten ja aineettomien hyödykkeiden hankinnat ja luovutukset",
+    "CF_INVESTMENTS": "Rahoitussijoitusten muutos",
+    "CF_INVESTING": "Investointien rahavirta yhteensä",
+    "CF_FINANCING_H": "Rahoituksen rahavirta",
+    "CF_LOANS": "Lainojen nostot ja takaisinmaksut",
+    "CF_EQUITY": "Oman pääoman sijoitukset",
+    "CF_DIVIDENDS": "Maksetut osingot ja muut oman pääoman muutokset",
+    "CF_FINANCING": "Rahoituksen rahavirta yhteensä",
+    "CF_NET": "Rahavirrat yhteensä",
+    "CF_CASH_OPENING": "Rahavarat kauden alussa",
+    "CF_CASH_CLOSING": "Rahavarat kauden lopussa",
+    "priorYearsResult": "Edellisten tilikausien tulos"
   },
   "vat": {
     "subtitle": "ALV-kannat, niiden voimassaolokaudet ja liitetyt tilit.",
@@ -996,7 +1090,8 @@
     "balance": "Saldo",
     "periodTotal": "Kauden liikevaihto ja loppusaldo",
     "code": "Koodi",
-    "name": "Nimi"
+    "name": "Nimi",
+    "asOf": "Päivänä"
   },
   "list": {
     "search": "Hae",
@@ -1719,7 +1814,19 @@
     "accountHint": "Esim. pankkikulu, veronmaksu, laina, omistajan sijoitus.",
     "fullyAllocated": "Koko summa on kohdistettu.",
     "remainderPrepayment": "Kohdistamaton {amount} jää ennakoksi.",
-    "remainder": "Kohdistamatta {amount}."
+    "remainder": "Kohdistamatta {amount}.",
+    "asOfLabel": "Päivänä {date}",
+    "comparePrevYearEnd": "Vertaa edellisen tilikauden loppuun",
+    "showAccounts": "Näytä tilit",
+    "balanceDifference": "Tase ei täsmää: ero {amount}. Tarkista, että tilit on liitetty raportin riveihin.",
+    "scheme": "Kaava",
+    "scheme1": "Kaava 1 (kululajeittain)",
+    "scheme2": "Kaava 2 (toiminnoittain)",
+    "comparePrevYear": "Vertaa edellisen vuoden samaan jaksoon",
+    "scheme2Note": "Kulutilin toiminnon voi asettaa tilikartassa. Oletuksena materiaalit menevät myytyjen suoritteiden hankintamenoon ja muut kulut hallinnon kuluihin.",
+    "indirectMethod": "epäsuora menetelmä",
+    "cashFlowNote": "Rahavirrat johdetaan taserivien muutoksista; yhteensä vastaa rahavarojen muutosta.",
+    "cashFlowDifference": "Rahavirtojen yhteissumma poikkeaa rahavarojen muutoksesta {amount} – tarkista tilien liitokset taseriveihin."
   },
   "paymentOrders": {
     "subtitle": "Valitse avoimet ostolaskut ja kululaskut, luo pain.001-tiedosto ja lataa se verkkopankkiin.",
@@ -1765,5 +1872,126 @@
     "closing": "Yhteensä ja loppusaldo",
     "noCash": "Ei kassaa",
     "noCashBody": "Lisää kassa (Maksut → Pankit ja kassat)."
+  },
+  "vatReturn": {
+    "subtitle": "Jakso {from} – {to}",
+    "period": "Jakso",
+    "adjustmentsPlus": "Rivi 10 (+)",
+    "adjustmentsMinus": "Rivi 11 (−)",
+    "downloadXml": "Lataa XML (e-MTA)",
+    "close": "Sulje jakso",
+    "closeConfirm": "Teen päättökirjauksen: myynnin ja oston ALV-saldot siirretään ALV-tilitystilille. Jatketaanko?",
+    "closed": "Päättökirjaus tehty.",
+    "reopen": "Peru sulkeminen",
+    "reopenConfirm": "Poistetaanko tämän kuun päättökirjaus?",
+    "reopened": "Sulkeminen peruttu.",
+    "closedInfo": "Jakso on suljettu kirjauksella",
+    "unknownRates": "Joillakin riveillä on verokanta, jolle ilmoituksessa ei ole riviä: {rates}%. Tarkista ALV-koodit.",
+    "line": "Rivi",
+    "description": "Selite",
+    "amount": "Summa",
+    "note": "Laskettu vahvistetuista asiakirjoista ja kirjauksista. Tarkista ennen jättämistä; XML-tiedoston voi ladata e-MTA:han.",
+    "partA": "KMD INF A-osa – myyntilaskut",
+    "partB": "KMD INF B-osa – ostolaskut",
+    "noInf": "Jaksolla ei ole kumppaneita, joiden laskujen summa ilman ALV:tä on vähintään 1000 €.",
+    "partner": "Kumppani",
+    "invoice": "Lasku",
+    "invoiceNet": "Laskun summa ilman ALV:tä",
+    "invoiceGross": "Laskun summa sis. ALV",
+    "rate": "Kanta",
+    "sumForRate": "Veron peruste",
+    "vatInPeriod": "Jaksolla vähennetty ALV",
+    "code": "Erityiskoodi",
+    "lines": {
+      "l1": "Yleisen verokannan myynti (24 %, ennen 1.7.2025 22 %)",
+      "l1a": "Myynti 20 %",
+      "l1b": "Myynti 22 %",
+      "l2": "Myynti 9 %",
+      "l2a": "Myynti 5 %",
+      "l2b": "Myynti 13 %",
+      "l3": "0 %:n myynti yhteensä",
+      "l3_1": "Tavaroiden yhteisömyynti ja palvelut toisen jäsenvaltion verovelvollisille",
+      "l3_1_1": "josta tavaroiden yhteisömyynti",
+      "l3_2": "Tavaroiden vienti",
+      "l3_2_1": "josta myynti matkustajille veronpalautuksin",
+      "l4": "Vero yhteensä",
+      "l4a": "Maahantuonnista maksettava vero",
+      "l5": "Vähennettävä vero yhteensä",
+      "l5_1": "josta maahantuonnista maksettu vero",
+      "l5_2": "josta käyttöomaisuuden hankinnoista",
+      "l5_3": "josta 100 % liiketoiminnassa käytettävästä henkilöautosta",
+      "l5_4": "josta osittain liiketoiminnassa käytettävästä henkilöautosta",
+      "l6": "Tavaroiden yhteisöhankinnat ja palveluostot muista EU-maista",
+      "l6_1": "josta tavaroiden yhteisöhankinnat",
+      "l7": "Muut käännetyn verovelvollisuuden hankinnat",
+      "l7_1": "josta kiinteistöt, metalliromu ja jalometallit (ALV-laki § 41¹)",
+      "l8": "Verovapaa myynti",
+      "l9": "Käännetyn verovelvollisuuden myynti (§ 41¹)",
+      "l10": "Oikaisut (+)",
+      "l11": "Oikaisut (−)",
+      "l12": "Maksettava vero",
+      "l13": "Liikaa maksettu vero"
+    }
+  },
+  "docReports": {
+    "count": "Laskuja",
+    "quantity": "Määrä",
+    "net": "Ilman ALV",
+    "vat": "ALV",
+    "total": "Yhteensä",
+    "totalRow": "Yhteensä",
+    "emptyTitle": "Jaksolla ei ole vahvistettuja laskuja",
+    "emptyBody": "Muuta jaksoa tai hakua.",
+    "groupBy": "Ryhmittele",
+    "salesGroups": {
+      "invoice": "Lasku",
+      "customer": "Asiakas",
+      "item": "Nimike",
+      "month": "Kuukausi"
+    },
+    "purchaseGroups": {
+      "invoice": "Lasku",
+      "supplier": "Toimittaja",
+      "account": "Kulutili",
+      "month": "Kuukausi"
+    },
+    "searchSales": "Asiakas tai laskun nro",
+    "searchPurchases": "Toimittaja tai laskun nro",
+    "documentCount": "{count, plural, one {# lasku} other {# laskua}}",
+    "note": "Summat euroina laskun kurssilla; hyvityslaskut negatiivisina.",
+    "notePurchases": "Summat euroina laskun kurssilla; vähennyskelvoton ALV sisältyy kuluun. Kululaskut eivät näy tässä."
+  },
+  "debts": {
+    "party": "Kumppani",
+    "buckets": {
+      "notDue": "Ei erääntynyt",
+      "d1_30": "1–30 pv",
+      "d31_60": "31–60 pv",
+      "d61_90": "61–90 pv",
+      "d90plus": "Yli 90 pv"
+    },
+    "prepayment": "Ennakko",
+    "total": "Saldo",
+    "totalRow": "Yhteensä",
+    "emptyTitle": "Ei avoimia saldoja",
+    "emptyBody": "Kaikki laskut on maksettu valittuna päivänä.",
+    "due": "eräpäivä {date}",
+    "overdueDays": "{days} pv myöhässä",
+    "opening": "Alkusaldo",
+    "invoicedSales": "Myyntilaskut",
+    "invoicedPurchases": "Ostolaskut",
+    "paid": "Maksettu",
+    "closing": "Loppusaldo",
+    "asOfLabel": "Päivänä {date}",
+    "mode": "Näkymä",
+    "modeAsOf": "Saldot päivänä",
+    "modeTurnover": "Liikevaihtoerittely",
+    "dateOrEnd": "Päivä",
+    "searchParty": "Kumppani",
+    "showDocuments": "Näytä laskut",
+    "note": "Summat euroina laskun kurssilla. Ennakot pienentävät kumppanin saldoa; maksetut sisältävät kuittaukset.",
+    "document": "Asiakirja",
+    "date": "Päivä",
+    "dueDate": "Eräpäivä"
   }
 }
