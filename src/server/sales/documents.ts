@@ -47,7 +47,7 @@ async function loadCompany(companyId: string) {
 }
 
 /** Arve pangarekvisiidid: arvel näidatavad pangakontod, muidu arve seadistuse vaba tekst. */
-async function bankDetails(companyId: string, fallback: string | null) {
+export async function bankDetails(companyId: string, fallback: string | null) {
   const banks = await db.bankAccount.findMany({
     where: { companyId, kind: "BANK", active: true, showOnInvoice: true, iban: { not: null } },
     orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
@@ -61,6 +61,7 @@ async function buildData(
   companyId: string,
   doc: {
     kind: "INVOICE" | "CREDIT" | "PREPAYMENT" | "QUOTE";
+    isInterest?: boolean;
     number: string;
     locale: string;
     currency: string;
@@ -116,7 +117,9 @@ async function buildData(
   ];
   if (doc.notes) notes.unshift(doc.notes);
 
-  const title = { INVOICE: t("titleInvoice"), CREDIT: t("titleCredit"), PREPAYMENT: t("titlePrepayment"), QUOTE: t("titleQuote") }[doc.kind];
+  const title = doc.isInterest
+    ? t("titleInterest")
+    : { INVOICE: t("titleInvoice"), CREDIT: t("titleCredit"), PREPAYMENT: t("titlePrepayment"), QUOTE: t("titleQuote") }[doc.kind];
   const address = customerAddress(company);
   return {
     title,
@@ -186,6 +189,7 @@ export async function invoicePdf(companyId: string, invoiceId: string) {
   const number = invoice.number ?? "—";
   const data = await buildData(companyId, {
     kind: invoice.type,
+    isInterest: invoice.isInterest,
     number,
     locale: invoice.locale,
     currency: invoice.currency,
@@ -212,7 +216,7 @@ export async function invoicePdf(companyId: string, invoiceId: string) {
     },
   });
   const t = await getTranslations({ locale: isLocale(invoice.locale) ? invoice.locale : "et", namespace: "pdf" });
-  const prefix = { INVOICE: t("fileInvoice"), CREDIT: t("fileCredit"), PREPAYMENT: t("filePrepayment") }[invoice.type];
+  const prefix = invoice.isInterest ? t("fileInterest") : { INVOICE: t("fileInvoice"), CREDIT: t("fileCredit"), PREPAYMENT: t("filePrepayment") }[invoice.type];
   return {
     buffer: await renderSalesDocumentPdf(data),
     filename: `${prefix}-${number.replace(/[^\w.-]+/g, "_")}.pdf`,

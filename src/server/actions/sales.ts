@@ -7,8 +7,7 @@ import { db } from "@/lib/db";
 import { ActionError, companyAction } from "@/lib/action";
 import { audit } from "@/lib/audit";
 import { toISODate } from "@/lib/accounting/dates";
-import { EmailNotConfiguredError, sendDocumentEmail } from "@/lib/email";
-import { rateLimit } from "@/lib/rate-limit";
+import { deliverDocument } from "@/server/sales/mailer";
 import {
   dateSchema,
   decimalInputSchema,
@@ -198,41 +197,19 @@ async function sendDocument(
   input: z.output<typeof sendSchema>,
   pdf: { buffer: Buffer; filename: string },
 ) {
-  // Kaitse kogemata massiliste saatmiste eest: kuni 60 kirja tunnis ettevõtte kohta
-  const limited = await rateLimit(`email:${ctx.company.id}`, 60, 3600);
-  if (!limited.ok) throw new ActionError("rateLimited");
-  const company = await db.company.findUniqueOrThrow({ where: { id: ctx.company.id }, select: { name: true, email: true } });
-  let providerId: string | null = null;
-  let error: string | null = null;
-  try {
-    providerId = await sendDocumentEmail({
-      to: input.to,
-      cc: input.cc,
-      replyTo: company.email ?? ctx.user.email,
-      subject: input.subject,
-      body: input.body,
-      companyName: company.name,
-      attachment: { filename: pdf.filename, content: pdf.buffer },
-    });
-  } catch (e) {
-    if (e instanceof EmailNotConfiguredError) throw new ActionError("emailNotConfigured");
-    error = e instanceof Error ? e.message.slice(0, 500) : "unknown";
-  }
-  await ctx.cdb.emailLog.create({
-    data: {
-      companyId: ctx.company.id,
-      documentType: kind,
-      documentId: input.id,
-      to: input.to,
-      cc: input.cc.join(", ") || null,
-      subject: input.subject,
-      status: error ? "FAILED" : "SENT",
-      error,
-      providerId,
-      sentById: ctx.user.id,
-    },
+  const res = await deliverDocument({
+    companyId: ctx.company.id,
+    userId: ctx.user.id,
+    documentType: kind,
+    documentId: input.id,
+    to: input.to,
+    cc: input.cc,
+    subject: input.subject,
+    body: input.body,
+    attachment: { filename: pdf.filename, content: pdf.buffer },
+    replyTo: ctx.user.email,
   });
-  if (error) throw new ActionError("emailFailed");
+  if (!res.ok) throw new ActionError(res.error);
 }
 
 export const sendSalesInvoice = companyAction({ module: "sales", level: "edit", schema: sendSchema }, async (input, ctx) => {

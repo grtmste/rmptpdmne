@@ -41,7 +41,15 @@ export type SalesErrorCode =
   | "employeeNotFound"
   | "reportNotFound"
   | "attachmentTooLarge"
-  | "attachmentType";
+  | "attachmentType"
+  // Faas 7
+  | "invalidPeriod"
+  | "recurringEnded"
+  | "recurringBusy"
+  | "nothingToCharge"
+  | "interestAccountMissing"
+  | "quotesDifferentCustomers"
+  | "quotesCurrency";
 
 /** Müügi ja ostu dokumendireegli rikkumine; `code` on i18n võti nimeruumis `errors.sales`. */
 export class SalesError extends Error {
@@ -87,6 +95,10 @@ export type InvoiceInput = {
   creditOfId?: string | null;
   taxFree?: boolean;
   quoteId?: string | null;
+  /** Perioodiline arve, millest arve tehakse (ainult loomisel) */
+  recurringInvoiceId?: string | null;
+  /** Viivisearve: oma numbriseeria, viivist sellele ei arvestata */
+  isInterest?: boolean;
   lines: SalesLineInput[];
 };
 
@@ -283,11 +295,11 @@ async function companyDefaults(tx: Tx, companyId: string) {
 export async function saveInvoiceDraft(tx: Tx, companyId: string, userId: string | null, input: InvoiceInput) {
   const customer = await loadCustomer(tx, companyId, input.customerId);
   const company = await companyDefaults(tx, companyId);
-  let existing: { id: string; type: InvoiceType; creditOfId: string | null; taxFree: boolean; quoteId: string | null } | null = null;
+  let existing: { id: string; type: InvoiceType; creditOfId: string | null; taxFree: boolean; quoteId: string | null; isInterest: boolean } | null = null;
   if (input.id) {
     existing = await tx.salesInvoice.findFirst({
       where: { companyId, id: input.id },
-      select: { id: true, status: true, type: true, creditOfId: true, taxFree: true, quoteId: true },
+      select: { id: true, status: true, type: true, creditOfId: true, taxFree: true, quoteId: true, isInterest: true },
     }).then((r) => {
       if (!r) throw new SalesError("invoiceNotFound");
       if (r.status !== "DRAFT") throw new SalesError("notDraft");
@@ -296,6 +308,7 @@ export async function saveInvoiceDraft(tx: Tx, companyId: string, userId: string
   }
   // Liik ja seos algse arvega ei muutu pärast loomist
   const type = existing?.type ?? input.type;
+  const isInterest = existing ? existing.isInterest : (input.isInterest ?? false);
   const creditOfId = existing ? existing.creditOfId : (input.creditOfId ?? null);
   let creditOf: { date: Date } | null = null;
   if (creditOfId) {
@@ -335,7 +348,7 @@ export async function saveInvoiceDraft(tx: Tx, companyId: string, userId: string
     locale: customer.locale,
     yourReference: input.yourReference ?? null,
     notes: input.notes ?? null,
-    lateInterestPct: customer.lateInterestPct ?? company.lateInterestPct,
+    lateInterestPct: isInterest ? null : (customer.lateInterestPct ?? company.lateInterestPct),
     netTotal: calc.net.toFixed(2),
     vatTotal: calc.vat.toFixed(2),
     total: calc.total.toFixed(2),
@@ -356,6 +369,8 @@ export async function saveInvoiceDraft(tx: Tx, companyId: string, userId: string
       creditOfId,
       taxFree: input.taxFree ?? false,
       quoteId: input.quoteId ?? null,
+      recurringInvoiceId: input.recurringInvoiceId ?? null,
+      isInterest,
       createdById: userId,
       ...data,
       notes: input.notes ?? (type === "INVOICE" ? company.invoiceNote : null),
@@ -423,7 +438,7 @@ export async function confirmInvoice(tx: Tx, companyId: string, userId: string |
     if (v.salesAccountId) vatAccounts.set(v.id, v.salesAccountId);
   }
 
-  const number = await nextDocumentNumber(tx, companyId, SERIES[invoice.type], invoice.date);
+  const number = await nextDocumentNumber(tx, companyId, invoice.isInterest ? "INTEREST_INVOICE" : SERIES[invoice.type], invoice.date);
   const digits = number.replace(/\D/g, "");
   const reference = invoice.customer.referenceNumber || (digits ? referenceNumber(digits) : null);
   const receivableAccountId = await roleAccount(tx, companyId, "RECEIVABLES");

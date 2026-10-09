@@ -145,43 +145,49 @@ model Company {
   invoiceNote           String?
   /// Arve aktsentvärv (hex)
   invoiceAccent         String      @default("#0f5c55")
+  /// Viivisearvete tulukonto (null = esimene intressitulu rea konto)
+  interestAccountId     String?
+  /// Maksemeeldetuletuse ja saldoteatise e-kirja tekst (null = vaikimisi tekst)
+  reminderText          String?
+  statementText         String?
   isDemo                Boolean     @default(false)
   archivedAt            DateTime?
   createdAt             DateTime    @default(now())
   updatedAt             DateTime    @updatedAt
   createdById           String?
 
-  organization     Organization      @relation(fields: [organizationId], references: [id])
-  memberships      Membership[]
-  invitations      Invitation[]
-  notifications    Notification[]
-  glAccounts       GlAccount[]
-  vatRates         VatRate[]
-  fiscalYears      FiscalYear[]
-  numberSeries     NumberSeries[]
-  currencies       CompanyCurrency[]
-  departments      Department[]
-  dimensions       Dimension[]
-  journalEntries   JournalEntry[]
-  journalTemplates JournalTemplate[]
-  customers        Customer[]
-  customerGroups   CustomerGroup[]
-  items            Item[]
-  itemGroups       ItemGroup[]
-  salesInvoices    SalesInvoice[]
-  quotes           Quote[]
-  emailLogs        EmailLog[]
-  suppliers        Supplier[]
-  supplierGroups   SupplierGroup[]
-  employees        Employee[]
-  purchaseInvoices PurchaseInvoice[]
-  purchaseOrders   PurchaseOrder[]
-  expenseReports   ExpenseReport[]
-  attachments      Attachment[]
-  bankAccounts     BankAccount[]
-  payments         Payment[]
-  bankStatements   BankStatement[]
-  paymentOrders    PaymentOrder[]
+  organization      Organization       @relation(fields: [organizationId], references: [id])
+  memberships       Membership[]
+  invitations       Invitation[]
+  notifications     Notification[]
+  glAccounts        GlAccount[]
+  vatRates          VatRate[]
+  fiscalYears       FiscalYear[]
+  numberSeries      NumberSeries[]
+  currencies        CompanyCurrency[]
+  departments       Department[]
+  dimensions        Dimension[]
+  journalEntries    JournalEntry[]
+  journalTemplates  JournalTemplate[]
+  customers         Customer[]
+  customerGroups    CustomerGroup[]
+  items             Item[]
+  itemGroups        ItemGroup[]
+  salesInvoices     SalesInvoice[]
+  quotes            Quote[]
+  emailLogs         EmailLog[]
+  recurringInvoices RecurringInvoice[]
+  suppliers         Supplier[]
+  supplierGroups    SupplierGroup[]
+  employees         Employee[]
+  purchaseInvoices  PurchaseInvoice[]
+  purchaseOrders    PurchaseOrder[]
+  expenseReports    ExpenseReport[]
+  attachments       Attachment[]
+  bankAccounts      BankAccount[]
+  payments          Payment[]
+  bankStatements    BankStatement[]
+  paymentOrders     PaymentOrder[]
 
   @@index([organizationId])
   @@index([regCode])
@@ -245,32 +251,32 @@ enum AccountRole {
 
 /// Pearaamatu konto (nimi GlAccount, sest Auth.js kasutab mudelit Account).
 model GlAccount {
-  id                   String       @id @default(cuid())
+  id                   String        @id @default(cuid())
   companyId            String
   /// 1… varad, 2… kohustised ja omakapital, 3… tulud, 4… kulud
   code                 String
   name                 String
   nameEn               String?
   type                 AccountType
-  kind                 AccountKind  @default(DETAIL)
+  kind                 AccountKind   @default(DETAIL)
   /// Bilansi või kasumiaruande rea kood (src/lib/accounting/report-lines.ts)
   reportLine           String?
   /// Vaikimisi käibemaks selle konto kasutamisel
   defaultVatRateId     String?
-  vatTurnover          VatTurnover  @default(NONE)
+  vatTurnover          VatTurnover   @default(NONE)
   /// Makseviisina kasutatav konto (pank, kassa)
-  isPaymentMethod      Boolean      @default(false)
+  isPaymentMethod      Boolean       @default(false)
   /// Osakond kohustuslik
-  requiresDepartment   Boolean      @default(false)
+  requiresDepartment   Boolean       @default(false)
   /// Dimensioonid, mille väärtus on kohustuslik (Dimension.id)
-  requiredDimensionIds String[]     @default([])
-  showOnDashboard      Boolean      @default(false)
+  requiredDimensionIds String[]      @default([])
+  showOnDashboard      Boolean       @default(false)
   /// Kasumiaruande skeem 2 (kulude funktsiooni järgi); null = vaikimisi rea järgi
   costFunction         CostFunction?
   role                 AccountRole?
-  active               Boolean      @default(true)
-  createdAt            DateTime     @default(now())
-  updatedAt            DateTime     @updatedAt
+  active               Boolean       @default(true)
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
   createdById          String?
 
   company              Company               @relation(fields: [companyId], references: [id], onDelete: Cascade)
@@ -875,58 +881,65 @@ enum DocumentStatus {
 }
 
 model SalesInvoice {
-  id                String           @id @default(cuid())
-  companyId         String
-  type              SalesInvoiceType @default(INVOICE)
-  status            DocumentStatus   @default(DRAFT)
+  id                 String           @id @default(cuid())
+  companyId          String
+  type               SalesInvoiceType @default(INVOICE)
+  status             DocumentStatus   @default(DRAFT)
   /// Number antakse kinnitamisel
-  number            String?
-  customerId        String
+  number             String?
+  customerId         String
   /// Kliendi andmed arve koostamise hetkel (arvel ei muutu, kui klient hiljem muutub)
-  customerName      String
-  customerRegCode   String?
-  customerVatNumber String?
-  customerAddress   String?
-  customerEmail     String?
-  date              DateTime         @db.Date
-  dueDate           DateTime         @db.Date
+  customerName       String
+  customerRegCode    String?
+  customerVatNumber  String?
+  customerAddress    String?
+  customerEmail      String?
+  date               DateTime         @db.Date
+  dueDate            DateTime         @db.Date
   /// Kauba/teenuse üleandmise kuupäev, kui erineb
-  deliveryDate      DateTime?        @db.Date
-  referenceNumber   String?
-  currency          String           @default("EUR") @db.Char(3)
+  deliveryDate       DateTime?        @db.Date
+  referenceNumber    String?
+  currency           String           @default("EUR") @db.Char(3)
   /// 1 EUR = rate valuutat
-  currencyRate      Decimal          @default(1) @db.Decimal(18, 6)
-  pricesIncludeVat  Boolean          @default(false)
-  locale            String           @default("et")
-  yourReference     String?
-  notes             String?
-  lateInterestPct   Decimal?         @db.Decimal(6, 3)
+  currencyRate       Decimal          @default(1) @db.Decimal(18, 6)
+  pricesIncludeVat   Boolean          @default(false)
+  locale             String           @default("et")
+  yourReference      String?
+  notes              String?
+  lateInterestPct    Decimal?         @db.Decimal(6, 3)
   /// Kreeditarve korral algne arve
-  creditOfId        String?
+  creditOfId         String?
   /// Tax-free korrigeerimine (KMS § 15 lg 3 p 2): müük reisijale muudetakse 0% ekspordiks
-  taxFree           Boolean          @default(false)
+  taxFree            Boolean          @default(false)
   /// Pakkumine, millest arve tehti
-  quoteId           String?
-  netTotal          Decimal          @default(0) @db.Decimal(18, 2)
-  vatTotal          Decimal          @default(0) @db.Decimal(18, 2)
-  total             Decimal          @default(0) @db.Decimal(18, 2)
+  quoteId            String?
+  /// Perioodiline arve, millest arve loodi
+  recurringInvoiceId String?
+  /// Viivisearve (eraldi numbriseeria)
+  isInterest         Boolean          @default(false)
+  netTotal           Decimal          @default(0) @db.Decimal(18, 2)
+  vatTotal           Decimal          @default(0) @db.Decimal(18, 2)
+  total              Decimal          @default(0) @db.Decimal(18, 2)
   /// Kogusumma eurodes (pearaamatu summa)
-  totalBase         Decimal          @default(0) @db.Decimal(18, 2)
+  totalBase          Decimal          @default(0) @db.Decimal(18, 2)
   /// Tasutud summa arve valuutas (kinnitatud maksete sidumistest)
-  paidTotal         Decimal          @default(0) @db.Decimal(18, 2)
-  journalEntryId    String?
-  confirmedAt       DateTime?
-  confirmedById     String?
-  sentAt            DateTime?
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
-  createdById       String?
+  paidTotal          Decimal          @default(0) @db.Decimal(18, 2)
+  journalEntryId     String?
+  confirmedAt        DateTime?
+  confirmedById      String?
+  sentAt             DateTime?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  createdById        String?
 
-  company  Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  customer Customer           @relation(fields: [companyId, customerId], references: [companyId, id], onDelete: Restrict)
-  creditOf SalesInvoice?      @relation("CreditOf", fields: [creditOfId], references: [id], onDelete: Restrict)
-  credits  SalesInvoice[]     @relation("CreditOf")
-  lines    SalesInvoiceLine[]
+  company         Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  customer        Customer             @relation(fields: [companyId, customerId], references: [companyId, id], onDelete: Restrict)
+  creditOf        SalesInvoice?        @relation("CreditOf", fields: [creditOfId], references: [id], onDelete: Restrict)
+  credits         SalesInvoice[]       @relation("CreditOf")
+  lines           SalesInvoiceLine[]
+  recurring       RecurringInvoice?    @relation(fields: [recurringInvoiceId], references: [id], onDelete: SetNull)
+  interestCharges LateInterestCharge[] @relation("InterestInvoice")
+  chargedInterest LateInterestCharge[] @relation("ChargedInvoice")
 
   @@unique([companyId, id])
   @@index([companyId, date])
@@ -1619,4 +1632,92 @@ model PaymentOrderLine {
   order PaymentOrder @relation(fields: [companyId, orderId], references: [companyId, id], onDelete: Cascade)
 
   @@index([companyId, orderId])
+}
+
+/// Perioodilise arve koostamise viis
+enum RecurringMode {
+  /// Mustand ülevaatamiseks
+  DRAFT
+  /// Kinnitatakse automaatselt
+  CONFIRM
+  /// Kinnitatakse ja saadetakse kliendile e-postiga
+  SEND
+}
+
+/// Perioodiline (korduv) müügiarve: mall, millest ajakava järgi tehakse arveid.
+model RecurringInvoice {
+  id               String        @id @default(cuid())
+  companyId        String
+  name             String
+  customerId       String
+  active           Boolean       @default(true)
+  mode             RecurringMode @default(DRAFT)
+  /// Kordus kuudes (1 = iga kuu, 3 = kvartal, 12 = aasta)
+  intervalMonths   Int           @default(1)
+  /// Esimese arve kuupäev; järgmised samal kuupäeval (või kuu viimasel päeval)
+  startDate        DateTime      @db.Date
+  endDate          DateTime?     @db.Date
+  /// Järgmise arve kuupäev; null = ajakava lõppenud
+  nextDate         DateTime?     @db.Date
+  /// Mitu arvet on tehtud (järgmine kuupäev = algus + tehtud × kordus)
+  runCount         Int           @default(0)
+  /// null = kliendi/ettevõtte maksetähtaeg
+  paymentTermDays  Int?
+  currency         String        @default("EUR") @db.Char(3)
+  pricesIncludeVat Boolean       @default(false)
+  yourReference    String?
+  notes            String?
+  lastRunAt        DateTime?
+  lastError        String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  createdById      String?
+
+  company  Company                @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  lines    RecurringInvoiceLine[]
+  invoices SalesInvoice[]
+
+  @@unique([companyId, id])
+  @@index([companyId, active, nextDate])
+}
+
+model RecurringInvoiceLine {
+  id                String   @id @default(cuid())
+  companyId         String
+  recurringId       String
+  itemId            String?
+  code              String?
+  description       String
+  quantity          Decimal  @db.Decimal(18, 4)
+  unit              String?
+  unitPrice         Decimal  @db.Decimal(18, 4)
+  discountPct       Decimal  @default(0) @db.Decimal(5, 2)
+  vatRateId         String?
+  accountId         String?
+  departmentId      String?
+  dimensionValueIds String[] @default([])
+  sortOrder         Int      @default(0)
+
+  recurring RecurringInvoice @relation(fields: [companyId, recurringId], references: [companyId, id], onDelete: Cascade)
+
+  @@unique([companyId, id])
+  @@index([companyId, recurringId])
+}
+
+/// Viivisearvel nõutud viivis arve kohta (topelt arvestamise vältimiseks).
+model LateInterestCharge {
+  id                String   @id @default(cuid())
+  companyId         String
+  interestInvoiceId String
+  salesInvoiceId    String
+  fromDate          DateTime @db.Date
+  toDate            DateTime @db.Date
+  amount            Decimal  @db.Decimal(18, 2)
+  createdAt         DateTime @default(now())
+
+  interestInvoice SalesInvoice @relation("InterestInvoice", fields: [interestInvoiceId], references: [id], onDelete: Cascade)
+  salesInvoice    SalesInvoice @relation("ChargedInvoice", fields: [salesInvoiceId], references: [id], onDelete: Restrict)
+
+  @@index([companyId, salesInvoiceId])
+  @@index([companyId, interestInvoiceId])
 }

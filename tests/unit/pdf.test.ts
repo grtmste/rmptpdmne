@@ -47,3 +47,28 @@ describe("PDF", () => {
     expect(buffer.length).toBeGreaterThan(5000);
   }, 30_000);
 });
+
+describe("saldoteatise PDF", () => {
+  it("meeldetuletus ja saldoteatis kinnitusosaga", async () => {
+    const { renderStatementPdf } = await import("@/server/pdf/statement-document");
+    const base = {
+      accent: "#0f5c55",
+      company: { name: "Põhjatuul AS", address: "Õie 1, Tartu", regCode: "12345678", email: "info@pt.ee", phone: null, bankDetails: "EE38 2200 2210 2014 5685" },
+      customer: { name: "ООО Ромашка", regCode: null, address: null },
+      meta: [["Seisuga", "10.05.2026"]] as Array<[string, string]>,
+      intro: "Meie andmetel on tasumata järgmised arved.",
+      rows: [{ number: "1001", date: "01.04.2026", dueDate: "15.04.2026", total: "1 240,00", open: "500,00", overdue: "25 p" }],
+      totals: [["Tasumata kokku", "500,00"]] as Array<[string, string]>,
+      payable: ["Tasuda", "500,00 EUR"] as [string, string],
+      labels: Object.fromEntries(["buyer", "regCode", "number", "date", "dueDate", "total", "open", "overdue", "bank", "page"].map((k) => [k, k])) as never,
+    };
+    const reminder = await renderStatementPdf({ ...base, title: "MAKSEMEELDETULETUS", confirmation: null });
+    expect(reminder.subarray(0, 4).toString()).toBe("%PDF");
+    const statement = await renderStatementPdf({
+      ...base,
+      title: "SALDOTEATIS",
+      confirmation: { text: "Palun kinnitage saldo.", agree: "Kinnitame", disagree: "Ei kinnita", signature: "Allkiri" },
+    });
+    expect(statement.length).toBeGreaterThan(reminder.length);
+  });
+});
