@@ -32,6 +32,17 @@ import { saveCustomer } from "@/server/actions/customers";
 import { newLine } from "./doc-line";
 
 import { confirmSalesInvoice, saveQuoteAction, saveSalesInvoice } from "@/server/actions/sales";
+import { saveRecurringAction } from "@/server/actions/recurring";
+
+/** Perioodilise arve malli lisaväljad (mode = "recurring"); alguskuupäev on `date`. */
+export type RecurringFields = {
+  name: string;
+  intervalMonths: string;
+  endDate: string;
+  mode: "DRAFT" | "CONFIRM" | "SEND";
+  paymentTermDays: string;
+  active: boolean;
+};
 
 export type EditorData = {
   customers: Array<{
@@ -114,9 +125,10 @@ export function SalesDocumentEditor({
   rateDate,
   creditOf,
   taxFree,
+  recurring,
 }: {
   companyId: string;
-  mode: "invoice" | "quote";
+  mode: "invoice" | "quote" | "recurring";
   type?: "INVOICE" | "CREDIT" | "PREPAYMENT";
   documentId?: string;
   initial: DocValues;
@@ -126,6 +138,7 @@ export function SalesDocumentEditor({
   rateDate?: string;
   creditOf?: { id: string; number: string } | null;
   taxFree?: boolean;
+  recurring?: RecurringFields;
 }) {
   const t = useTranslations("invoices");
   const tc = useTranslations("common");
@@ -142,6 +155,10 @@ export function SalesDocumentEditor({
   );
   const [showMore, setShowMore] = useState(Boolean(initial.deliveryDate || initial.yourReference || initial.currency !== data.baseCurrency));
   const [newCustomerOpen, setNewCustomerOpen] = useState(false);
+  const [rec, setRec] = useState<RecurringFields>(
+    recurring ?? { name: "", intervalMonths: "1", endDate: "", mode: "DRAFT", paymentTermDays: "", active: true },
+  );
+  const tr = useTranslations("recurring");
   const gridId = useId();
   const isCredit = type === "CREDIT";
 
@@ -322,6 +339,34 @@ export function SalesDocumentEditor({
   function save() {
     setError(null);
     setErrorRow(null);
+    if (mode === "recurring") {
+      run(
+        () =>
+          saveRecurringAction(companyId, {
+            id: documentId,
+            name: rec.name,
+            customerId: v.customerId,
+            active: rec.active,
+            mode: rec.mode,
+            intervalMonths: Number(rec.intervalMonths),
+            startDate: v.date,
+            endDate: rec.endDate,
+            paymentTermDays: rec.paymentTermDays,
+            currency: v.currency,
+            pricesIncludeVat: v.pricesIncludeVat,
+            yourReference: v.yourReference,
+            notes: v.notes,
+            ...payload(),
+          }),
+        {
+          success: tr("saved"),
+          refresh: false,
+          onSuccess: (d) => router.push(`/c/${companyId}/sales/recurring?doc=${d.id}`),
+          onError,
+        },
+      );
+      return;
+    }
     if (mode === "quote") {
       run(
         () =>
@@ -390,6 +435,41 @@ export function SalesDocumentEditor({
           {taxFree ? t("taxFreeInfo", { number: creditOf?.number ?? "" }) : t("creditInfo", { number: creditOf?.number ?? "" })}
         </div>
       )}
+      {mode === "recurring" && (
+        <Card>
+          <CardContent className="grid gap-4 pt-5 md:grid-cols-4">
+            <FormField label={tr("name")} htmlFor="rec-name" className="md:col-span-2" hint={tr("nameHint")}>
+              <Input id="rec-name" value={rec.name} onChange={(e) => setRec({ ...rec, name: e.target.value })} />
+            </FormField>
+            <FormField label={tr("interval")} htmlFor="rec-interval">
+              <NativeSelect id="rec-interval" value={rec.intervalMonths} onChange={(e) => setRec({ ...rec, intervalMonths: e.target.value })}>
+                {["1", "2", "3", "6", "12"].map((m) => (
+                  <option key={m} value={m}>
+                    {tr(`intervals.m${m}`)}
+                  </option>
+                ))}
+              </NativeSelect>
+            </FormField>
+            <FormField label={tr("mode")} htmlFor="rec-mode">
+              <NativeSelect id="rec-mode" value={rec.mode} onChange={(e) => setRec({ ...rec, mode: e.target.value as RecurringFields["mode"] })}>
+                {(["DRAFT", "CONFIRM", "SEND"] as const).map((m) => (
+                  <option key={m} value={m}>
+                    {tr(`modes.${m}`)}
+                  </option>
+                ))}
+              </NativeSelect>
+            </FormField>
+            <FormField label={tr("endDate")} htmlFor="rec-end" hint={tr("endDateHint")}>
+              <Input id="rec-end" type="date" value={rec.endDate} onChange={(e) => setRec({ ...rec, endDate: e.target.value })} />
+            </FormField>
+            <FormField label={tr("paymentTermDays")} htmlFor="rec-term" hint={tr("paymentTermHint")}>
+              <Input id="rec-term" inputMode="numeric" value={rec.paymentTermDays} onChange={(e) => setRec({ ...rec, paymentTermDays: e.target.value })} />
+            </FormField>
+            <Checkbox label={tr("active")} checked={rec.active} onChange={(e) => setRec({ ...rec, active: e.target.checked })} className="self-end pb-2" />
+            <p className="self-end pb-2 text-xs text-muted-foreground md:col-span-1">{tr("placeholdersHint")}</p>
+          </CardContent>
+        </Card>
+      )}
       <Card>
         <CardContent className="grid gap-4 pt-5 md:grid-cols-[minmax(0,2fr)_repeat(2,minmax(0,1fr))]">
           <FormField label={t("customer")} htmlFor="doc-customer">
@@ -414,7 +494,7 @@ export function SalesDocumentEditor({
               )}
             </div>
           </FormField>
-          <FormField label={t("date")} htmlFor="doc-date">
+          <FormField label={mode === "recurring" ? tr("startDate") : t("date")} htmlFor="doc-date">
             <Input
               id="doc-date"
               type="date"
@@ -425,7 +505,9 @@ export function SalesDocumentEditor({
               }}
             />
           </FormField>
-          {mode === "invoice" ? (
+          {mode === "recurring" ? (
+            <span className="hidden md:block" />
+          ) : mode === "invoice" ? (
             <FormField label={t("dueDate")} htmlFor="doc-due">
               <Input
                 id="doc-due"
@@ -769,8 +851,8 @@ export function SalesDocumentEditor({
           <Receipt className="size-4 text-muted-foreground" />
           {t("total")}: <b className="tabular-nums">{formatMoney(calc.total, locale)}{currencyLabel}</b>
         </span>
-        <Button type="button" variant={mode === "quote" ? "default" : "outline"} disabled={pending} onClick={save}>
-          {mode === "quote" ? tc("save") : t("saveDraft")}
+        <Button type="button" variant={mode === "invoice" ? "outline" : "default"} disabled={pending} onClick={save}>
+          {mode === "invoice" ? t("saveDraft") : tc("save")}
         </Button>
         {mode === "invoice" && canConfirm && (
           <Button type="button" disabled={pending || !v.customerId} onClick={confirmDoc}>

@@ -199,3 +199,25 @@ pangaliidesed otse (API) – praegu failiga.
 Hiljem: valuutasaldode ümberhindamine perioodi lõpus ja majandusaasta sulgemiskanne (faas 7/10), majandusaasta
 aruande eksport e-äriregistrisse, dimensioonide ja kassapõhised aruanded (faas 10), OSS ja ühendusesisese käibe
 aruanne (VD).
+
+## Faas 7 (perioodilised arved, saldoteatised, meeldetuletused, viivised) – tehtud
+
+- **Perioodilised arved**: mall (klient, read, kordus 1/2/3/6/12 kuud, algus- ja lõppkuupäev, maksetähtaeg) ja
+  koostamise viis: mustand / kinnitamine / kinnitamine + e-post kliendile. Kuupäevad arvutatakse alati
+  alguskuupäevast (31. jääb 31-ks pärast veebruari). Kohatäited kirjeldustes ja märkuses kliendi keeles:
+  `[kuu]`, `[aasta]`, `[periood]`, `[järgmine kuu]` (ka inglise kujul). „Koosta järgmine arve kohe“ ja tehtud arvete
+  ajalugu; mallist tehtud arve on mallist seotud.
+- **Ajastatud töö** `/api/cron/daily` (Vercel Cron, `vercel.json`, kaitstud `CRON_SECRET`-iga): koostab tähtajaks
+  jõudnud perioodilised arved (ka mahajäänud, kuni 12 malli kohta), saadab need SEND-režiimis ning loob teated
+  KMD tähtajast (5 ja 1 päev enne) ja majandusaasta aruande tähtajast (30 päeva enne). Vead jäävad mallile
+  (`lastError`) ega peata teisi.
+- **Viivised**: arvutus iga hilinenud päeva eest osamakseid ja kreeditarveid arvestades (tasumise päev loeb
+  veel hilinenuks), määr arvelt (kliendi või ettevõtte seadistus). Viivisearved kliendi kaupa (oma numbriseeria
+  V-, KM-ita, tulukonto seadistatav), nõutud vahemik salvestatakse – järgmine arvestus jätkub sealt.
+- **Maksemeeldetuletused ja saldoteatised**: kliendid seisuga (meeldetuletusel ainult tähtaja ületanud arved,
+  päevade piir), PDF kliendi keeles (saldoteatisel kinnitusosa), masssaatmine e-postiga (ka koopia saajad),
+  saatmise logi ja „viimati saadetud“. E-kirja teksti saab arve seadistuses muuta (kohatäited).
+- **Koondarved**: sama kliendi mitu pakkumist/tellimust → üks arve mustand, pakkumised märgitakse arveks tehtuks.
+- IBAN-i veateade eristab nüüd vale pikkuse (nt puuduv pangakood) ja vale kontrollsumma.
+
+Hiljem: näidupõhised perioodilised arved, makselink e-kirjas, saldoteatised tarnijatele (faas 10 koos e-arvetega).

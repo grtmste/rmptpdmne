@@ -8,13 +8,14 @@ import "dotenv/config";
 import { createPrismaClient } from "../src/lib/prisma";
 import { hashPassword } from "../src/lib/password";
 import type { CompanyRole } from "../src/lib/permissions";
-import { addDays, parseISODate } from "../src/lib/accounting/dates";
+import { addDays, addMonths, parseISODate } from "../src/lib/accounting/dates";
 import { todayLocal } from "../src/lib/dates";
 import { ensureCompanyDefaults } from "../src/server/services/company-setup";
 import { postJournalEntry } from "../src/server/services/journal";
 import { dec } from "../src/lib/money";
 import { confirmInvoice, saveInvoiceDraft, saveQuote } from "../src/server/services/sales";
 import { confirmPayment, savePayment, type PaymentInput } from "../src/server/services/payments";
+import { saveRecurring } from "../src/server/services/recurring";
 import { confirmExpenseReport, confirmPurchase, saveExpenseReport, savePurchaseDraft, savePurchaseOrder } from "../src/server/services/purchases";
 
 const db = createPrismaClient();
@@ -376,6 +377,21 @@ async function main() {
       { timeout: 30_000 },
     );
   }
+
+  // Perioodiline arve (faas 7): iga kuu esimesel päeval aiahoolduse kuutasu mustandina
+  await db.$transaction((tx) =>
+    saveRecurring(tx, first.id, owner, {
+      name: "Aiahoolduse kuutasu",
+      customerId: kohvik.id,
+      active: true,
+      mode: "DRAFT",
+      intervalMonths: 1,
+      startDate: addMonths(new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), 1)), 1),
+      pricesIncludeVat: false,
+      notes: "Hooldusperiood: [periood]",
+      lines: [{ itemId: hool!.id, description: "Terrassi taimede hooldus [kuu] [aasta]", quantity: "4", unitPrice: "35", vatRateId: vat.KM }],
+    }),
+  );
 
   // Töölaud (faas 6): kontode käibe vidin
   await db.glAccount.updateMany({ where: { companyId: first.id, code: { in: ["3000", "3010", "4010", "4180"] } }, data: { showOnDashboard: true } });

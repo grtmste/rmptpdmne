@@ -6,10 +6,9 @@ import type { Prisma } from "@/generated/prisma/client";
 import { db } from "@/lib/db";
 import { ActionError, companyAction } from "@/lib/action";
 import { audit } from "@/lib/audit";
-import { isValidIban, normalizeIban } from "@/lib/iban";
 import { toISODate } from "@/lib/accounting/dates";
 import { parseStatement, StatementParseError } from "@/lib/payments/statement";
-import { dateSchema, decimalInputSchema, idSchema, optionalIdSchema, optionalText, requiredText } from "@/lib/validation";
+import { dateSchema, decimalInputSchema, idSchema, optionalIbanSchema, optionalIdSchema, optionalText, requiredText } from "@/lib/validation";
 import {
   cancelPayment,
   confirmPayment,
@@ -37,12 +36,7 @@ async function log(ctx: CompanyContext, action: string, entityType: string, enti
 
 // --- Pangad ja kassad ----------------------------------------------------------
 
-const ibanSchema = z
-  .string()
-  .trim()
-  .optional()
-  .transform((v) => (v ? normalizeIban(v) : null))
-  .refine((v) => v === null || isValidIban(v), { error: "iban" });
+const ibanSchema = optionalIbanSchema;
 
 const bankAccountSchema = z.object({
   id: idSchema.optional(),

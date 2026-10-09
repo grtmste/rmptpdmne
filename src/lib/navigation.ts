@@ -25,7 +25,7 @@ import { can, type Level, type MembershipLike, type Module } from "./permissions
  */
 
 /** Faas, mis on hetkel valmis. Kõrgema faasi vaated näitavad „tulekul“ lehte. */
-export const CURRENT_PHASE = 6;
+export const CURRENT_PHASE = 7;
 
 export type NavItem = {
   id: string;
@@ -81,7 +81,7 @@ export const NAVIGATION: NavGroup[] = [
         items: [
           item("sales.invoices", "/sales/invoices", "sales", 3),
           item("sales.quotes", "/sales/quotes", "sales", 3),
-          item("sales.recurring", "/sales/recurring", "sales", 7),
+          item("sales.recurring", "/sales/recurring", "sales", 7, ["perioodiline", "korduv", "kuuarve"]),
           item("sales.consolidated", "/sales/consolidated", "sales", 7),
         ],
       },
@@ -97,8 +97,8 @@ export const NAVIGATION: NavGroup[] = [
         items: [
           item("sales.reportSales", "/sales/reports/sales", "reports", 6, ["müügianalüüs", "käive"]),
           item("sales.reportReceivables", "/sales/reports/receivables", "reports", 6, ["võlgnevus", "laekumata", "käibeandmik"]),
-          item("sales.reportReminders", "/sales/reminders", "sales", 7),
-          item("sales.reportInterest", "/sales/interest", "sales", 7),
+          item("sales.reportReminders", "/sales/reminders", "sales", 7, ["meeldetuletus", "saldoteatis", "saldokinnitus"]),
+          item("sales.reportInterest", "/sales/interest", "sales", 7, ["viivis", "viivisearve"]),
         ],
       },
     ],

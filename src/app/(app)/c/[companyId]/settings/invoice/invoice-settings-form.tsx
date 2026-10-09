@@ -6,6 +6,7 @@ import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
 import { FormError, FormField } from "@/components/common/form-field";
 import { useActionRunner } from "@/components/common/use-action";
@@ -18,12 +19,25 @@ type Values = {
   invoiceFooter: string;
   invoiceNote: string;
   invoiceAccent: string;
+  interestAccountId: string;
+  reminderText: string;
+  statementText: string;
 };
 
 /** Arve aktsentvärvid: oma palett, mis sobib valgel paberil ja trükis. */
 const ACCENTS = ["#0f5c55", "#1f6f4a", "#7c4a1e", "#8a3b52", "#3f3d8f", "#334155", "#111827"];
 
-export function InvoiceSettingsForm({ companyId, initial, readOnly }: { companyId: string; initial: Values; readOnly: boolean }) {
+export function InvoiceSettingsForm({
+  companyId,
+  initial,
+  readOnly,
+  interestAccounts,
+}: {
+  companyId: string;
+  initial: Values;
+  readOnly: boolean;
+  interestAccounts: Array<{ id: string; code: string; name: string }>;
+}) {
   const t = useTranslations("invoiceSettings");
   const tc = useTranslations("common");
   const { pending, run } = useActionRunner();
@@ -66,6 +80,22 @@ export function InvoiceSettingsForm({ companyId, initial, readOnly }: { companyI
         </FormField>
         <FormField label={t("footer")} htmlFor="s-footer" errors={fieldErrors.invoiceFooter} hint={t("footerHint")}>
           <Input id="s-footer" value={v.invoiceFooter} onChange={(e) => set("invoiceFooter", e.target.value)} />
+        </FormField>
+        <FormField label={t("interestAccount")} htmlFor="s-int-acc" hint={t("interestAccountHint")}>
+          <NativeSelect id="s-int-acc" value={v.interestAccountId} onChange={(e) => set("interestAccountId", e.target.value)}>
+            <option value="">{t("interestAccountDefault")}</option>
+            {interestAccounts.map((a) => (
+              <option key={a.id} value={a.id}>
+                {a.code} {a.name}
+              </option>
+            ))}
+          </NativeSelect>
+        </FormField>
+        <FormField label={t("reminderText")} htmlFor="s-reminder" errors={fieldErrors.reminderText} hint={t("textHint")}>
+          <Textarea id="s-reminder" rows={4} value={v.reminderText} placeholder={t("reminderPlaceholder")} onChange={(e) => set("reminderText", e.target.value)} />
+        </FormField>
+        <FormField label={t("statementText")} htmlFor="s-statement" errors={fieldErrors.statementText} hint={t("textHint")}>
+          <Textarea id="s-statement" rows={4} value={v.statementText} placeholder={t("statementPlaceholder")} onChange={(e) => set("statementText", e.target.value)} />
         </FormField>
         <fieldset>
           <legend className="mb-2 text-sm font-medium">{t("accent")}</legend>

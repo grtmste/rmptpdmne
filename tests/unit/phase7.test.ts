@@ -71,3 +71,15 @@ describe("viivis", () => {
     expect(none.amount.toFixed(2)).toBe("0.00");
   });
 });
+
+describe("IBAN veateade", async () => {
+  const { ibanIssue } = await import("@/lib/iban");
+  it("eristab pikkuse, kuju ja kontrollsumma vea", () => {
+    expect(ibanIssue("EE95 2200 2210 2916 8472")).toBeNull();
+    // Pangakood „22“ puudu → 18 märki
+    expect(ibanIssue("EE9500221029168472")).toBe("ibanLength");
+    expect(ibanIssue("EE952200221029168473")).toBe("iban");
+    expect(ibanIssue("1234")).toBe("ibanFormat");
+    expect(ibanIssue("FI2112345600000785")).toBeNull();
+  });
+});

@@ -8,6 +8,7 @@ import { createInterestInvoices, interestCandidates } from "@/server/services/in
 import { consolidateQuotes } from "@/server/services/consolidated";
 import { confirmPayment, savePayment } from "@/server/services/payments";
 import { statementCandidates } from "@/server/sales/statements";
+import { runRecurringJob } from "@/server/jobs/daily";
 import { resetDatabase } from "./helpers";
 
 const db = createPrismaClient();
@@ -82,6 +83,40 @@ describe("perioodilised arved", () => {
     expect(r.nextDate).toBeNull();
     await expect(db.$transaction((tx) => runRecurring(tx, companyId, userId, id))).rejects.toBeInstanceOf(SalesError);
     expect(await dueRecurring(db, d("2026-12-31"))).toHaveLength(0);
+  });
+});
+
+describe("igapäevane töö", () => {
+  it("teeb mahajäänud perioodilised arved järele ja jätab peatatud mallid vahele", async () => {
+    const make = (name: string, active: boolean) =>
+      db.$transaction((tx) =>
+        saveRecurring(tx, companyId, userId, {
+          name,
+          customerId,
+          active,
+          mode: "DRAFT",
+          intervalMonths: 1,
+          startDate: d("2026-06-10"),
+          pricesIncludeVat: false,
+          lines: [{ description: "Hooldus [kuu]", quantity: "1", unitPrice: "50", vatRateId: vat.KM }],
+        }),
+      );
+    const active = await make("Hooldus", true);
+    const paused = await make("Peatatud", false);
+    const res = await runRecurringJob(d("2026-08-15"));
+    expect(res.invoices).toBe(3);
+    expect(res.errors).toBe(0);
+    const drafts = await db.salesInvoice.findMany({ where: { recurringInvoiceId: active }, orderBy: { date: "asc" }, include: { lines: true } });
+    expect(drafts.map((i) => [toISODate(i.date), i.status, i.lines[0]!.description])).toEqual([
+      ["2026-06-10", "DRAFT", "Hooldus juuni"],
+      ["2026-07-10", "DRAFT", "Hooldus juuli"],
+      ["2026-08-10", "DRAFT", "Hooldus august"],
+    ]);
+    expect(await db.salesInvoice.count({ where: { recurringInvoiceId: paused } })).toBe(0);
+    // Teine käivitus samal päeval ei tee midagi
+    expect((await runRecurringJob(d("2026-08-15"))).invoices).toBe(0);
+    await db.recurringInvoice.deleteMany({ where: { id: { in: [active, paused] } } });
+    await db.salesInvoice.deleteMany({ where: { recurringInvoiceId: null, status: "DRAFT", lines: { some: { description: { startsWith: "Hooldus" } } } } });
   });
 });
 

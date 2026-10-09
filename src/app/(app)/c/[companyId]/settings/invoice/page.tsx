@@ -17,7 +17,22 @@ export default async function InvoiceSettingsPage({ params }: PageProps<"/c/[com
   const t = await getTranslations("invoiceSettings");
   const tn = await getTranslations("nav");
   const c = await ctx.cdb.company.findFirstOrThrow({
-    select: { paymentTermDays: true, lateInterestPct: true, invoiceBankDetails: true, invoiceFooter: true, invoiceNote: true, invoiceAccent: true },
+    select: {
+      paymentTermDays: true,
+      lateInterestPct: true,
+      invoiceBankDetails: true,
+      invoiceFooter: true,
+      invoiceNote: true,
+      invoiceAccent: true,
+      interestAccountId: true,
+      reminderText: true,
+      statementText: true,
+    },
+  });
+  const interestAccounts = await ctx.cdb.glAccount.findMany({
+    where: { type: "INCOME", kind: "DETAIL", active: true },
+    orderBy: { code: "asc" },
+    select: { id: true, code: true, name: true },
   });
   return (
     <div className="mx-auto max-w-3xl space-y-5">
@@ -40,7 +55,11 @@ export default async function InvoiceSettingsPage({ params }: PageProps<"/c/[com
               invoiceFooter: c.invoiceFooter ?? "",
               invoiceNote: c.invoiceNote ?? "",
               invoiceAccent: c.invoiceAccent,
+              interestAccountId: c.interestAccountId ?? "",
+              reminderText: c.reminderText ?? "",
+              statementText: c.statementText ?? "",
             }}
+            interestAccounts={interestAccounts}
           />
         </CardContent>
       </Card>

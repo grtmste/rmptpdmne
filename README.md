@@ -55,6 +55,8 @@ Testandmebaasi migreerimine: `DATABASE_URL=$TEST_DATABASE_URL pnpm prisma migrat
    - `AUTH_SECRET` – `openssl rand -base64 32`
    - `APP_URL` – nt `https://lily-sokid.vercel.app` (kutselinkide jaoks)
    - `RESEND_API_KEY` ja `EMAIL_FROM` – Resendi võti ja kinnitatud domeeniga saatja
+   - `CRON_SECRET` – juhuslik pikk sõne; Vercel Cron käivitab iga päev 04:00 UTC (Eestis 6–7 hommikul) `/api/cron/daily`
+     (perioodilised arved, KMD ja majandusaasta aruande tähtaegade teated)
    - `BLOB_READ_WRITE_TOKEN` – Vercel Blob (Storage → Blob → Connect) ostuarvete failidele; ilma selleta hoitakse failid andmebaasis
 4. **Deploy.** Vercel käivitab `vercel-build` skripti: `prisma generate` → `prisma migrate deploy` → `next build`,
    seega migratsioonid rakenduvad automaatselt.

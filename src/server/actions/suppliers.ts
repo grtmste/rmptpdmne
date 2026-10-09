@@ -4,7 +4,6 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { ActionError, companyAction } from "@/lib/action";
 import { audit, diffRecords } from "@/lib/audit";
-import { isValidIban, normalizeIban } from "@/lib/iban";
 import {
   emailSchema,
   idSchema,
@@ -13,6 +12,7 @@ import {
   regCodeSchema,
   requiredText,
   vatNumberSchema,
+  optionalIbanSchema,
 } from "@/lib/validation";
 
 const path = (companyId: string) => `/c/${companyId}/purchases/suppliers`;
@@ -24,12 +24,7 @@ const optionalEmail = z
   .transform((v) => (v ? v : null))
   .pipe(emailSchema.nullable());
 
-const ibanSchema = z
-  .string()
-  .trim()
-  .optional()
-  .transform((v) => (v ? normalizeIban(v) : null))
-  .refine((v) => v === null || isValidIban(v), { error: "iban" });
+const ibanSchema = optionalIbanSchema;
 
 const daysSchema = z
   .string()

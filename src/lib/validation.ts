@@ -1,3 +1,4 @@
+import { ibanIssue, normalizeIban } from "./iban";
 import { z } from "zod";
 import { PASSWORD_MIN_LENGTH } from "./password-policy";
 import { parseISODate } from "./accounting/dates";
@@ -144,3 +145,19 @@ export const optionalIdSchema = z
   .max(64)
   .optional()
   .transform((v) => (v ? v : null));
+
+/** Valikuline IBAN: tühikud eemaldatakse; viga ütleb, kas kuju, pikkus või kontrollsumma ei sobi. */
+export const optionalIbanSchema = z
+  .string()
+  .trim()
+  .optional()
+  .transform((v, ctx) => {
+    if (!v) return null;
+    const iban = normalizeIban(v);
+    const issue = ibanIssue(iban);
+    if (issue) {
+      ctx.addIssue({ code: "custom", message: issue });
+      return z.NEVER;
+    }
+    return iban;
+  });
