@@ -270,3 +270,28 @@ Hiljem: näidupõhised perioodilised arved, makselink e-kirjas, saldoteatised ta
 
 Lihtsustused võrreldes Meritiga: omahind on ühine kõigile ladudele (lao väärtus on selle lao liikumiste summa);
 seerianumbrid, partiid, komplektid ja tootmine ei ole veel toetatud.
+
+## Faas 9 (põhivara) – tehtud
+
+- **Register**: kood, nimetus, grupp, asukoht, vastutaja (töötaja), seerianumber, soetamise kuupäev, kulumi algus
+  (kuu), soetusmaksumus, lõppväärtus, kasulik eluiga kuudes, osakond, märkused ja seos ostuarvega. Üle toodud varale
+  saab märkida enne LILY SOKID-i arvestatud kulumi ja kuude arvu. Kinnitatud ostuarvelt „Lisa põhivarana“ täidab
+  andmed ette (põhivara kontodel olevate ridade summa ilma mahaarvatava KM-ita, grupp konto järgi).
+- **Grupid** kontodega (soetusmaksumus, akumuleeritud kulum, kulumikulu) ja vaikimisi elueaga; uuele ettevõttele
+  tehakse Eesti kontoplaani järgi viis gruppi (ehitised, masinad ja seadmed, transpordivahendid, inventar ja arvutid,
+  immateriaalne põhivara). Asukohtade nimekiri.
+- **Kulum** (lineaarne, kuu kaupa): kuu kulum = (soetusmaksumus − lõppväärtus − akumuleeritud kulum) / järelejäänud
+  kuud, seega läheb ümardus viimasesse kuusse ning ümberhindamine ja eluea muutus mõjuvad edasiulatuvalt. Vahele
+  jäänud kuud (tagantjärele lisatud vara) arvestatakse järele. Kuu arvestus teeb ühe kande (D kulumikulu osakonna
+  kaupa / K akumuleeritud kulum), kuud arvestatakse järjest, tulevase kuu kulumit ei arvestata. Viimase kuu
+  arvestuse saab tühistada, kui varadel pole hilisemaid muutusi. Varal on kulumiplaan ja ajalugu.
+- **Muutused** (oma kandeallikas „Põhivara muutus“): ümberhindamine (uus soetusmaksumus vastaskontoga ja/või uus
+  eluiga), ümberklassifitseerimine teise gruppi (soetusmaksumus ja kulum kantakse üle, kui kontod erinevad) ja
+  mahakandmine (kulum ja soetusmaksumus maha, jääkväärtus valitud kontole, vaikimisi 4420). Muutus ei tohi olla
+  enne viimast kulumi kuupäeva. Kulumi või muutustega vara rahalisi andmeid otse muuta ega vara kustutada ei saa.
+- **Aruanded**: põhivarade nimekiri kuupäeva seisuga (grupi, asukoha ja vastutaja filtriga, soovi korral ka maha
+  kantud), kulumiaruanne perioodi kohta gruppide kaupa ja koondaruanne (soetusmaksumuse ja kulumi liikumine
+  perioodis gruppide kaupa, nagu majandusaasta aruande lisas). CSV eksport.
+
+Lihtsustused: koondaruandes on vara selle praeguses grupis (ümberklassifitseerimist eraldi reana ei näidata);
+degressiivset kulumit ja osalist esimest kuud ei arvestata.

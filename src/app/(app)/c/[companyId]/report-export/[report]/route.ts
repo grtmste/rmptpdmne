@@ -9,6 +9,7 @@ import { loadCompanyContext } from "@/server/session";
 import { purchaseReport, salesReport } from "@/server/reports/documents";
 import { debtsAsOf, partyTurnover } from "@/server/reports/debts";
 import { stockAnalysis, stockBalance, stockTurnover } from "@/server/reports/inventory";
+import { assetList, assetSummary, depreciationReport } from "@/server/reports/assets";
 import { parseISODate } from "@/lib/accounting/dates";
 import { todayLocal } from "@/lib/dates";
 import { parseDocReportQuery } from "@/components/reports/params";
@@ -26,6 +27,7 @@ export async function GET(request: NextRequest, ctx: RouteContext<"/c/[companyId
   const t = await getTranslations("docReports");
   const td = await getTranslations("debts");
   const tv = await getTranslations("inventory");
+  const ta = await getTranslations("assets");
   const a = (v: Parameters<typeof csvAmount>[0]) => csvAmount(v, locale);
   const rows: Array<Array<string | number | null>> = [];
   let suffix = "";
@@ -86,6 +88,40 @@ export async function GET(request: NextRequest, ctx: RouteContext<"/c/[companyId
       rows.push([tv("code"), tv("item"), tv("soldQuantity"), tv("revenue"), tv("cost"), tv("margin"), tv("marginPct")]);
       for (const x of r.rows) rows.push([x.code, x.name, x.quantity.toString(), a(x.revenue), a(x.cost), a(x.margin), x.marginPct ? csvAmount(x.marginPct.toDecimalPlaces(1), locale) : ""]);
       rows.push([tv("total"), "", "", a(r.totals.revenue), a(r.totals.cost), a(r.totals.margin), r.totals.marginPct ? csvAmount(r.totals.marginPct.toDecimalPlaces(1), locale) : ""]);
+    }
+    suffix = `${q.fromIso}_${q.toIso}`;
+  } else if (report === "assets") {
+    const date = parseISODate(sp.to ?? "") ?? todayLocal();
+    // Filtrid ainult selle ettevõtte kirjetest
+    const [group, location, person] = await Promise.all([
+      sp.group ? db.fixedAssetGroup.findFirst({ where: { companyId, id: sp.group }, select: { id: true } }) : null,
+      sp.location ? db.fixedAssetLocation.findFirst({ where: { companyId, id: sp.location }, select: { id: true } }) : null,
+      sp.responsible ? db.employee.findFirst({ where: { companyId, id: sp.responsible }, select: { id: true } }) : null,
+    ]);
+    const r = await assetList(db, companyId, {
+      date,
+      groupId: group?.id ?? null,
+      locationId: location?.id ?? null,
+      responsibleId: person?.id ?? null,
+      includeDisposed: sp.disposed === "1",
+    });
+    rows.push([ta("code"), ta("name"), ta("group"), ta("location"), ta("acquisitionDate"), ta("cost"), ta("accumulated"), ta("bookValue")]);
+    for (const x of r.rows) rows.push([x.code, x.name, x.group, x.location ?? "", toISODate(x.acquisitionDate), a(x.cost), a(x.accumulated), a(x.bookValue)]);
+    rows.push([ta("total"), "", "", "", "", a(r.totals.cost), a(r.totals.accumulated), a(r.totals.bookValue)]);
+    suffix = toISODate(date);
+  } else if (report === "asset-depreciation" || report === "asset-summary") {
+    const q = await parseDocReportQuery(companyId, sp, ["none"] as const, "none");
+    if (report === "asset-depreciation") {
+      const group = sp.group ? ((await db.fixedAssetGroup.findFirst({ where: { companyId, id: sp.group }, select: { id: true } }))?.id ?? null) : null;
+      const r = await depreciationReport(db, companyId, { from: q.from, to: q.to, groupId: group });
+      rows.push([ta("code"), ta("name"), ta("group"), ta("cost"), ta("periodDepreciation"), ta("accumulated"), ta("bookValue")]);
+      for (const x of r.rows) rows.push([x.code, x.name, x.group, a(x.cost), a(x.amount), a(x.accumulated), a(x.bookValue)]);
+      rows.push([ta("total"), "", "", "", a(r.total), "", ""]);
+    } else {
+      const r = await assetSummary(db, companyId, { from: q.from, to: q.to });
+      const keys = ["openingCost", "additions", "revaluations", "disposals", "closingCost", "openingAccumulated", "depreciation", "accumulatedDisposals", "closingAccumulated", "openingBookValue", "closingBookValue"] as const;
+      rows.push(["", ...r.rows.map((g) => g.group), ta("total")]);
+      for (const k of keys) rows.push([ta(`summary.${k}`), ...r.rows.map((g) => a(g[k])), a(r.totals[k])]);
     }
     suffix = `${q.fromIso}_${q.toIso}`;
   } else {

@@ -6,6 +6,7 @@ import { SalesError } from "@/server/services/sales";
 import { PaymentError } from "@/server/services/payments";
 import { VatError } from "@/server/services/vat";
 import { InventoryError } from "@/server/services/inventory";
+import { AssetError } from "@/server/services/assets";
 import { can, type Level, type Module } from "./permissions";
 
 /**
@@ -42,11 +43,11 @@ async function run<T>(fn: () => Promise<T>): Promise<ActionResult<T>> {
     return { ok: true, data: await fn() };
   } catch (e) {
     if (e instanceof ActionError) return { ok: false, error: e.code };
-    if (e instanceof LedgerError || e instanceof SalesError || e instanceof PaymentError || e instanceof VatError || e instanceof InventoryError) {
+    if (e instanceof LedgerError || e instanceof SalesError || e instanceof PaymentError || e instanceof VatError || e instanceof InventoryError || e instanceof AssetError) {
       const params = { ...e.meta };
       // Rea number kasutajale 1-st alates
       if (typeof params.index === "number") params.row = params.index + 1;
-      const ns = e instanceof SalesError ? "sales" : e instanceof PaymentError ? "payments" : e instanceof VatError ? "vat" : e instanceof InventoryError ? "inventory" : "ledger";
+      const ns = e instanceof SalesError ? "sales" : e instanceof PaymentError ? "payments" : e instanceof VatError ? "vat" : e instanceof InventoryError ? "inventory" : e instanceof AssetError ? "assets" : "ledger";
       return { ok: false, error: `${ns}.${e.code}`, errorParams: params };
     }
     // Prisma: unikaalsuse rikkumine ja kasutuses oleva kirje kustutamine

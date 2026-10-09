@@ -158,40 +158,44 @@ model Company {
   updatedAt             DateTime    @updatedAt
   createdById           String?
 
-  organization      Organization       @relation(fields: [organizationId], references: [id])
-  memberships       Membership[]
-  invitations       Invitation[]
-  notifications     Notification[]
-  glAccounts        GlAccount[]
-  vatRates          VatRate[]
-  fiscalYears       FiscalYear[]
-  numberSeries      NumberSeries[]
-  currencies        CompanyCurrency[]
-  departments       Department[]
-  dimensions        Dimension[]
-  journalEntries    JournalEntry[]
-  journalTemplates  JournalTemplate[]
-  customers         Customer[]
-  customerGroups    CustomerGroup[]
-  items             Item[]
-  itemGroups        ItemGroup[]
-  salesInvoices     SalesInvoice[]
-  quotes            Quote[]
-  emailLogs         EmailLog[]
-  recurringInvoices RecurringInvoice[]
-  suppliers         Supplier[]
-  supplierGroups    SupplierGroup[]
-  employees         Employee[]
-  purchaseInvoices  PurchaseInvoice[]
-  purchaseOrders    PurchaseOrder[]
-  expenseReports    ExpenseReport[]
-  attachments       Attachment[]
-  bankAccounts      BankAccount[]
-  payments          Payment[]
-  bankStatements    BankStatement[]
-  paymentOrders     PaymentOrder[]
-  warehouses        Warehouse[]
-  stockMovements    StockMovement[]
+  organization        Organization         @relation(fields: [organizationId], references: [id])
+  memberships         Membership[]
+  invitations         Invitation[]
+  notifications       Notification[]
+  glAccounts          GlAccount[]
+  vatRates            VatRate[]
+  fiscalYears         FiscalYear[]
+  numberSeries        NumberSeries[]
+  currencies          CompanyCurrency[]
+  departments         Department[]
+  dimensions          Dimension[]
+  journalEntries      JournalEntry[]
+  journalTemplates    JournalTemplate[]
+  customers           Customer[]
+  customerGroups      CustomerGroup[]
+  items               Item[]
+  itemGroups          ItemGroup[]
+  salesInvoices       SalesInvoice[]
+  quotes              Quote[]
+  emailLogs           EmailLog[]
+  recurringInvoices   RecurringInvoice[]
+  suppliers           Supplier[]
+  supplierGroups      SupplierGroup[]
+  employees           Employee[]
+  purchaseInvoices    PurchaseInvoice[]
+  purchaseOrders      PurchaseOrder[]
+  expenseReports      ExpenseReport[]
+  attachments         Attachment[]
+  bankAccounts        BankAccount[]
+  payments            Payment[]
+  bankStatements      BankStatement[]
+  paymentOrders       PaymentOrder[]
+  warehouses          Warehouse[]
+  stockMovements      StockMovement[]
+  fixedAssetGroups    FixedAssetGroup[]
+  fixedAssetLocations FixedAssetLocation[]
+  fixedAssets         FixedAsset[]
+  depreciationRuns    DepreciationRun[]
 
   @@index([organizationId])
   @@index([regCode])
@@ -549,6 +553,8 @@ enum JournalSource {
   PAYMENT
   INVENTORY
   DEPRECIATION
+  /// Põhivara ümberhindamine, mahakandmine, ümberklassifitseerimine
+  FIXED_ASSET
   VAT_CLOSING
   YEAR_END
 }
@@ -1840,4 +1846,164 @@ model StockMovementLine {
   @@unique([companyId, id])
   @@index([companyId, movementId])
   @@index([companyId, itemId])
+}
+
+/// Põhivara grupp: vaikimisi kontod ja kasulik eluiga.
+model FixedAssetGroup {
+  id                   String   @id @default(cuid())
+  companyId            String
+  name                 String
+  /// Soetusmaksumuse konto (nt 1720)
+  assetAccountId       String
+  /// Akumuleeritud kulumi konto (nt 1790)
+  accumulatedAccountId String
+  /// Kulumikulu konto (nt 4300)
+  expenseAccountId     String
+  usefulLifeMonths     Int?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  createdById          String?
+
+  company Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  assets  FixedAsset[]
+
+  @@unique([companyId, id])
+  @@unique([companyId, name])
+}
+
+model FixedAssetLocation {
+  id          String   @id @default(cuid())
+  companyId   String
+  name        String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById String?
+
+  company Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  assets  FixedAsset[]
+
+  @@unique([companyId, id])
+  @@unique([companyId, name])
+}
+
+enum FixedAssetStatus {
+  /// Kasutusel, kulumit arvestatakse
+  ACTIVE
+  /// Maha kantud või müüdud
+  DISPOSED
+}
+
+/// Põhivara. Kulum arvestatakse lineaarselt kuu kaupa alguskuust alates.
+model FixedAsset {
+  id                   String           @id @default(cuid())
+  companyId            String
+  code                 String
+  name                 String
+  status               FixedAssetStatus @default(ACTIVE)
+  groupId              String
+  locationId           String?
+  /// Vastutaja (töötaja / aruandev isik)
+  responsibleId        String?
+  serialNumber         String?
+  acquisitionDate      DateTime         @db.Date
+  /// Kulumi arvestuse algus (kuu esimene päev)
+  depreciationStart    DateTime         @db.Date
+  /// Soetusmaksumus (koos ümberhindlustega)
+  cost                 Decimal          @db.Decimal(18, 2)
+  residualValue        Decimal          @default(0) @db.Decimal(18, 2)
+  usefulLifeMonths     Int
+  /// Enne LILY SOKID-i arvestatud kulum ja kuude arv (üle toodud vara)
+  openingDepreciation  Decimal          @default(0) @db.Decimal(18, 2)
+  openingMonths        Int              @default(0)
+  assetAccountId       String
+  accumulatedAccountId String
+  expenseAccountId     String
+  departmentId         String?
+  /// Ostuarve, millega vara soetati
+  purchaseInvoiceId    String?
+  disposedAt           DateTime?        @db.Date
+  notes                String?
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+  createdById          String?
+
+  company           Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  group             FixedAssetGroup     @relation(fields: [companyId, groupId], references: [companyId, id], onDelete: Restrict)
+  location          FixedAssetLocation? @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  events            FixedAssetEvent[]
+  depreciationLines DepreciationLine[]
+
+  @@unique([companyId, id])
+  @@unique([companyId, code])
+  @@index([companyId, status])
+}
+
+enum FixedAssetEventType {
+  REVALUATION
+  DISPOSAL
+  RECLASSIFICATION
+}
+
+/// Põhivara muutus (ümberhindamine, mahakandmine, ümberklassifitseerimine) koos kandega.
+model FixedAssetEvent {
+  id               String              @id @default(cuid())
+  companyId        String
+  assetId          String
+  type             FixedAssetEventType
+  date             DateTime            @db.Date
+  /// Mõju soetusmaksumusele ja akumuleeritud kulumile (märgiga)
+  costDelta        Decimal             @default(0) @db.Decimal(18, 2)
+  accumulatedDelta Decimal             @default(0) @db.Decimal(18, 2)
+  fromGroupId      String?
+  toGroupId        String?
+  /// Ümberhindamisel uus kasulik eluiga (kuud alates kulumi algusest)
+  usefulLifeMonths Int?
+  counterAccountId String?
+  description      String?
+  journalEntryId   String?
+  createdAt        DateTime            @default(now())
+  createdById      String?
+
+  asset FixedAsset @relation(fields: [companyId, assetId], references: [companyId, id], onDelete: Cascade)
+
+  @@unique([companyId, id])
+  @@index([companyId, assetId])
+  @@index([companyId, date])
+}
+
+/// Kuu kulumi arvestus: üks kanne kõigi varade kohta.
+model DepreciationRun {
+  id             String   @id @default(cuid())
+  companyId      String
+  /// Kuu esimene päev
+  period         DateTime @db.Date
+  /// Kande kuupäev (kuu viimane päev)
+  date           DateTime @db.Date
+  total          Decimal  @default(0) @db.Decimal(18, 2)
+  journalEntryId String?
+  createdAt      DateTime @default(now())
+  createdById    String?
+
+  company Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  lines   DepreciationLine[]
+
+  @@unique([companyId, id])
+  @@unique([companyId, period])
+}
+
+model DepreciationLine {
+  id        String  @id @default(cuid())
+  companyId String
+  runId     String
+  assetId   String
+  amount    Decimal @db.Decimal(18, 2)
+  /// Mitme kuu kulum (järeleaitamisel > 1)
+  months    Int     @default(1)
+
+  run   DepreciationRun @relation(fields: [companyId, runId], references: [companyId, id], onDelete: Cascade)
+  asset FixedAsset      @relation(fields: [companyId, assetId], references: [companyId, id], onDelete: Restrict)
+
+  @@unique([companyId, id])
+  @@unique([runId, assetId])
+  @@index([companyId, assetId])
 }

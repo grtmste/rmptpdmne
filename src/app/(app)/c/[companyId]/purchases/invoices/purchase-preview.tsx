@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { BookOpen, CheckCircle2, FileMinus2, MoreHorizontal, Pencil, Trash2, X } from "lucide-react";
+import { BookOpen, CheckCircle2, FileMinus2, MoreHorizontal, PackageOpen, Pencil, Trash2, X } from "lucide-react";
 import { parseISODate } from "@/lib/accounting/dates";
 import { formatDate } from "@/lib/dates";
 import { formatMoney } from "@/lib/money";
@@ -55,6 +55,7 @@ export function PurchasePreview({
   canConfirm,
   canViewLedger,
   today,
+  canAddAsset,
 }: {
   companyId: string;
   invoice: PurchasePreviewData;
@@ -63,6 +64,8 @@ export function PurchasePreview({
   canConfirm: boolean;
   canViewLedger: boolean;
   today: string;
+  /** Kasutaja võib lisada põhivara (link „Lisa põhivarana“) */
+  canAddAsset?: boolean;
 }) {
   const t = useTranslations("purchases");
   const ti = useTranslations("invoices");
@@ -128,6 +131,13 @@ export function PurchasePreview({
               {!isDraft && !invoice.isCredit && (
                 <DropdownMenuItem onSelect={() => setCreditOpen(true)}>
                   <FileMinus2 /> {t("createCredit")}
+                </DropdownMenuItem>
+              )}
+              {!isDraft && !invoice.isCredit && canAddAsset && (
+                <DropdownMenuItem asChild>
+                  <Link href={`/c/${companyId}/assets/new?purchaseInvoice=${invoice.id}`}>
+                    <PackageOpen /> {t("addAsAsset")}
+                  </Link>
                 </DropdownMenuItem>
               )}
               {isDraft && (

@@ -49,10 +49,12 @@ const SOURCE_PATHS: Record<string, string> = {
   EXPENSE_REPORT: "/purchases/expenses",
   PAYMENT: "/payments",
   INVENTORY: "/inventory/movements",
+  DEPRECIATION: "/assets/depreciation",
+  FIXED_ASSET: "/assets",
   VAT_CLOSING: "/finance/vat",
 };
 /** Allika parameeter: dokumendi eelvaade (?doc=) või KMD periood (?period=). */
-const sourceQuery = (source: string, id: string) => (source === "VAT_CLOSING" ? `period=${id}` : `doc=${id}`);
+const sourceQuery = (source: string, id: string) => (source === "VAT_CLOSING" ? `period=${id}` : source === "DEPRECIATION" ? `run=${id}` : `doc=${id}`);
 
 export function EntryPreview({
   companyId,

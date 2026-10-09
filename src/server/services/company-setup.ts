@@ -2,6 +2,7 @@ import type { Prisma } from "@/generated/prisma/client";
 import { parseISODate, addDays } from "@/lib/accounting/dates";
 import { calendarYearOf } from "@/lib/accounting/fiscal";
 import { BUSINESS_CHART, DEFAULT_DIMENSIONS, DEFAULT_NUMBER_SERIES, VAT_TEMPLATES } from "@/lib/accounting/templates";
+import { ensureDefaultAssetGroups } from "./assets";
 
 type Tx = Prisma.TransactionClient;
 
@@ -126,6 +127,9 @@ export async function ensureCompanyDefaults(
       });
     }
   }
+
+  // Põhivara grupid
+  await ensureDefaultAssetGroups(tx, companyId, opts.userId);
 
   // Dimensioonid
   if ((await tx.dimension.count({ where: { companyId } })) === 0) {

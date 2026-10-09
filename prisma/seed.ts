@@ -17,6 +17,7 @@ import { confirmInvoice, saveInvoiceDraft, saveQuote } from "../src/server/servi
 import { confirmPayment, savePayment, type PaymentInput } from "../src/server/services/payments";
 import { saveRecurring } from "../src/server/services/recurring";
 import { confirmMovement, saveMovementDraft } from "../src/server/services/inventory";
+import { runDepreciation, saveAsset } from "../src/server/services/assets";
 import { confirmExpenseReport, confirmPurchase, saveExpenseReport, savePurchaseDraft, savePurchaseOrder } from "../src/server/services/purchases";
 
 const db = createPrismaClient();
@@ -425,6 +426,53 @@ async function main() {
     description: "Kuu lõpu inventuur",
     lines: [{ itemId: muld!.id, quantity: "38" }],
   });
+
+  // Põhivara (faas 9): ostuarvetest soetatud varad ja lõppenud kuude kulum
+  const autokeskus = await db.supplier.create({
+    data: { companyId: first.id, name: "Autokeskus AS", regCode: "10456789", vatNumber: "EE100456789", bankAccount: "EE382200221020145685", paymentTermDays: 14 },
+  });
+  const assetPurchases = [
+    { supplierId: autokeskus.id, invoiceNumber: "AK-5512", date: ago(100), description: "Kaubik Ford Transit", price: "24000", account: "1730" },
+    { supplierId: telia.id, invoiceNumber: "S-90211", date: ago(70), description: "Sülearvuti Lenovo ThinkPad", price: "1600", account: "1740" },
+  ];
+  const [office, depot] = await Promise.all([
+    db.fixedAssetLocation.create({ data: { companyId: first.id, name: "Kontor" } }),
+    db.fixedAssetLocation.create({ data: { companyId: first.id, name: "Aiamaja" } }),
+  ]);
+  const assetGroups = new Map((await db.fixedAssetGroup.findMany({ where: { companyId: first.id } })).map((g) => [g.assetAccountId, g]));
+  for (const [i, p] of assetPurchases.entries()) {
+    await db.$transaction(
+      async (tx) => {
+        const invoiceId = await savePurchaseDraft(tx, first.id, owner, {
+          supplierId: p.supplierId,
+          invoiceNumber: p.invoiceNumber,
+          date: p.date,
+          pricesIncludeVat: false,
+          lines: [{ description: p.description, quantity: "1", unitPrice: p.price, vatRateId: vat.KM, accountId: acc[p.account] }],
+        });
+        await confirmPurchase(tx, first.id, owner, invoiceId);
+        const group = assetGroups.get(acc[p.account]!)!;
+        await saveAsset(tx, first.id, owner, {
+          code: `PV-${i + 1}`,
+          name: p.description,
+          groupId: group.id,
+          locationId: i === 0 ? depot.id : office.id,
+          responsibleId: employee.id,
+          acquisitionDate: p.date,
+          depreciationStart: p.date,
+          cost: p.price,
+          usefulLifeMonths: group.usefulLifeMonths ?? 60,
+          purchaseInvoiceId: invoiceId,
+        });
+      },
+      { timeout: 30_000 },
+    );
+  }
+  // Kulum kuni eelmise kuuni
+  const thisMonth = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), 1));
+  for (let m = new Date(Date.UTC(ago(100).getUTCFullYear(), ago(100).getUTCMonth(), 1)); m < thisMonth; m = addMonths(m, 1)) {
+    await db.$transaction((tx) => runDepreciation(tx, first.id, owner, m), { timeout: 30_000 });
+  }
 
   // Perioodiline arve (faas 7): iga kuu esimesel päeval aiahoolduse kuutasu mustandina
   await db.$transaction((tx) =>

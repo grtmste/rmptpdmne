@@ -16,6 +16,7 @@ export type JournalSource =
   | "PAYMENT"
   | "INVENTORY"
   | "DEPRECIATION"
+  | "FIXED_ASSET"
   | "VAT_CLOSING"
   | "YEAR_END";
 

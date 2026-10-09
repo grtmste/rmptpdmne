@@ -254,6 +254,7 @@ export default async function PurchaseInvoicesPage({ params, searchParams }: Pag
             canConfirm={can(ctx.membership, "purchases", "confirm")}
             canViewLedger={can(ctx.membership, "finance", "view")}
             today={toISODate(today)}
+            canAddAsset={can(ctx.membership, "assets", "edit")}
           />
         )}
       </div>
